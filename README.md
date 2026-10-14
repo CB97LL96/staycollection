@@ -24,6 +24,14 @@ Próximos passos:
 3. Exportar os dados do artefato e importar no backend novo.
 4. Importar o repositório no Vercel (site estático, sem configuração).
 
+## Pendências
+
+- **Redesenhar a página de Cobranças.** É a parte mais importante do app, e a
+  usabilidade está confusa. O redesenho começou no artefato em 14/10/2026,
+  mas não chegou a ser publicado, então o `index.html` daqui ainda tem a
+  versão antiga. A ideia que estava em andamento: cartões de cobrança
+  agrupados e um fluxo parecido com um checkout. Idear antes de implementar.
+
 ## Cuidado: o repositório é público
 
 Nunca commitar dados pessoais: chaves Pix, nomes, grupos de WhatsApp,
