@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ler mensagem</title>
+<style>
+:root{--bg:#FCF5F8;--surface:#fff;--sunk:#F7EEF4;--ink:#2B2233;--ink2:#6E6178;--line:#EEDDE7;--accent:#F7B2CF;--accent-ink:#2B2233;--ok:#1D6B4B;--ok-bg:#DAF4E6;--warn:#875300;--warn-bg:#FFEFC2;--bad:#B0305F;--bad-bg:#FFE0EC;--f-body:"Nunito",system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root{--bg:#17131C;--surface:#221C29;--sunk:#2B2433;--ink:#F3ECF4;--ink2:#BBAFC2;--line:#3A3145;--accent:#F29CC2;--accent-ink:#2A1222;--ok:#8EE0B8;--ok-bg:#183528;--warn:#F6CF78;--warn-bg:#3A3019;--bad:#FF9EC1;--bad-bg:#3E1F2E}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;padding:24px 16px 48px;background:var(--bg);color:var(--ink);font:15px/1.5 var(--f-body)}
+main{max-width:680px;margin:0 auto;display:grid;gap:14px}
+h1{margin:0;font-size:24px}p{margin:0}.hint{color:var(--ink2);font-size:13.5px}
+.card{background:var(--surface);border-radius:18px;padding:16px;display:grid;gap:10px}
+textarea{width:100%;min-height:150px;resize:vertical;border:1px solid var(--line);border-radius:12px;padding:10px;font:inherit;background:var(--surface);color:var(--ink)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button,.file{border:none;border-radius:999px;padding:10px 18px;font:inherit;font-weight:700;cursor:pointer;background:var(--accent);color:var(--accent-ink)}
+.file,.ghost{background:var(--sunk);color:var(--ink)}
+.file input{display:none}
+button:disabled{opacity:.5;cursor:default}
+#prev img{max-width:100%;max-height:260px;border-radius:12px;display:block}
+.reg{border-radius:14px;background:var(--sunk);padding:12px;display:grid;gap:6px}
+.reg h3{margin:0;font-size:16px}
+.tags{display:flex;flex-wrap:wrap;gap:6px}.tag{font-size:12px;font-weight:700;border-radius:999px;padding:2px 9px;background:var(--surface)}
+.alta{background:var(--ok-bg);color:var(--ok)}.media{background:var(--warn-bg);color:var(--warn)}.baixa{background:var(--bad-bg);color:var(--bad)}
+dl{margin:0;display:grid;grid-template-columns:110px minmax(0,1fr);gap:2px 10px;font-size:13.5px}dt{color:var(--ink2)}dd{margin:0;overflow-wrap:anywhere}
+blockquote{margin:0;padding:6px 10px;border-left:3px solid var(--line);color:var(--ink2);font-size:13.5px;white-space:pre-wrap}
+.duv{color:var(--warn);font-size:13.5px}
+#msg.bad{color:var(--bad)}
+@media (max-width:480px){dl{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Ler mensagem <span class="hint">(teste)</span></h1>
+  <p class="hint">Cole uma mensagem do WhatsApp, um trecho de conversa exportada ou um print (Ctrl+V no computador, ou "Escolher imagem" no celular). O Claude sugere o que vira cobrança, item, envio ou repasse. Nada é salvo ainda: isto é só pra testar a leitura.</p>
+  <div class="card">
+    <textarea id="fonte" placeholder="Cole aqui a mensagem..."></textarea>
+    <div id="prev"></div>
+    <div class="row">
+      <button id="ler">Ler</button>
+      <label class="file">Escolher imagem<input type="file" id="img" accept="image/*"></label>
+      <button class="ghost" id="limpar">Limpar</button>
+    </div>
+    <p id="msg"></p>
+  </div>
+  <div id="out" class="card" hidden></div>
+  <p><a href="./">Voltar pro app</a></p>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script src="backend.js"></script>
+<script>
+(async function(){
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const msg = (t, c) => { $("#msg").textContent = t; $("#msg").className = c || "" };
+  if (!window.stay.sb) { msg("Falta preencher o config.js com os dados do Supabase.", "bad"); return }
+  const session = await window.stay.getSession();
+  if (!session) { window.stay.showLogin(); return }
+
+  let imagem = null;
+  async function usarImagem(file){
+    if (!file || !file.type.startsWith("image/")) return;
+    const bm = await createImageBitmap(file), k = Math.min(1, 1600 / Math.max(bm.width, bm.height));
+    const c = document.createElement("canvas"); c.width = Math.round(bm.width * k); c.height = Math.round(bm.height * k);
+    c.getContext("2d").drawImage(bm, 0, 0, c.width, c.height);
+    const url = c.toDataURL("image/jpeg", 0.85);
+    imagem = { tipo: "image/jpeg", dados: url.split(",")[1] };
+    $("#prev").innerHTML = `<img src="${url}" alt="imagem que vai ser lida">`;
+  }
+  $("#img").onchange = e => usarImagem(e.target.files[0]);
+  document.addEventListener("paste", e => {
+    const f = [...(e.clipboardData && e.clipboardData.files || [])].find(x => x.type.startsWith("image/"));
+    if (f) { e.preventDefault(); usarImagem(f) }
+  });
+  $("#limpar").onclick = () => { imagem = null; $("#fonte").value = ""; $("#prev").innerHTML = ""; $("#out").hidden = true; msg("") };
+
+  async function contexto(){
+    const { data } = await window.stay.sb.from("docs").select("col,data").in("col", ["comunidades", "cegs"]);
+    const nomes = col => [...new Set((data || []).filter(r => r.col === col).map(r => r.data && r.data.nome).filter(Boolean))];
+    return { hoje: new Date().toLocaleDateString("sv-SE"), comunidades: nomes("comunidades"), cegs: nomes("cegs") };
+  }
+
+  $("#ler").onclick = async () => {
+    const fonte = $("#fonte").value;
+    if (!fonte.trim() && !imagem) { msg("Cole um texto ou escolha uma imagem."); return }
+    $("#ler").disabled = true; msg("Lendo… pode levar uns segundos."); $("#out").hidden = true;
+    try {
+      const { data: { session: s } } = await window.stay.sb.auth.getSession();
+      const r = await fetch("/api/ler", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + s.access_token },
+        body: JSON.stringify({ fonte, imagem, contexto: await contexto() }),
+      });
+      const j = await r.json().catch(() => ({ erro: "Resposta inválida do servidor." }));
+      if (!r.ok) throw new Error(j.erro || "Falhou.");
+      const regs = j.registros || [];
+      const linha = (k, v) => v || v === 0 ? `<dt>${k}</dt><dd>${esc(v)}</dd>` : "";
+      $("#out").innerHTML = `<p><b>${esc(j.resumo)}</b></p>` + (regs.length ? regs.map(x => `
+        <div class="reg">
+          <div class="tags"><span class="tag">${esc(x.destino)}</span><span class="tag ${esc(x.confianca)}">confiança ${esc(x.confianca)}</span></div>
+          <h3>${esc(x.referente || "(sem título)")}</h3>
+          <dl>${linha("Comunidade", x.comunidade)}${linha("CEG", x.ceg)}${linha("Tipo", x.tipo)}${linha("Membro", x.membro)}${linha("Valor", x.valor != null ? "R$ " + Number(x.valor).toFixed(2).replace(".", ",") : "")}${linha("Prazo", x.prazo)}${linha("Status", x.status)}${linha("Pix", x.pix)}${linha("Como pagar", x.pagarComo)}${linha("Link", x.pagarLink)}${linha("Comprovante", x.compOnde)}${linha("Link comprov.", x.compLink)}${linha("Obs", x.obs)}</dl>
+          ${x.trecho ? `<blockquote>${esc(x.trecho)}</blockquote>` : ""}
+          ${x.duvidas ? `<p class="duv">Conferir: ${esc(x.duvidas)}</p>` : ""}
+        </div>`).join("") : "") + `<p class="hint">${esc(j.modelo)} · ${j.uso ? j.uso.input_tokens + " tokens de entrada, " + j.uso.output_tokens + " de saída" : ""}</p>`;
+      $("#out").hidden = false; msg("");
+    } catch (e) { msg(e.message, "bad") }
+    $("#ler").disabled = false;
+  };
+})();
+</script>
+</body>
+</html>

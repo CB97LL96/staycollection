@@ -1007,6 +1007,9 @@ details.cobsec:not([open])>summary .esl::after{content:" ▸";color:var(--ink2);
 <div class="toast" id="toast" hidden></div>
 <input type="file" id="fotoin" accept="image/*" hidden>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script src="backend.js"></script>
 <script>
 (function(){
 function cegLbl(d){ if(!d.ceg) return ""; const a=String(d.ceg).trim().split(/\s+/), b=String(d.comunidade||"").toLowerCase().trim().split(/\s+/); let i=0; while(i<a.length&&i<b.length&&(a[i].toLowerCase()===b[i]||(a[i].length>=3&&b[i].startsWith(a[i].toLowerCase())))) i++; const rest=a.slice(i).join(" "); return rest||d.ceg; }
@@ -1748,7 +1751,7 @@ function linkMap(){ const its=list("itens").filter(d=>Array.isArray(d.cards)&&d.
   const m={}; its.forEach(d=>{const st=d.status==="Recebido"?"tenho":CAMINHO_ST.includes(d.status)?"caminho":""; if(!st)return; d.cards.forEach(cid=>{const cur=m[cid]; if(!cur||(st==="tenho"&&cur.s!=="tenho"))m[cid]={s:st,item:d};});});
   linkCache={sig,map:m}; return m; }
 const stOf=it=>stMan(it)||((linkMap()[it.i]||{}).s)||"";
-const fotoSpr=key=>{const f=fotos[key]; return f&&/^[0-9a-f]{32}$/.test(f.asset||"")?{u:"/_blob/"+f.asset,n:1,m:1,c:0,r:0,cover:true}:null};
+const fotoSpr=key=>{const f=fotos[key]; return f&&/^[0-9a-f]{32}$/.test(f.asset||"")?{u:window.stay.blobUrl(f.asset),n:1,m:1,c:0,r:0,cover:true}:null};
 const colSpr=it=>fotoSpr(it.i)||(it.p&&COL&&!it.novo?{u:COL.sheets[it.p[0]],n:COL.n,m:COL.m,c:it.p[1],r:it.p[2]}:null);
 function wishPanel(){
   const w=list("wishlist").sort((a,b)=>String(a.era).localeCompare(String(b.era),"pt-BR"));
@@ -2002,7 +2005,7 @@ function render(){
   renderTabs();
   $("#stamp").textContent=meta.atualizadoEm?`última varredura ${fd(meta.atualizadoEm)} · ${meta.nota||""}`:"";
   if(!ready){$("#view").innerHTML=`<div class="empty">Carregando cobranças, itens e envios…</div>`;return}
-  if(!db){$("#view").innerHTML=`<div class="notice">A base fica guardada no claude.ai. Abra esta página logada na sua conta pra ver e editar suas CEGs.</div>`;return}
+  if(!db){$("#view").innerHTML=`<div class="notice">Não consegui abrir a base. Confira se você entrou com a sua conta e se o config.js tem os dados do Supabase.</div>`;return}
   const total=Object.values(data).reduce((s,m)=>s+m.size,0);
   if(!total){$("#view").innerHTML=`<div class="empty">A base ainda está vazia. Peça pro Claude fazer a varredura, ou use "+ Adicionar" em qualquer aba.</div>`;return}
   if(ui.tab==="painel")renderPainel(); else if(ui.tab==="catalogo")renderCatalogo(); else if(ui.tab==="colecao")renderColecao(); else renderList(ui.tab);
