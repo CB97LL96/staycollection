@@ -3,6 +3,6 @@
 // quem protege os dados são as regras do banco (supabase/schema.sql).
 // Nunca colocar aqui a chave "service_role" / "secret".
 window.STAY_CONFIG = {
-  supabaseUrl: "",
+  supabaseUrl: "https://rcdreaphagooklgcjsuc.supabase.co",
   supabaseAnonKey: "",
 };
