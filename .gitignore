@@ -1,0 +1,8 @@
+# dados pessoais e backups do banco: nunca no repositório público
+backup/
+*.backup.json
+.env
+.env.*
+.vercel
+.DS_Store
+node_modules/
