@@ -11,7 +11,8 @@ Começou como o artefato "Coleção SKZ" no claude.ai e está sendo migrado para
 - `supabase/schema.sql`: cria o banco. Roda uma vez no SQL Editor do Supabase.
 - `importar.html`: importa o backup exportado do artefato do claude.ai.
 - `ler.html` e `api/ler.js`: teste da leitura de mensagens e prints pela API do Claude.
-- `colecao.json` e `sprites/`: catálogo de photocards (fonte: CraftenSKZ / StrayKidsPCCollector).
+- `colecao.json`: catálogo de photocards (fonte: CraftenSKZ / StrayKidsPCCollector).
+- `blobs/`: todas as imagens que ficavam no artefato (folhas de fotos do catálogo e fotos do paboracha). O `vercel.json` faz o endereço antigo `/_blob/<id>` apontar pra `blobs/<id>.jpg`, então os dados não precisaram mudar.
 
 ## Como colocar no ar
 
@@ -53,6 +54,12 @@ e abrir http://localhost:8000 (a leitura pela API só funciona no Vercel).
   mas não chegou a ser publicado, então o `index.html` daqui ainda tem a
   versão antiga. A ideia que estava em andamento: cartões de cobrança
   agrupados e um fluxo parecido com um checkout. Idear antes de implementar.
+
+- **Manter o catálogo atualizado sozinho.** O catálogo vem do CraftenSKZ
+  (github.com/CraftenSKZ/StrayKidsPCCollector), que é aberto. Dá pra criar uma
+  rotina que confere de tempos em tempos se ele mudou e regenera o
+  `colecao.json` e as folhas de fotos. Também falta completar com SG, fankit,
+  pop up, eventos e merch (outras fontes).
 
 ## Cuidado: o repositório é público
 

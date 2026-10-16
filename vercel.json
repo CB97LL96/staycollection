@@ -1,5 +1,8 @@
 {
   "functions": {
     "api/ler.js": { "maxDuration": 120 }
-  }
+  },
+  "rewrites": [
+    { "source": "/_blob/:id", "destination": "/blobs/:id.jpg" }
+  ]
 }
