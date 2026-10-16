@@ -12,7 +12,7 @@ Começou como o artefato "Coleção SKZ" no claude.ai e está sendo migrado para
 - `importar.html`: importa o backup exportado do artefato do claude.ai.
 - `ler.html` e `api/ler.js`: teste da leitura de mensagens e prints pela API do Claude.
 - `colecao.json`: catálogo de photocards (fonte: CraftenSKZ / StrayKidsPCCollector).
-- `blobs/`: todas as imagens que ficavam no artefato (folhas de fotos do catálogo e fotos do paboracha). O `vercel.json` faz o endereço antigo `/_blob/<id>` apontar pra `blobs/<id>.jpg`, então os dados não precisaram mudar.
+- `blobs/`: as folhas de fotos do catálogo de photocards, que ficavam no artefato. O `vercel.json` faz o endereço antigo `/_blob/<id>` apontar pra `blobs/<id>.jpg`, então os dados não precisaram mudar.
 
 ## Como colocar no ar
 
