@@ -169,7 +169,9 @@ details.ciclo ol{margin:8px 0;padding-left:22px;display:grid;gap:4px;font-size:1
 details.ciclo li b{margin-right:6px}
 .empty{border:1.5px dashed var(--line);border-radius:var(--r);padding:20px;color:var(--ink2);text-align:center}
 .notice{background:var(--warn-bg);color:var(--warn);border-radius:var(--r);padding:12px 14px;font-weight:700}
-.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:10px;font-weight:700;font-size:14px;z-index:20}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:10px;font-weight:700;font-size:14px;z-index:20;display:flex;align-items:center;gap:10px}
+.toast .toastbtn{border:1px solid color-mix(in srgb,var(--bg) 50%,transparent);background:transparent;color:var(--bg);border-radius:999px;padding:3px 10px;font:inherit;font-weight:700;cursor:pointer}
+.toast .toastbtn:hover{background:color-mix(in srgb,var(--bg) 15%,transparent)}
 @media (prefers-reduced-motion:no-preference){.row{transition:border-color .15s}}
 
 /* ===== tema pastel (referência: apps de saúde com cartões suaves) ===== */
@@ -955,12 +957,15 @@ nav.tabs.areas button[aria-current="page"] .badge{background:#fff;color:#B0305F}
 .etile:focus-visible{outline:none}.etile:focus-visible .eimg{box-shadow:0 0 0 3px var(--berry),0 0 0 6px var(--accent)}
 .ecov{justify-self:start}
 .cobtop{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-.cobk{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);padding:12px 14px;display:grid;gap:2px;border-top:4px solid var(--line)}
-.cobk span{font-size:12.5px;color:var(--ink2);font-weight:var(--w-label)}
+.cobk{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);padding:12px 14px;display:grid;gap:2px}
+.cobk span{font-size:12.5px;color:var(--ink2);font-weight:var(--w-label);display:flex;align-items:center;gap:6px}
+.cobk span::before{content:"";width:8px;height:8px;border-radius:999px;background:var(--line)}
 .cobk b{font-size:22px;font-weight:var(--w-hero);line-height:1.15}
 .cobk small{font-size:12px;color:var(--ink2)}
-.cobk.bad{border-top-color:var(--bad)} .cobk.bad b{color:var(--bad)}
-.cobk.warn{border-top-color:var(--honey)} .cobk.info{border-top-color:var(--lav)} .cobk.ok{border-top-color:var(--mint)}
+.cobk.bad span::before{background:var(--bad)} .cobk.bad b{color:var(--bad)}
+.cobk.warn span::before{background:var(--honey)} .cobk.warn b{color:var(--honey)}
+.cobk.info span::before{background:var(--lav)} .cobk.info b{color:var(--lav)}
+.cobk.ok span::before{background:var(--mint)} .cobk.ok b{color:var(--mint)}
 .cobhint{margin:2px 0 0}
 details.cobsec{display:grid;gap:8px}
 details.cobsec>summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;padding:8px 0 2px}
@@ -969,10 +974,23 @@ details.cobsec:not([open])>summary .esl::after{content:" ▸";color:var(--ink2);
 .cobsec.pagar .esic{background:var(--bad-bg);color:var(--bad)} .cobsec.conf2 .esic{background:var(--warn-bg);color:var(--warn)} .cobsec.esperar .esic{background:var(--info-bg);color:var(--info)} .cobsec.pagas .esic{background:var(--ok-bg);color:var(--ok)} .cobsec.longe .esic{background:var(--muted-bg);color:var(--muted)}
 .cobsum{font-weight:700;font-size:15px}
 .crlist{display:grid;gap:8px}
-.crow{background:var(--surface);border-radius:16px;box-shadow:var(--shadow);border-left:5px solid var(--c,var(--line));overflow:hidden}
+.crow{background:var(--surface);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
 .crow.is-late{background:color-mix(in srgb,var(--bad-bg) 55%,var(--surface))}
+.crow.is-sel{box-shadow:0 0 0 2px var(--berry),var(--shadow)}
 .crmain{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto 20px;gap:12px;align-items:center;padding:10px 14px;cursor:pointer}
+.crmain.haschk{grid-template-columns:22px minmax(0,1fr) auto auto auto 20px}
 .crmain:focus-visible{outline:3px solid var(--berry);outline-offset:-3px;border-radius:14px}
+.cobchk{display:flex;align-items:center;justify-content:center}
+.cobchk input{width:20px;height:20px;accent-color:var(--berry);cursor:pointer}
+.cobchk input:disabled{cursor:not-allowed;opacity:.4}
+.cobselbar{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:19;background:var(--surface);box-shadow:0 4px 24px rgba(0,0,0,.18),var(--shadow);border-radius:16px;padding:12px 16px;display:grid;gap:8px;max-width:min(560px,calc(100vw - 24px))}
+.cobselmain{font-size:14px}
+.cobselmain b{font-weight:var(--w-title)}
+.selpix{font-size:12.5px;color:var(--ink2);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.selpix.warn{color:var(--warn);font-weight:600}
+.selpix.warn .i{width:14px;height:14px;flex:none}
+.cobselact{display:flex;gap:8px;justify-content:flex-end}
+@media (max-width:640px){.cobselbar{left:12px;right:12px;transform:none;max-width:none}.cobselact{justify-content:stretch}.cobselact .btn{flex:1}}
 .crt{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;min-width:0}
 .crt b{font-weight:var(--w-title);font-size:15px}
 .crs{flex-basis:100%;font-size:12.5px;color:var(--ink2)}
@@ -990,7 +1008,7 @@ details.cobsec:not([open])>summary .esl::after{content:" ▸";color:var(--ink2);
 .crsrc p{margin:2px 0 6px;font-size:13.5px}
 .crsrcb{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .crfull .row{box-shadow:none;border-radius:0;background:transparent}
-@media (max-width:820px){.cobtop{grid-template-columns:repeat(2,minmax(0,1fr))}.crmain{grid-template-columns:minmax(0,1fr) auto 20px}.crd,.crtrust{grid-column:1/-1;justify-self:start}.crd{grid-row:2}.crtrust{grid-row:3}.crmain .tmore{grid-column:3;grid-row:1}}
+@media (max-width:820px){.cobtop{grid-template-columns:repeat(2,minmax(0,1fr))}.crmain{grid-template-columns:minmax(0,1fr) auto 20px}.crmain.haschk{grid-template-columns:22px minmax(0,1fr) auto 20px}.crd,.crtrust{grid-column:1/-1;justify-self:start}.crd{grid-row:2}.crtrust{grid-row:3}.crmain .tmore{grid-column:3;grid-row:1}.crmain.haschk .tmore{grid-column:4}}
 .crfull .row .main>.tic,.crfull .row .main>.thumb,.crfull .row .main>div>.t,.crfull .row .main>.val,.crfull .row .proof{display:none}
 .crfull .row .main{padding-top:0}
 </style>
@@ -1004,7 +1022,7 @@ details.cobsec:not([open])>summary .esl::after{content:" ▸";color:var(--ink2);
   <nav class="subtabs" id="subtabs" aria-label="Páginas"></nav>
   <main id="view"><div class="empty">Carregando cobranças, itens e envios…</div></main>
 </div>
-<div class="toast" id="toast" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 <input type="file" id="fotoin" accept="image/*" hidden>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
@@ -1046,7 +1064,7 @@ const tone=v=>"t-"+(TONE[v]||"muted");
 
 const data={acervo:new Map()}; Object.keys(COLS).forEach(k=>data[k]=new Map());
 let meta={}; let catalogo=new Map(); let db=null; let canWrite=true; let ready=false;
-const ui={linking:null,lq:null,itf:{m:"",tipo:"",fase:"aberto"},gclosed:{},pexp:null,tab:"painel",q:"",st:{},com:"",editing:null,newOpen:false,sort:{},cat:{q:"",ceg:"",membro:"",foto:false,vagas:false,meus:false},zoom:null};
+const ui={linking:null,lq:null,itf:{m:"",tipo:"",fase:"aberto"},gclosed:{},pexp:null,tab:"painel",q:"",st:{},com:"",editing:null,newOpen:false,sort:{},cat:{q:"",ceg:"",membro:"",foto:false,vagas:false,meus:false},zoom:null,cobSel:new Set()};
 try{const s=JSON.parse(localStorage.getItem("cegs-ui")||"{}"); if(s.tab&&TABS.some(t=>t[0]===s.tab)) ui.tab=s.tab; if(s.sort&&typeof s.sort==="object") ui.sort=s.sort;}catch(e){}
 const saveUi=()=>{try{localStorage.setItem("cegs-ui",JSON.stringify({tab:ui.tab,sort:ui.sort}))}catch(e){}};
 
@@ -1060,7 +1078,12 @@ const fd=s=>{const d=pd(s);return d?String(d.getDate()).padStart(2,"0")+"/"+Stri
 const daysTo=s=>{const d=pd(s);return d?Math.round((d-today())/864e5):null};
 const daysTag=n=>n==null?"":`<span class="days ${n<0?"t-bad":n<=7?"t-warn":"t-muted"}">${n<0?Math.abs(n)+"d atrasado":n===0?"hoje":"em "+n+"d"}</span>`;
 const list=k=>[...data[k].entries()].map(([id,d])=>({id,...d}));
-function toast(msg){const t=$("#toast");t.textContent=msg;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2200)}
+function toast(msg,action){const t=$("#toast");
+  const fn=typeof action==="function"?action:action&&action.fn;
+  const label=(action&&action.label)||"tentar de novo";
+  t.innerHTML=esc(msg)+(fn?` <button type="button" class="toastbtn">${esc(label)}</button>`:"");t.hidden=false;clearTimeout(toast._t);
+  if(fn){const b=t.querySelector(".toastbtn");b.onclick=()=>{t.hidden=true;clearTimeout(toast._t);fn()}}
+  toast._t=setTimeout(()=>t.hidden=true,fn?6000:2200)}
 
 // ---------- derived ----------
 function stats(){
@@ -1087,9 +1110,9 @@ function renderTabs(){
   const st=$("#subtabs"); st.innerHTML=subs; st.hidden=!subs;
 }
 ui.lastIn=ui.lastIn||{};
-$("#tabs").addEventListener("click",e=>{const b=e.target.closest("[data-area]");if(!b)return; const a=AREAS.find(x=>x[0]===b.dataset.area); const nt=(ui.lastIn[a[0]]&&a[3].includes(ui.lastIn[a[0]]))?ui.lastIn[a[0]]:a[3][0]; if(nt===ui.tab&&a[0]!=="colecao")return; ui.tab=nt;ui.q="";ui.com="";ui.editing=null;ui.newOpen=false;saveUi();render();window.scrollTo({top:0})});
+$("#tabs").addEventListener("click",e=>{const b=e.target.closest("[data-area]");if(!b)return; const a=AREAS.find(x=>x[0]===b.dataset.area); const nt=(ui.lastIn[a[0]]&&a[3].includes(ui.lastIn[a[0]]))?ui.lastIn[a[0]]:a[3][0]; if(nt===ui.tab&&a[0]!=="colecao")return; ui.tab=nt;ui.q="";ui.com="";ui.editing=null;ui.newOpen=false;ui.cobSel.clear();saveUi();render();window.scrollTo({top:0})});
 $("#subtabs").addEventListener("click",e=>{const cv=e.target.closest("[data-cv]"); if(cv){ui.tab="colecao";cf.view=cv.dataset.cv;ui.newOpen=false;render();window.scrollTo({top:0});return}
-  const b=e.target.closest("[data-tab]");if(!b)return;ui.tab=b.dataset.tab;ui.lastIn[areaOf(ui.tab)]=ui.tab;ui.q="";ui.com="";ui.editing=null;ui.newOpen=false;saveUi();render();window.scrollTo({top:0})});
+  const b=e.target.closest("[data-tab]");if(!b)return;ui.tab=b.dataset.tab;ui.lastIn[areaOf(ui.tab)]=ui.tab;ui.q="";ui.com="";ui.editing=null;ui.newOpen=false;ui.cobSel.clear();saveUi();render();window.scrollTo({top:0})});
 
 // ---------- painel ----------
 const ICONS={
@@ -1287,7 +1310,7 @@ function itensChips(base){
 }
 $("#view").addEventListener("click",e=>{if(ui.tab!=="itens")return; const a=e.target.closest("[data-im],[data-itp],[data-ifs]"); if(!a)return;
   if(a.hasAttribute("data-im"))ui.itf.m=a.dataset.im; else if(a.hasAttribute("data-itp"))ui.itf.tipo=a.dataset.itp; else ui.itf.fase=a.dataset.ifs; renderList("itens");});
-const GROUPED={cegs:"Agrupar por comunidade (padrão)",envios:"Agrupar por comunidade (padrão)",comunidades:"Grade (padrão)"};
+const GROUPED={cegs:"Agrupar por comunidade (padrão)",envios:"Agrupar por comunidade (padrão)",comunidades:"Grade (padrão)",cobrancas:"Agrupar por status (padrão)"};
 const EMPTY='<div class="empty">Nada por aqui com esses filtros.</div>';
 function comOrder(){return list("comunidades").sort((a,b)=>(a.ordem??99)-(b.ordem??99)).map(c=>c.nome);}
 function trustOf(d){
@@ -1297,17 +1320,21 @@ function trustOf(d){
   return {cls:n<=2?"ok":n<=7?"warn":"bad",ic:n<=2?"check":"clock",txt:`conferido ${when}${src?" na "+src:""}`,src,n};
 }
 function cobRow(d){
-  const open=ui.cexp===d.id, late=d.status==="Pendente"&&d.prazo&&daysTo(d.prazo)<0, tr=trustOf(d);
+  const open=ui.cexp===d.id, late=["Pendente","A confirmar"].includes(d.status)&&d.prazo&&daysTo(d.prazo)<0, tr=trustOf(d);
   const u=safeUrl(d.pagarLink)||(/^(forms\.gle|docs\.google)/.test(d.pagarLink||"")?"https://"+d.pagarLink:"");
   const pay=d.status==="Pendente"?(d.pix?`<button class="cta" type="button" data-copy="${esc(d.pix)}">copiar pix${I("copy")}</button>`:u?`<a class="cta" href="${esc(u)}" target="_blank" rel="noopener">pagar${I("ext")}</a>`:""):"";
-  const ask=d.status==="A confirmar"&&canWrite?`<span class="cask">você pagou?</span><button class="cta" type="button" data-cpay="${esc(d.id)}">${I("check")}já paguei</button><button class="btn ghost small" type="button" data-cnot="${esc(d.id)}">ainda não</button>`:"";
+  const ask=d.status==="A confirmar"&&canWrite?`<span class="cask">você pagou?</span><button class="cta" type="button" data-cpay="${esc(d.id)}">${I("check")}já paguei</button><button class="btn ghost small" type="button" data-cnot="${esc(d.id)}">ainda não</button><button class="btn ghost small" type="button" data-cexp="${esc(d.id)}">não tenho certeza</button>`:"";
   const pl=safeUrl(d.provaLink);
-  return `<div class="crow ${late?"is-late":""} ${open?"open":""}" data-k="cobrancas" id="row-${esc(d.id)}" style="--c:${okHex((comInfo(d.comunidade)||{}).cor)}">
-    <div class="crmain" data-cexp="${esc(d.id)}" role="button" tabindex="0" aria-expanded="${open}">
+  const selPin=ui.cobSel.size?(data.cobrancas.get([...ui.cobSel][0])||{}).comunidade||"":null;
+  const selBlocked=d.status==="Pendente"&&selPin!=null&&(d.comunidade||"")!==selPin;
+  const chk=d.status==="Pendente"&&canWrite?`<label class="cobchk" title="${selBlocked?"a seleção pra liquidar em lote é limitada a uma comunidade por vez":"selecionar pra liquidar em lote"}"><input type="checkbox" data-cobchk="${esc(d.id)}" ${ui.cobSel.has(d.id)?"checked":""} ${selBlocked?"disabled":""} aria-label="Selecionar pra liquidar em lote: ${esc(d.referente||"sem título")}, ${typeof d.valor==="number"?brl(d.valor):"valor não informado"}"></label>`:"";
+  return `<div class="crow ${late?"is-late":""} ${open?"open":""} ${ui.cobSel.has(d.id)?"is-sel":""}" data-k="cobrancas" id="row-${esc(d.id)}" style="--c:${okHex((comInfo(d.comunidade)||{}).cor)}">
+    <div class="crmain ${chk?"haschk":""}" data-cexp="${esc(d.id)}" role="button" tabindex="0" aria-expanded="${open}">
+      ${chk}
       <div class="crt">${comChip(d.comunidade)}<b>${esc(d.referente||"")}</b><span class="crs">${esc([cegLbl(d)||d.ceg,d.tipo].filter(Boolean).join(" · "))}</span></div>
       <div class="crv">${typeof d.valor==="number"?`<b>${brl(d.valor)}</b>`:`<small class="nota">valor não informado</small>`}</div>
       <div class="crd">${["Pendente","A confirmar"].includes(d.status)?dueChip(d.prazo):d.status==="Paga"&&d.pagoEm?`<span class="due none">${I("check")}paga ${fd(d.pagoEm)}</span>`:""}</div>
-      <div class="crtrust ${tr.cls}" title="${esc(d.prova||"sem fonte anotada")}">${I(tr.ic)}${esc(tr.txt)}</div>
+      <div class="crtrust ${tr.cls}" title="${esc((tr.cls==="ok"?"Conferida com a fonte há pouco tempo. ":tr.cls==="warn"?"Já faz um tempo que não é conferida com a fonte; vale confirmar de novo. ":"Ainda não foi comparada com a fonte original. ")+(d.prova||"sem fonte anotada"))}">${I(tr.ic)}${esc(tr.txt)}</div>
       <span class="tmore" aria-hidden="true">${I("chev")}</span>
     </div>
     ${pay||ask?`<div class="cract">${ask}${pay}</div>`:""}
@@ -1316,19 +1343,62 @@ function cobRow(d){
       <div class="crfull">${rowHtml("cobrancas",d,{nochip:true})}</div>`:""}
   </div>`;
 }
+function cobSelBar(){
+  if(!ui.cobSel.size) return "";
+  const rows=[...ui.cobSel].map(id=>data.cobrancas.get(id)).filter(d=>d&&d.status==="Pendente");
+  if(!rows.length){ui.cobSel.clear(); return "";}
+  const comName=rows[0].comunidade||"";
+  const ci=comInfo(comName);
+  const total=rows.reduce((s,d)=>s+(typeof d.valor==="number"?d.valor:0),0);
+  const semVal=rows.filter(d=>typeof d.valor!=="number").length;
+  const pixes=[...new Set(rows.map(d=>d.pix||(ci&&ci.pix)||"").filter(Boolean))];
+  const pixLine=pixes.length===1?`<span class="selpix">pix pra pagar: <b>${esc(pixes[0])}</b> <button type="button" class="btn ghost small" data-copy="${esc(pixes[0])}">copiar${I("copy")}</button></span>`
+    :pixes.length>1?`<span class="selpix warn">${I("alert")}essas cobranças têm chaves pix diferentes — pague cada uma separadamente, não dá pra usar um pix só pra todas</span>`
+    :comName?`<span class="selpix">sem pix cadastrado nessas cobranças nem em ${esc(comName)} — confira em Comunidades</span>`:"";
+  return `<div class="cobselbar" role="region" aria-label="Seleção para liquidar em lote">
+    <div class="cobselmain" aria-live="polite"><b>${rows.length}</b> ${rows.length===1?"cobrança selecionada":"cobranças selecionadas"} · <b>${brl(total)}</b>${semVal?` <small>(${semVal} sem valor)</small>`:""}${comName?` · ${esc(comName)}`:""}</div>
+    ${pixLine}
+    <div class="cobselact"><button type="button" class="btn ghost small" data-cobcancel>cancelar seleção</button><button type="button" class="btn danger" data-cobsettle>liquidar</button></div>
+  </div>`;
+}
+async function settleCobBatch(ids){
+  const prevs=new Map();
+  for(const id of ids){ const prev=data.cobrancas.get(id); if(!prev)continue; prevs.set(id,prev);
+    data.cobrancas.set(id,{...prev,status:"Paga",pagoEm:prev.pagoEm||isoToday()}); }
+  ui.cobSel.clear(); render();
+  const fails=[];
+  for(const id of ids){ const prev=prevs.get(id); if(!prev)continue;
+    try{ await db.doc("cobrancas/"+id).update({status:"Paga",pagoEm:prev.pagoEm||isoToday()}); }
+    catch(err){ data.cobrancas.set(id,prev); fails.push(id); } }
+  if(fails.length) render();
+  const ok=ids.length-fails.length;
+  if(fails.length) toast(`${ok} de ${ids.length} marcadas como pagas; ${fails.length} não salvou`,()=>settleCobBatch(fails));
+  else toast(`${ok} ${ok===1?"cobrança marcada":"cobranças marcadas"} como pagas`,{label:"desfazer",fn:()=>undoCobBatch(ids,prevs)});
+}
+async function undoCobBatch(ids,prevs){
+  for(const id of ids){ const prev=prevs.get(id); if(prev)data.cobrancas.set(id,prev); }
+  render();
+  const fails=[];
+  for(const id of ids){ const prev=prevs.get(id); if(!prev)continue;
+    try{ await db.doc("cobrancas/"+id).update({status:prev.status,pagoEm:prev.pagoEm||null}); }
+    catch(err){ data.cobrancas.set(id,{...prev,status:"Paga",pagoEm:prev.pagoEm||isoToday()}); fails.push(id); } }
+  if(fails.length){ render(); toast(`Desfeito, mas ${fails.length} não salvou — continua como paga no banco`,()=>undoCobBatch(fails,prevs)); }
+  else toast("Desfeito");
+}
 function cobBoard(rows){
   const by=(a,b)=>(a.prazo||"9999").localeCompare(b.prazo||"9999");
   const sec=(sts)=>rows.filter(d=>sts.includes(d.status)).sort(by);
   const pend=sec(["Pendente"]), conf=sec(["A confirmar"]), fut=sec(["Aguardando a GOM","Futura","Não liberado"]), pagas=sec(["Paga"]).sort((a,b)=>(b.pagoEm||"").localeCompare(a.pagoEm||"")), sem=sec(["Set não fechou","Cancelada"]);
   const sum=a=>a.reduce((x,d)=>x+(typeof d.valor==="number"?d.valor:0),0);
+  const semValor=a=>a.filter(d=>typeof d.valor!=="number").length;
   const abertas=[...pend,...conf]; const frescas=abertas.filter(d=>{const t=trustOf(d);return t.cls==="ok"}).length;
   const block=(key,title,sub,arr,ic,cls,closedDef)=>{ if(!arr.length)return ""; const isOpen=ui.gclosed["cob|"+key]!=null?ui.gclosed["cob|"+key]===false:!closedDef;
     return `<details class="cobsec ${cls}" data-gkey="cob|${key}" ${isOpen?"open":""}><summary><span class="esic">${I(ic)}</span><span class="esl">${title}</span><span class="esn">${arr.length}</span>${sum(arr)?`<span class="cobsum">${brl(sum(arr))}</span>`:""}<span class="esd">${sub}</span></summary><div class="crlist">${arr.map(cobRow).join("")}</div></details>`;};
   return `<div class="cobtop">
-      <div class="cobk bad"><span>pra pagar</span><b>${brl(sum(pend))}</b><small>${pend.length} ${pend.length===1?"cobrança":"cobranças"}</small></div>
-      <div class="cobk warn"><span>você pagou?</span><b>${conf.length}</b><small>${conf.length?brl(sum(conf))+" em dúvida":"nada em dúvida"}</small></div>
+      <div class="cobk bad"><span>pra pagar</span><b>${brl(sum(pend))}</b><small>${pend.length} ${pend.length===1?"cobrança":"cobranças"}${semValor(pend)?` · ${semValor(pend)} sem valor informado`:""}</small></div>
+      <div class="cobk warn"><span>você pagou?</span><b>${conf.length}</b><small>${conf.length?brl(sum(conf))+" em dúvida"+(semValor(conf)?` · ${semValor(conf)} sem valor`:""):"nada em dúvida"}</small></div>
       <div class="cobk info"><span>ainda vão cobrar</span><b>${fut.length}</b><small>${sum(fut)?"uns "+brl(sum(fut)):"valores ainda não definidos"}</small></div>
-      <div class="cobk ${frescas===abertas.length?"ok":"warn"}"><span>confiança</span><b>${frescas}/${abertas.length}</b><small>em aberto conferidas nos últimos 2 dias</small></div>
+      <div class="cobk ${!abertas.length?"muted":frescas===abertas.length?"ok":"warn"}" title="Quantas cobranças em aberto (pra pagar + você pagou?) foram conferidas com a fonte (planilha, grupo etc.) nos últimos 2 dias. Depois de 2 dias sem conferir o badge da cobrança fica amarelo; depois de 7 dias, ou se nunca foi conferida, fica vermelho."><span>confiança</span><b>${abertas.length?`${frescas}/${abertas.length}`:"–"}</b><small>${abertas.length?"em aberto conferidas nos últimos 2 dias":"nada em aberto pra conferir"}</small></div>
     </div>
     <p class="hint cobhint">cada cobrança diz de onde veio a informação e quando foi conferida com a planilha ou o grupo. Abra a cobrança, confira a fonte e marque "está igual" pra ter certeza. Pra uma conferência completa, me peça "confere as cobranças".</p>
     ${block("pend","Pra pagar","a GOM já cobrou e você ainda não pagou",pend,"coin","pagar",false)}
@@ -1336,14 +1406,23 @@ function cobBoard(rows){
     ${block("fut","Ainda vão cobrar","a GOM ainda não liberou o pagamento",fut,"clock","esperar",true)}
     ${block("pagas","Pagas","histórico, da mais recente pra mais antiga",pagas,"check","pagas",true)}
     ${block("sem","Sem cobrança","set não fechou ou cancelada",sem,"x","longe",true)}
-    ${rows.length?"":EMPTY}`;
+    ${rows.length?"":EMPTY}${cobSelBar()}`;
 }
 $("#view").addEventListener("click",async e=>{ if(ui.tab!=="cobrancas")return;
+  if(e.target.closest("[data-cobcancel]")){ui.cobSel.clear();render();return;}
+  const settleBtn=e.target.closest("[data-cobsettle]");
+  if(settleBtn){
+    if(!settleBtn.classList.contains("armed")){settleBtn.classList.add("armed");settleBtn.textContent="Confirmar liquidação";setTimeout(()=>{if(settleBtn.isConnected){settleBtn.classList.remove("armed");settleBtn.textContent="liquidar"}},4000);return;}
+    const ids=[...ui.cobSel]; await settleCobBatch(ids); return;
+  }
   if(e.target.closest("a,select,input,textarea,form,[data-copy],[data-edit],[data-del],[data-cpay],[data-cnot],[data-cconf],[data-cancel]")&&!e.target.closest("[data-cpay],[data-cnot],[data-cconf]"))return;
   const pay=e.target.closest("[data-cpay]"), not=e.target.closest("[data-cnot]"), cf_=e.target.closest("[data-cconf]");
-  const b=pay||not||cf_; if(b&&db){ const id=b.dataset.cpay||b.dataset.cnot||b.dataset.cconf; const d=data.cobrancas.get(id); if(!d)return;
-    const patch=pay?{status:"Paga",pagoEm:d.pagoEm||isoToday()}:not?{status:"Pendente"}:{conferidoEm:isoToday()};
-    data.cobrancas.set(id,{...d,...patch}); render(); try{await db.doc("cobrancas/"+id).update(patch); toast(pay?"Marcada como paga":not?"Voltou pra pagar":"Conferida hoje")}catch(err){toast("Não deu pra salvar")} return; }
+  const b=pay||not||cf_; if(b&&db){ const id=b.dataset.cpay||b.dataset.cnot||b.dataset.cconf; const prev=data.cobrancas.get(id); if(!prev)return;
+    const patch=pay?{status:"Paga",pagoEm:prev.pagoEm||isoToday()}:not?{status:"Pendente"}:{conferidoEm:isoToday()};
+    const save=async()=>{ data.cobrancas.set(id,{...prev,...patch}); render();
+      try{ await db.doc("cobrancas/"+id).update(patch); toast(pay?"Marcada como paga":not?"Voltou pra pagar":"Conferida hoje") }
+      catch(err){ data.cobrancas.set(id,prev); render(); toast("Não deu pra salvar; a cobrança voltou como estava",save) } };
+    await save(); return; }
   const h=e.target.closest("[data-cexp]"); if(!h)return; ui.cexp=ui.cexp===h.dataset.cexp?null:h.dataset.cexp; ui.editing=null; render(); });
 $("#view").addEventListener("keydown",e=>{if(ui.tab!=="cobrancas"||(e.key!=="Enter"&&e.key!==" "))return; const h=e.target.closest(".crmain"); if(!h||e.target!==h)return; e.preventDefault(); h.click();});
 function bodyFor(k,rows){
@@ -1539,7 +1618,7 @@ $("#view").addEventListener("submit",async e=>{const f=e.target.closest("form.cn
   }catch(err){btn.disabled=false; toast("Não deu pra criar o card")} });
 function comInfo(name){if(!name)return null;for(const c of data.comunidades.values()){if(c.nome===name)return c;}return null;}
 const okHex=c=>/^#[0-9a-f]{6}$/i.test(c||"")?c:"#8A8F99";
-function comChip(name){const c=comInfo(name); if(!name)return ""; const sg=(c&&c.sigla)||name.replace(/[^A-Za-z]/g,"").slice(0,4).toUpperCase(); return `<span class="cchip" style="--c:${okHex(c&&c.cor)}" title="${esc(name)}">${esc(sg)}</span>`;}
+function comChip(name){const c=comInfo(name); const sg=name?((c&&c.sigla)||name.replace(/[^A-Za-z]/g,"").slice(0,4).toUpperCase()):"?"; return `<span class="cchip" style="--c:${okHex(c&&c.cor)}" title="${esc(name||"sem comunidade")}">${esc(sg)}</span>`;}
 function cegInfo(name){if(!name)return null;for(const g of data.cegs.values()){if(g.nome===name)return g;}return null;}
 const grupoDe=d=>d.grupo||((cegInfo(d.ceg)||{}).grupo)||"";
 const ABERTO={cobrancas:["Pendente","A confirmar","Aguardando a GOM","Não liberado"],envios:["A pedir","A confirmar","Aguardando liberação"]};
@@ -1618,7 +1697,7 @@ $("#view").addEventListener("click",async e=>{
     data.itens.set(id,{...d,cards:nx}); render(); try{await db.doc("itens/"+id).update({cards:nx});}catch(err){toast("Não deu pra salvar")} }
 });
 $("#view").addEventListener("input",e=>{if(e.target.id!=="lq")return; ui.lq=e.target.value; const pos=e.target.selectionStart; render(); const n=$("#lq"); if(n){n.focus();n.setSelectionRange(pos,pos);}});
-$("#view").addEventListener("click",e=>{const g=e.target.closest("[data-goto]"); if(!g)return; ui.tab=g.dataset.goto; ui.com=g.dataset.gcom||""; if(ui.tab==="comunidades"&&ui.com){const c=comInfo(ui.com); ui.comOpen=c?c.id:null;} if(g.dataset.gst!=null)ui.st[ui.tab]=g.dataset.gst; if(g.dataset.gfase!=null)ui.itf.fase=g.dataset.gfase; ui.q=""; ui.editing=null; ui.newOpen=false; saveUi(); render(); window.scrollTo({top:0});});
+$("#view").addEventListener("click",e=>{const g=e.target.closest("[data-goto]"); if(!g)return; ui.tab=g.dataset.goto; ui.com=g.dataset.gcom||""; if(ui.tab==="comunidades"&&ui.com){const c=comInfo(ui.com); ui.comOpen=c?c.id:null;} if(g.dataset.gst!=null)ui.st[ui.tab]=g.dataset.gst; if(g.dataset.gfase!=null)ui.itf.fase=g.dataset.gfase; ui.q=""; ui.editing=null; ui.newOpen=false; ui.cobSel.clear(); saveUi(); render(); window.scrollTo({top:0});});
 $("#view").addEventListener("click",e=>{const sm=e.target.closest("summary"); if(!sm)return; const d=sm.parentElement; if(d&&d.dataset&&d.dataset.gkey) ui.gclosed[d.dataset.gkey]=d.open;});
 const kindOf=el=>{const f=el.closest("form[data-form]"); if(f)return f.dataset.form; const r=el.closest("[data-k]"); return r?r.dataset.k:ui.tab;};
 $("#view").addEventListener("click",async e=>{
@@ -1632,11 +1711,16 @@ $("#view").addEventListener("click",async e=>{
     try{await db.doc(kindOf(del)+"/"+del.dataset.del).delete();ui.editing=null;ui.pexp=null;toast("Excluído");}catch(err){toast("Não deu pra excluir agora; tente de novo")}
   }
 });
+$("#view").addEventListener("change",e=>{
+  const chk=e.target.closest("[data-cobchk]"); if(chk){ const id=chk.dataset.cobchk; if(chk.checked)ui.cobSel.add(id); else ui.cobSel.delete(id); render(); }
+});
 $("#view").addEventListener("change",async e=>{
   const s=e.target.closest("[data-status]"); if(!s)return;
   const k=kindOf(s), c=COLS[k], patch={[c.status]:s.value};
   if(k==="cobrancas"&&s.value==="Paga"){const cur=data[k].get(s.dataset.status);if(cur&&!cur.pagoEm)patch.pagoEm=isoToday();}
-  try{await db.doc(k+"/"+s.dataset.status).update(patch);toast(s.value==="Paga"?"Marcada como paga":"Status: "+s.value)}catch(err){toast("Não deu pra salvar; tente de novo")}
+  const save=async()=>{ try{await db.doc(k+"/"+s.dataset.status).update(patch);toast(s.value==="Paga"?"Marcada como paga":"Status: "+s.value)}
+    catch(err){ render(); toast("Não deu pra salvar; o status voltou como estava",save) } };
+  await save();
 });
 $("#view").addEventListener("submit",async e=>{
   const f=e.target.closest("form[data-form]"); if(!f)return; e.preventDefault();

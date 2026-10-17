@@ -49,11 +49,19 @@ e abrir http://localhost:8000 (a leitura pela API só funciona no Vercel).
 
 ## Pendências
 
-- **Redesenhar a página de Cobranças.** É a parte mais importante do app, e a
-  usabilidade está confusa. O redesenho começou no artefato em 14/10/2026,
-  mas não chegou a ser publicado, então o `index.html` daqui ainda tem a
-  versão antiga. A ideia que estava em andamento: cartões de cobrança
-  agrupados e um fluxo parecido com um checkout. Idear antes de implementar.
+- **Cobranças: fluxo de checkout em lote, feito em 17/10/2026.** A visão em
+  cartões agrupados (`cobBoard`) já existia; faltava o "fluxo parecido com um
+  checkout" descrito aqui. Agora dá pra selecionar várias cobranças "Pendente"
+  da mesma comunidade (checkbox em cada cartão), ver o total e o pix dessa
+  comunidade numa barra fixa, e liquidar todas de uma vez (com confirmação em
+  dois passos e desfazer por alguns segundos). Também corrigido: escrita
+  otimista sem rollback em caso de falha de rede, rótulo errado do controle
+  "Agrupar/Ordenar", "você pagou?" sem opção pra incerteza, e zero explicação
+  do conceito de confiança/conferência.
+  Em aberto: a seleção em lote é só da sessão (não fica salva no banco); se
+  fizer sentido guardar quais cobranças foram liquidadas juntas (pra
+  histórico/auditoria), precisa de um campo novo em `supabase/schema.sql`
+  (ex.: `lote`) — decisão de propósito deixada pra depois.
 
 - **Manter o catálogo atualizado sozinho.** O catálogo vem do CraftenSKZ
   (github.com/CraftenSKZ/StrayKidsPCCollector), que é aberto. Dá pra criar uma
