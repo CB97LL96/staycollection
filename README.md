@@ -56,8 +56,8 @@ e abrir http://localhost:8000 (a leitura pela API só funciona no Vercel).
   agrupados e um fluxo parecido com um checkout. Idear antes de implementar.
 
 - **Completar o catálogo com outras fontes.** Próxima: Bibliocards (memberships,
-  fanclub, SG japonês, MD, revistas e collabs). Depois o Bias Room, pelo Chrome
-  da Lari, só pra nomes e versões. Muitas fotos ainda são pequenas (abaixo de
+  fanclub, SG japonês, MD, revistas e collabs). Depois o Bias Room, pelo Chrome,
+  só pra nomes e versões. Muitas fotos ainda são pequenas (abaixo de
   300px), sobretudo de Karma, DO IT e THIS & THAT.
 
 ## Catálogo de photocards
