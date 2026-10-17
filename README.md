@@ -55,11 +55,23 @@ e abrir http://localhost:8000 (a leitura pela API só funciona no Vercel).
   versão antiga. A ideia que estava em andamento: cartões de cobrança
   agrupados e um fluxo parecido com um checkout. Idear antes de implementar.
 
-- **Manter o catálogo atualizado sozinho.** O catálogo vem do CraftenSKZ
-  (github.com/CraftenSKZ/StrayKidsPCCollector), que é aberto. Dá pra criar uma
-  rotina que confere de tempos em tempos se ele mudou e regenera o
-  `colecao.json` e as folhas de fotos. Também falta completar com SG, fankit,
-  pop up, eventos e merch (outras fontes).
+- **Completar o catálogo com outras fontes.** Próxima: Bibliocards (memberships,
+  fanclub, SG japonês, MD, revistas e collabs). Depois o Bias Room, pelo Chrome
+  da Lari, só pra nomes e versões. Muitas fotos ainda são pequenas (abaixo de
+  300px), sobretudo de Karma, DO IT e THIS & THAT.
+
+## Catálogo de photocards
+
+O `colecao.json` é gerado por `node scripts/catalogo/gerar.mjs`, que lê as fontes
+em `scripts/catalogo/fontes/`, junta os cards repetidos (mesma era, versão e
+membro) e escolhe a foto de maior resolução. Das fontes guardamos só o link da
+foto. Os códigos dos cards nunca mudam, porque as marcações e os pedidos apontam
+pra eles. O tamanho de cada foto fica guardado em `scripts/catalogo/imagens.json`
+pra não medir tudo de novo.
+
+A rotina `.github/workflows/catalogo.yml` roda toda segunda de manhã (e pelo
+botão "Run workflow" na aba Actions do GitHub) e salva no `main` quando alguma
+fonte muda. O Vercel publica sozinho em seguida.
 
 ## Cuidado: o repositório é público
 

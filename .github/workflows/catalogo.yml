@@ -1,0 +1,32 @@
+name: Atualizar catálogo de photocards
+
+# Toda segunda de manhã (horário de Brasília) e quando você clicar em "Run workflow".
+on:
+  schedule:
+    - cron: "17 9 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Gerar o catálogo a partir das fontes
+        run: node scripts/catalogo/gerar.mjs
+      - name: Salvar no main se alguma fonte mudou
+        run: |
+          if git diff --quiet -- colecao.json scripts/catalogo/imagens.json; then
+            echo "Nenhuma fonte mudou."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add colecao.json scripts/catalogo/imagens.json
+          git commit -m "Atualiza o catálogo de photocards"
+          git push

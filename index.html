@@ -1652,7 +1652,7 @@ $("#view").addEventListener("submit",async e=>{
 
 // ---------- catálogo ----------
 const spr=f=>f.cover?`background-image:url('${f.u}');background-size:cover;background-position:center`:`background-image:url('${f.u}');background-size:${f.n*100}% ${f.m*100}%;background-position:${f.n>1?(f.c/(f.n-1))*100:0}% ${f.m>1?(f.r/(f.m-1))*100:0}%`;
-const okSpr=f=>f&&/^\/_blob\/[0-9a-f]{32}$/.test(f.u||"")&&[f.n,f.m,f.c,f.r].every(Number.isInteger);
+const okSpr=f=>f&&(/^\/_blob\/[0-9a-f]{32}$/.test(f.u||"")||/^https:\/\/[A-Za-z0-9.-]+\/[A-Za-z0-9._~\/%=&?-]*$/.test(f.u||""))&&[f.n,f.m,f.c,f.r].every(Number.isInteger);
 function renderCatalogo(){
   const f=ui.cat; const all=[...catalogo.entries()].map(([id,d])=>({id,...d})).sort((a,b)=>(a.ordem||0)-(b.ordem||0));
   const cegs=[...new Set(all.map(d=>d.ceg))];
@@ -1752,7 +1752,7 @@ function linkMap(){ const its=list("itens").filter(d=>Array.isArray(d.cards)&&d.
   linkCache={sig,map:m}; return m; }
 const stOf=it=>stMan(it)||((linkMap()[it.i]||{}).s)||"";
 const fotoSpr=key=>{const f=fotos[key]; return f&&/^[0-9a-f]{32}$/.test(f.asset||"")?{u:window.stay.blobUrl(f.asset),n:1,m:1,c:0,r:0,cover:true}:null};
-const colSpr=it=>fotoSpr(it.i)||(it.p&&COL&&!it.novo?{u:COL.sheets[it.p[0]],n:COL.n,m:COL.m,c:it.p[1],r:it.p[2]}:null);
+const colSpr=it=>fotoSpr(it.i)||(it.novo||!COL?null:it.u?{u:it.u,n:1,m:1,c:0,r:0,cover:true}:it.p?{u:COL.sheets[it.p[0]],n:COL.n,m:COL.m,c:it.p[1],r:it.p[2]}:null);
 function wishPanel(){
   const w=list("wishlist").sort((a,b)=>String(a.era).localeCompare(String(b.era),"pt-BR"));
   const fora=w.filter(d=>!/^marcad/i.test(d.catalogo||"")).length;
@@ -1899,7 +1899,7 @@ function detailHtml(z,zs){
     </div></div></div>`;
 }
 function eraStrip(eras){
-  if(!COL.eraRep){const m={}; COL.items.forEach(it=>{const k=it.o+"|"+it.e; if(!m[k]&&it.p&&!it.novo)m[k]=it;}); COL.eraRep=m;}
+  if(!COL.eraRep){const m={}; COL.items.forEach(it=>{const k=it.o+"|"+it.e; if(!m[k]&&(it.p||it.u)&&!it.novo)m[k]=it;}); COL.eraRep=m;}
   const cnt={}; COL.items.forEach(it=>{const k=it.o+"|"+it.e; const c=cnt[k]||(cnt[k]={t:0,h:0}); c.t++; const st=stOf(it); if(st==="tenho"||st==="caminho")c.h++;});
   const slug=k=>"era-"+k.toLowerCase().normalize("NFD").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
   const tile=k=>{const [o,e]=k.split("|"), on=cf.era===k, cov=fotoSpr(slug(k)), rep=COL.eraRep[k], sp=cov||(rep&&colSpr(rep)); const c=cnt[k]||{t:0,h:0};
@@ -1932,7 +1932,7 @@ function renderColecao(){
   const z=cf.zoom&&all.find(it=>it.i===cf.zoom); const zs=z&&colSpr(z);
   $("#view").innerHTML=`<section class="block">
     ${pageHead("colecao")}
-    <p class="hint">${all.length} photocards (${all.filter(it=>it.p).length} com foto) de álbuns coreanos e japoneses e POBs coreanos. Cards ligados a um pedido ficam "a caminho" sozinhos e viram "tenho" quando ele chega. Ainda faltam SG, fankit, pop up e eventos.</p>
+    <p class="hint">${all.length} photocards (${all.filter(it=>it.p||it.u).length} com foto) de álbuns coreanos e japoneses e POBs coreanos. Cards ligados a um pedido ficam "a caminho" sozinhos e viram "tenho" quando ele chega. Ainda faltam SG, fankit, pop up e eventos.</p>
     ${wishPanel()}
     ${eraStrip(eras)}
     <div class="mrow" role="group" aria-label="Membro"><button class="chip" data-cm="" aria-pressed="${!cf.m}">Todos</button>${MEMBROS.map(m=>`<button class="chip" data-cm="${esc(m)}" aria-pressed="${cf.m===m}">${esc(m)}</button>`).join("")}</div>
