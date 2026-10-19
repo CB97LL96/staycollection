@@ -974,6 +974,10 @@ details.cobsec:not([open])>summary .esl::after{content:" ▸";color:var(--ink2);
 .cobsec.pagar .esic{background:var(--bad-bg);color:var(--bad)} .cobsec.conf2 .esic{background:var(--warn-bg);color:var(--warn)} .cobsec.esperar .esic{background:var(--info-bg);color:var(--info)} .cobsec.pagas .esic{background:var(--ok-bg);color:var(--ok)} .cobsec.longe .esic{background:var(--muted-bg);color:var(--muted)}
 .cobsum{font-weight:700;font-size:15px}
 .crlist{display:grid;gap:8px}
+.cobday{display:flex;align-items:baseline;gap:8px;padding:6px 2px 0;font-size:12.5px;color:var(--ink2)}
+.cobday:first-child{padding-top:0}
+.cobday b{font-size:13px;font-weight:700;color:var(--ink)}
+.cobday .cobdaysum{margin-left:auto;font-weight:600;color:var(--ink2)}
 .crow{background:var(--surface);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
 .crow.is-late{background:color-mix(in srgb,var(--bad-bg) 55%,var(--surface))}
 .crow.is-sel{box-shadow:0 0 0 2px var(--berry),var(--shadow)}
@@ -1392,8 +1396,10 @@ function cobBoard(rows){
   const sum=a=>a.reduce((x,d)=>x+(typeof d.valor==="number"?d.valor:0),0);
   const semValor=a=>a.filter(d=>typeof d.valor!=="number").length;
   const abertas=[...pend,...conf]; const frescas=abertas.filter(d=>{const t=trustOf(d);return t.cls==="ok"}).length;
-  const block=(key,title,sub,arr,ic,cls,closedDef)=>{ if(!arr.length)return ""; const isOpen=ui.gclosed["cob|"+key]!=null?ui.gclosed["cob|"+key]===false:!closedDef;
-    return `<details class="cobsec ${cls}" data-gkey="cob|${key}" ${isOpen?"open":""}><summary><span class="esic">${I(ic)}</span><span class="esl">${title}</span><span class="esn">${arr.length}</span>${sum(arr)?`<span class="cobsum">${brl(sum(arr))}</span>`:""}<span class="esd">${sub}</span></summary><div class="crlist">${arr.map(cobRow).join("")}</div></details>`;};
+  const byDay=arr=>{const m=new Map(); arr.forEach(d=>{const k=d.pagoEm||""; if(!m.has(k))m.set(k,[]); m.get(k).push(d)});
+    return [...m.entries()].map(([day,ds])=>`<div class="cobday">${day?`<b>${esc(fd(day))}</b>`:"<b>sem data</b>"}<span>${ds.length>1?`lote de ${ds.length} cobranças`:"1 cobrança"}</span>${sum(ds)?`<span class="cobdaysum">${brl(sum(ds))}</span>`:""}</div>${ds.map(cobRow).join("")}`).join("")};
+  const block=(key,title,sub,arr,ic,cls,closedDef,grouped)=>{ if(!arr.length)return ""; const isOpen=ui.gclosed["cob|"+key]!=null?ui.gclosed["cob|"+key]===false:!closedDef;
+    return `<details class="cobsec ${cls}" data-gkey="cob|${key}" ${isOpen?"open":""}><summary><span class="esic">${I(ic)}</span><span class="esl">${title}</span><span class="esn">${arr.length}</span>${sum(arr)?`<span class="cobsum">${brl(sum(arr))}</span>`:""}<span class="esd">${sub}</span></summary><div class="crlist">${grouped?byDay(arr):arr.map(cobRow).join("")}</div></details>`;};
   return `<div class="cobtop">
       <div class="cobk bad"><span>pra pagar</span><b>${brl(sum(pend))}</b><small>${pend.length} ${pend.length===1?"cobrança":"cobranças"}${semValor(pend)?` · ${semValor(pend)} sem valor informado`:""}</small></div>
       <div class="cobk warn"><span>você pagou?</span><b>${conf.length}</b><small>${conf.length?brl(sum(conf))+" em dúvida"+(semValor(conf)?` · ${semValor(conf)} sem valor`:""):"nada em dúvida"}</small></div>
@@ -1404,7 +1410,7 @@ function cobBoard(rows){
     ${block("pend","Pra pagar","a GOM já cobrou e você ainda não pagou",pend,"coin","pagar",false)}
     ${block("conf","Você pagou?","não ficou claro na fonte se você já pagou; confira e marque",conf,"help","conf2",false)}
     ${block("fut","Ainda vão cobrar","a GOM ainda não liberou o pagamento",fut,"clock","esperar",true)}
-    ${block("pagas","Pagas","histórico, da mais recente pra mais antiga",pagas,"check","pagas",true)}
+    ${block("pagas","Pagas","histórico, da mais recente pra mais antiga, agrupado por dia",pagas,"check","pagas",true,true)}
     ${block("sem","Sem cobrança","set não fechou ou cancelada",sem,"x","longe",true)}
     ${rows.length?"":EMPTY}${cobSelBar()}`;
 }
