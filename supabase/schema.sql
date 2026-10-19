@@ -75,3 +75,48 @@ drop policy if exists "fotos: apagar as minhas" on storage.objects;
 create policy "fotos: apagar as minhas" on storage.objects
   for delete to authenticated
   using (bucket_id = 'fotos' and owner = auth.uid());
+
+-- Catálogo de photocards (fonte: CraftenSKZ e outras). Diferente de "docs":
+-- não é dado da usuária, é referência compartilhada. Só a chave service_role
+-- (usada pelo cron do Vercel, nunca pelo navegador) escreve aqui; não existe
+-- policy de insert/update/delete pra authenticated/anon de propósito — RLS
+-- ligado sem nenhuma policy bloqueia todo mundo, exceto service_role, que
+-- ignora RLS. O app lê o catálogo do colecao.json estático (rápido, servido
+-- pela CDN), não desta tabela; ela só existe pra saber o que já foi
+-- importado quando o cron confere a fonte de novo (scripts/sync-catalogo.mjs
+-- e api/cron/sync-catalogo.js).
+create table if not exists public.catalogo_itens (
+  i text primary key,
+  m text not null,
+  e text not null,
+  o text not null,
+  t text not null,
+  v text not null,
+  s text,
+  p jsonb,
+  criado_em timestamptz not null default now()
+);
+
+alter table public.catalogo_itens enable row level security;
+
+-- Linha do tempo de eventos (fanclube, pop-up, Season's Greetings, merch,
+-- collab, turnê, revista etc.) importada da planilha "SKZ Era Timeline"
+-- (mantida por terceiros, fora deste projeto). É em nível de evento/era, não
+-- item a item como catalogo_itens — cobre as categorias que o CraftenSKZ não
+-- tem. Mesma postura de acesso: só service_role escreve.
+create table if not exists public.catalogo_eventos (
+  id uuid primary key default gen_random_uuid(),
+  evento text not null,
+  tipo text,
+  data_inicio date,
+  data_inicio_raw text,
+  data_fim date,
+  data_fim_raw text,
+  pais text,
+  cidade text,
+  notas text,
+  aba_origem text not null,
+  criado_em timestamptz not null default now()
+);
+
+alter table public.catalogo_eventos enable row level security;

@@ -2,6 +2,13 @@
   "name": "staycollection",
   "private": true,
   "type": "module",
+  "scripts": {
+    "migrar-catalogo-supabase": "node scripts/migrar-catalogo-supabase.mjs",
+    "migrar-eventos-timeline": "node scripts/migrar-eventos-timeline.mjs",
+    "migrar-wiki-skz": "node scripts/migrar-wiki-skz.mjs",
+    "sync-catalogo": "node scripts/sync-catalogo.mjs",
+    "exportar-catalogo": "node scripts/exportar-catalogo.mjs"
+  },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.132.1"
   }
