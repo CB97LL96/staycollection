@@ -84,11 +84,23 @@ do photocard — scan às vezes sai errado): `skzpicsarchive` (tabuleiro
 `/scans/`), `skzpcs`, `hhjiinn` (`/skz-photocards/`), `V1RGWHORE`
 (`/skz-photocard-scans/`), `S0325_2018`, `cookyartt__`.
 
-## Outras lojas/sites (ideia futura, não iniciado)
+## Outras lojas/sites
 
-- **pocamarket.com** — onde a usuária compra; no futuro, puxar preço ou
-  link direto da página do item.
-- **Mercari** — fonte de foto/merch pra itens que não tem em outro lugar.
+- **POCA MALL (mall.pocamarket.com)** — automatizado em 20/10/2026. A busca
+  do site é renderizada no servidor (Next.js) e já embute os dados do
+  produto (nome, preço, preço de tabela, link, foto) como JSON no próprio
+  HTML — não precisa de navegador nem de API paga. `scripts/migrar-
+  pocamarket.mjs` busca `/en/search?q=Stray%20Kids` e filtra pelo campo
+  `"brand":"Stray Kids"` do próprio JSON (não confia só no texto da busca),
+  pra `catalogo_loja`. Reimporta inteiro a cada execução (apaga e grava de
+  novo): é um retrato do que está à venda agora, não um histórico — item
+  que sai de linha simplesmente some da tabela. Rodado junto do cron
+  semanal de eventos (`api/cron/sync-eventos.js`) pra não passar do limite
+  de cron jobs do plano Hobby da Vercel.
+- **Mercari** — fonte de foto/merch pra itens que não tem em outro lugar,
+  ainda não iniciado. A usuária deixou a estratégia de busca a critério de
+  quem for implementar; ideia: por nome + membro + era do item que falta
+  foto, não uma varredura geral do catálogo.
 
 ## O que foi descartado
 

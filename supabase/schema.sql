@@ -120,3 +120,25 @@ create table if not exists public.catalogo_eventos (
 );
 
 alter table public.catalogo_eventos enable row level security;
+
+-- Preço e link de itens da Stray Kids à venda em lojas externas (hoje só a
+-- POCA MALL, scripts/migrar-pocamarket.mjs). É um retrato do que está à
+-- venda agora, não histórico: a cada importação, apaga e regrava as linhas
+-- daquela "fonte" antes de inserir de novo, então item que saiu de linha
+-- simplesmente some. Mesma postura de acesso das outras tabelas de catálogo:
+-- só service_role escreve.
+create table if not exists public.catalogo_loja (
+  id text primary key,
+  fonte text not null,
+  nome text,
+  preco_usd numeric,
+  preco_lista_usd numeric,
+  slug text,
+  link text,
+  imagem text,
+  categoria text,
+  pre_order_em date,
+  atualizado_em timestamptz not null default now()
+);
+
+alter table public.catalogo_loja enable row level security;

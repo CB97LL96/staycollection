@@ -6,6 +6,7 @@
     "migrar-catalogo-supabase": "node scripts/migrar-catalogo-supabase.mjs",
     "migrar-eventos-timeline": "node scripts/migrar-eventos-timeline.mjs",
     "migrar-wiki-skz": "node scripts/migrar-wiki-skz.mjs",
+    "migrar-pocamarket": "node scripts/migrar-pocamarket.mjs",
     "sync-catalogo": "node scripts/sync-catalogo.mjs",
     "exportar-catalogo": "node scripts/exportar-catalogo.mjs"
   },

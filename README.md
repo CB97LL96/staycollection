@@ -178,10 +178,24 @@ e abrir http://localhost:8000 (a leitura pela API só funciona no Vercel).
   skzpclist.carrd.co) pra ver se algum link dela leva a outro lugar que
   também valha monitorar.
 
-- **Preço/link do Pokamarket e fotos do Mercari — ideia da usuária, não
-  iniciado.** Puxar preço ou link direto da página do item no pocamarket.com
-  (onde ela compra), e usar o Mercari como fonte de foto/merch. Ainda não
-  explorado como ligar isso ao catálogo.
+- **Preço/link da POCA MALL — automatizado em 20/10/2026.** A usuária pediu
+  que fosse automático, mas só de itens da Stray Kids (o site vende de
+  vários grupos). `scripts/migrar-pocamarket.mjs` lê `mall.pocamarket.com`
+  (renderizado no servidor, dados do produto já vêm como JSON no HTML, sem
+  precisar de navegador) e filtra pelo campo `brand` do produto, não pelo
+  texto da busca. Grava em `catalogo_loja` (preço atual, preço de tabela,
+  link, foto, se é pré-venda), lido pelo app em `api/loja.js` e mostrado na
+  aba Loja da Coleção. Reimporta inteiro a cada execução — é o que está à
+  venda agora, não histórico. Roda junto do cron semanal de eventos (ver
+  "Catálogo: como atualizar").
+  Pendente da usuária: a tabela `catalogo_loja` ainda precisa ser criada no
+  Supabase (rodar o trecho novo de `supabase/schema.sql`) e a primeira
+  importação rodada uma vez (`npm run migrar-pocamarket`) antes disso
+  aparecer no site.
+  Em aberto: fotos do Mercari como fonte complementar pra itens sem foto —
+  não iniciado; a usuária deixou a estratégia de busca em aberto pra quem
+  for implementar (ideia: buscar por nome + membro + era do item específico
+  que falta foto, não uma varredura geral do catálogo).
 
 - **Qual fonte de scan tem a cor mais fiel ao photocard real — pedido da
   usuária, não iniciado.** Ela listou várias contas de Pinterest de scan

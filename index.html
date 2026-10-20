@@ -395,6 +395,22 @@ details.wl .row{box-shadow:none;background:var(--sunk)}
 .pkimg{width:34px;aspect-ratio:55/85;border-radius:3px;background-color:var(--line);background-repeat:no-repeat;display:block}
 .legend{display:inline-flex;gap:12px;flex-wrap:wrap;align-items:center}
 .legend span{display:inline-flex;gap:4px;align-items:center}
+.evlist{display:grid;gap:8px}
+.evrow{background:var(--surface);border-radius:14px;box-shadow:var(--shadow);display:grid;grid-template-columns:76px minmax(0,1fr);gap:12px;align-items:start;padding:12px;border-left:5px solid var(--line)}
+.evdate{font-weight:700;font-size:12px;color:var(--ink2);line-height:1.3}
+.evb{display:grid;gap:3px;min-width:0}
+.evtop{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.evloc{font-size:11.5px;color:var(--ink2)}
+.evnome{font-weight:800;font-size:13.5px;line-height:1.25}
+.evnotas{font-size:11.5px;color:var(--ink2)}
+.evsep{font-size:12px;color:var(--ink2);font-weight:700;margin:6px 2px 0;text-transform:uppercase;letter-spacing:.04em}
+@media (max-width:560px){.evrow{grid-template-columns:1fr}.evdate{order:-1}}
+.ljrow{background:var(--surface);border-radius:14px;box-shadow:var(--shadow);display:grid;grid-template-columns:64px minmax(0,1fr);gap:12px;align-items:start;padding:12px;border-left:5px solid var(--line)}
+.ljimg{width:64px;height:64px;border-radius:10px;object-fit:cover;background:var(--sunk);display:block}
+.ljb{display:grid;gap:4px;min-width:0}
+.ljtop{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.ljpreco{font-weight:800;font-size:14px}
+.ljpreco s{font-weight:400;color:var(--ink2);margin-left:6px;font-size:12px}
 /* ===== tema fofo: rosa, lilás e creme; cores de status seguem as acessíveis ===== */
 :root{
   --bg:#FCF5F8; --surface:#FFFFFF; --sunk:#F7EEF4; --line:#EEDDE7;
@@ -1110,7 +1126,7 @@ function renderTabs(){
   let subs="";
   if(cur==="pedidos") subs=AREAS[1][3].map(t=>`<button type="button" data-tab="${t}" aria-current="${ui.tab===t?"page":"false"}">${I(TABICON[t]||"spark")}${esc(TLABEL[t]||t)}${badge[t]?`<span class="badge">${badge[t]}</span>`:""}</button>`).join("");
   else if(cur==="colecao"){ const nC=COL?cfQueue().q.filter(([d])=>!(Array.isArray(d.cards)&&d.cards.length)).length:0;
-    subs=[["pc","Photocards",""],["outras","Outras coisas",""],["conf","Confirmar cards",nC]].map(([v,l,n])=>`<button type="button" data-cv="${v}" aria-current="${cf.view===v?"page":"false"}">${esc(l)}${n?`<span class="c">${n}</span>`:""}</button>`).join(""); }
+    subs=[["pc","Photocards",""],["outras","Outras coisas",""],["eventos","Eventos",""],["loja","Loja",""],["conf","Confirmar cards",nC]].map(([v,l,n])=>`<button type="button" data-cv="${v}" aria-current="${cf.view===v?"page":"false"}">${esc(l)}${n?`<span class="c">${n}</span>`:""}</button>`).join(""); }
   const st=$("#subtabs"); st.innerHTML=subs; st.hidden=!subs;
 }
 ui.lastIn=ui.lastIn||{};
@@ -1819,6 +1835,10 @@ function colMatch(it,q){ if(!q)return true; const h=hayOf(it);
     return t.length>=4&&h.w.some(w=>near1(t,w)||(w.length>t.length&&near1(t,w.slice(0,t.length)))); }); }
 const cf={view:"pc",m:"",era:"",tipo:"",origem:"",st:"",q:"",lim:96,zoom:null};
 const of={tipo:"",st:"",m:"",q:""};
+let EVT=null, evtErr=false; const ef={tipo:"",q:""};
+async function loadEvt(){ if(EVT||evtErr)return; try{const r=await fetch("/api/eventos"); if(!r.ok)throw 0; const j=await r.json(); EVT=j.eventos||[];}catch(e){evtErr=true;} if(ui.tab==="colecao"&&cf.view==="eventos")render(); }
+let LOJA=null, lojaErr=false;
+async function loadLoja(){ if(LOJA||lojaErr)return; try{const r=await fetch("/api/loja"); if(!r.ok)throw 0; const j=await r.json(); LOJA=j.itens||[];}catch(e){lojaErr=true;} if(ui.tab==="colecao"&&cf.view==="loja")render(); }
 let notas={}, fotos={}, novos=new Map(), assetsNs=null, canUpload=false, fotoKey=null;
 function mergeNovos(){ if(!COL||!COL.base)return; COL.items=COL.base.concat([...novos].map(([id,d])=>({i:"x-"+id,m:d.m||"",e:d.e||"",o:d.o==="JP"?"JP":"KR",t:d.t||"POB",v:d.v||"",s:"",novo:true}))); GIDX=null; if(typeof GCACHE!=="undefined")GCACHE.clear(); linkCache.sig=""; }
 async function shrink(file){ try{ const bm=await createImageBitmap(file); const k=Math.min(1,1100/Math.max(bm.width,bm.height)); const c=document.createElement("canvas"); c.width=Math.round(bm.width*k); c.height=Math.round(bm.height*k); c.getContext("2d").drawImage(bm,0,0,c.width,c.height); const b=await new Promise(r=>c.toBlob(r,"image/jpeg",0.88)); if(b)return b; }catch(e){} return file; }
@@ -1854,7 +1874,7 @@ function wishPanel(){
 }
 function colSwitch(){
   const n=outrasList().length;
-  return `<div class="viewsw" role="tablist" aria-label="Parte da coleção"><button role="tab" data-cv="pc" aria-selected="${cf.view==="pc"}">Photocards</button><button role="tab" data-cv="outras" aria-selected="${cf.view==="outras"}">Outras coisas<span class="c">${n}</span></button><button role="tab" data-cv="conf" aria-selected="${cf.view==="conf"}">Confirmar cards${COL?`<span class="c">${cfQueue().q.filter(([d])=>!(Array.isArray(d.cards)&&d.cards.length)).length}</span>`:""}</button></div>`;
+  return `<div class="viewsw" role="tablist" aria-label="Parte da coleção"><button role="tab" data-cv="pc" aria-selected="${cf.view==="pc"}">Photocards</button><button role="tab" data-cv="outras" aria-selected="${cf.view==="outras"}">Outras coisas<span class="c">${n}</span></button><button role="tab" data-cv="eventos" aria-selected="${cf.view==="eventos"}">Eventos</button><button role="tab" data-cv="loja" aria-selected="${cf.view==="loja"}">Loja</button><button role="tab" data-cv="conf" aria-selected="${cf.view==="conf"}">Confirmar cards${COL?`<span class="c">${cfQueue().q.filter(([d])=>!(Array.isArray(d.cards)&&d.cards.length)).length}</span>`:""}</button></div>`;
 }
 function outrasList(){
   const fromItens=list("itens").filter(d=>!(Array.isArray(d.cards)&&d.cards.length)&&(d.status==="Recebido"||CAMINHO_ST.includes(d.status))).map(d=>({src:"item",id:d.id,nome:[d.item,d.membro].filter(Boolean).join(" · "),tipo:tipoDe(d),era:cegLbl(d)||d.ceg||"",com:d.comunidade||"",membros:membrosDe(d),st:d.status==="Recebido"?"tenho":"caminho",status:d.status,obs:d.obs||""}));
@@ -1887,6 +1907,51 @@ function renderOutras(){
     <div class="ocgrid">${rows.map(card).join("")||'<div class="empty">Nada com esses filtros.</div>'}</div>
   </section>`;
   const oq=$("#oq"); oq.addEventListener("input",()=>{of.q=oq.value;const pos=oq.selectionStart;renderOutras();const n=$("#oq");n.focus();n.setSelectionRange(pos,pos)});
+}
+function renderEventos(){
+  if(!EVT){ $("#view").innerHTML=`<section class="block">${pageHead("colecao")}<div class="empty">${evtErr?"Não deu pra carregar os eventos; recarregue a página.":"Carregando eventos…"}</div></section>`; loadEvt(); return; }
+  const tipos=[...new Set(EVT.map(e=>e.tipo||"sem tipo"))].sort((a,b)=>a.localeCompare(b,"pt-BR"));
+  const q=ef.q.trim().toLowerCase();
+  const base=EVT.filter(e=>(!ef.tipo||(e.tipo||"sem tipo")===ef.tipo)&&(!q||(e.evento+" "+(e.notas||"")+" "+(e.cidade||"")+" "+(e.pais||"")).toLowerCase().includes(q)));
+  const comData=base.filter(e=>e.data_inicio).sort((a,b)=>b.data_inicio.localeCompare(a.data_inicio));
+  const semData=base.filter(e=>!e.data_inicio);
+  const row=e=>{const periodo=e.data_fim&&e.data_fim!==e.data_inicio?`${fd(e.data_inicio)} – ${fd(e.data_fim)}`:fd(e.data_inicio);
+    return `<article class="evrow">
+      <div class="evdate">${e.data_inicio?periodo:esc(e.data_inicio_raw||e.data_fim_raw||"sem data")}</div>
+      <div class="evb"><div class="evtop"><span class="tag t-muted">${esc(e.tipo||"sem tipo")}</span>${e.cidade||e.pais?`<span class="evloc">${esc([e.cidade,e.pais].filter(Boolean).join(", "))}</span>`:""}</div>
+      <div class="evnome">${esc(e.evento)}</div>
+      ${e.notas?`<div class="evnotas">${esc(e.notas)}</div>`:""}</div>
+    </article>`;};
+  $("#view").innerHTML=`<section class="block">
+    ${pageHead("colecao")}
+    <p class="hint">${EVT.length} eventos — Season's Greetings, pop-ups, turnês, fanclube, collabs e mais. Fontes: a wiki stray-kids.fandom.com e a planilha "SKZ Era Timeline" (nomes e datas como as fontes documentam, sem adivinhação).</p>
+    <div class="toolbar">
+      <input type="search" id="evq" placeholder="Buscar evento, cidade ou nota" value="${esc(ef.q)}" aria-label="Buscar eventos">
+      <select id="evtipo" aria-label="Tipo"><option value="">Todos os tipos</option>${tipos.map(t=>`<option value="${esc(t)}" ${ef.tipo===t?"selected":""}>${esc(t)}</option>`).join("")}</select>
+    </div>
+    <div class="count">${base.length} evento${base.length===1?"":"s"}${semData.length?` · ${semData.length} sem data confirmada`:""}</div>
+    <div class="evlist">${comData.map(row).join("")}${semData.length?`<div class="evsep">sem data confirmada</div>${semData.map(row).join("")}`:""}${!base.length?'<div class="empty">Nada com esses filtros.</div>':""}</div>
+  </section>`;
+  const eq=$("#evq"); eq.addEventListener("input",()=>{ef.q=eq.value;const pos=eq.selectionStart;renderEventos();const n=$("#evq");n.focus();n.setSelectionRange(pos,pos)});
+  $("#evtipo").addEventListener("change",e=>{ef.tipo=e.target.value;renderEventos()});
+}
+function renderLoja(){
+  if(!LOJA){ $("#view").innerHTML=`<section class="block">${pageHead("colecao")}<div class="empty">${lojaErr?"Não deu pra carregar a loja; recarregue a página.":"Carregando…"}</div></section>`; loadLoja(); return; }
+  const row=it=>{ const desc=(it.preco_lista_usd&&it.preco_usd&&it.preco_lista_usd>it.preco_usd)?Math.round((1-it.preco_usd/it.preco_lista_usd)*100):null;
+    return `<article class="ljrow">
+      ${it.imagem?`<img class="ljimg" src="${esc(it.imagem)}" alt="" loading="lazy">`:`<div class="ljimg"></div>`}
+      <div class="ljb">
+        <div class="ljtop">${it.categoria?`<span class="tag t-muted">${esc(it.categoria)}</span>`:""}${it.pre_order_em?`<span class="tag t-info">pré-venda · ${fd(it.pre_order_em)}</span>`:""}</div>
+        <div class="evnome">${esc(it.nome||"")}</div>
+        <div class="ljpreco">${it.preco_usd!=null?`US$ ${it.preco_usd.toFixed(2)}`:""}${desc?`<s>US$ ${it.preco_lista_usd.toFixed(2)}</s><span class="tag t-ok" style="margin-left:6px">-${desc}%</span>`:""}</div>
+        ${it.link?`<a class="btn ghost small" href="${esc(it.link)}" target="_blank" rel="noopener">ver na POCA MALL</a>`:""}
+      </div>
+    </article>`;};
+  $("#view").innerHTML=`<section class="block">
+    ${pageHead("colecao")}
+    <p class="hint">${LOJA.length} itens da Stray Kids à venda agora na POCA MALL (mall.pocamarket.com), com preço e link — atualiza toda semana.</p>
+    <div class="evlist">${LOJA.map(row).join("")||'<div class="empty">Nada encontrado agora.</div>'}</div>
+  </section>`;
 }
 const OICON={"Álbum":'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/></svg>',
  "SG / fankit":'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M3 12h18M12 8v13M12 8s-1.5-5-4.5-5a2 2 0 0 0 0 5M12 8s1.5-5 4.5-5a2 2 0 0 1 0 5"/></svg>',
@@ -2000,6 +2065,8 @@ function eraStrip(eras){
 function renderColecao(){
   if(cf.view==="conf"){renderConfirm();return}
   if(cf.view==="outras"){renderOutras();return}
+  if(cf.view==="eventos"){renderEventos();return}
+  if(cf.view==="loja"){renderLoja();return}
   if(!COL){ $("#view").innerHTML=`<div class="empty">${colErr?"Não deu pra carregar o catálogo; recarregue a página.":"Carregando catálogo…"}</div>`; loadCol(); return; }
   const all=COL.items;
   const eras=[]; all.forEach(it=>{const k=it.o+"|"+it.e; if(!eras.includes(k))eras.push(k)});
@@ -2022,7 +2089,7 @@ function renderColecao(){
   const z=cf.zoom&&all.find(it=>it.i===cf.zoom); const zs=z&&colSpr(z);
   $("#view").innerHTML=`<section class="block">
     ${pageHead("colecao")}
-    <p class="hint">${all.length} photocards (${all.filter(it=>it.p).length} com foto) de álbuns coreanos e japoneses e POBs coreanos. Cards ligados a um pedido ficam "a caminho" sozinhos e viram "tenho" quando ele chega. Ainda faltam SG, fankit, pop up e eventos.</p>
+    <p class="hint">${all.length} photocards (${all.filter(it=>it.p).length} com foto) de álbuns coreanos e japoneses e POBs coreanos. Cards ligados a um pedido ficam "a caminho" sozinhos e viram "tenho" quando ele chega. SG, pop-up e outros eventos estão na aba Eventos, ao lado.</p>
     ${wishPanel()}
     ${eraStrip(eras)}
     <div class="mrow" role="group" aria-label="Membro"><button class="chip" data-cm="" aria-pressed="${!cf.m}">Todos</button>${MEMBROS.map(m=>`<button class="chip" data-cm="${esc(m)}" aria-pressed="${cf.m===m}">${esc(m)}</button>`).join("")}</div>
