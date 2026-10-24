@@ -6,3 +6,5 @@ backup/
 .vercel
 .DS_Store
 node_modules/
+# conversas exportadas do WhatsApp: dados pessoais, nunca no repositório público
+_whatsapp/

@@ -1,7 +1,7 @@
 {
   "functions": {
     "api/ler.js": { "maxDuration": 120 },
-    "api/cron/sync-catalogo.js": { "maxDuration": 60, "includeFiles": "data/catalogo-*.json" },
+    "api/cron/sync-catalogo.js": { "maxDuration": 120, "includeFiles": "data/catalogo-*.json" },
     "api/cron/sync-eventos.js": { "maxDuration": 60 }
   },
   "rewrites": [
