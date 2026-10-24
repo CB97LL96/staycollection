@@ -52,30 +52,52 @@ const brl = (n) => (typeof n === "number" ? `R$ ${n.toFixed(2).replace(".", ",")
 const ddmm = (iso) => iso.slice(8, 10) + "/" + iso.slice(5, 7);
 const hojeBR = () => new Date(Date.now() - 3 * 3600 * 1000).toISOString().slice(0, 10);
 
-// Link de planilha do Google -> CSV. Aceita o gid do link (aba específica).
-export function urlCsv(link) {
-  const m = String(link || "").match(/docs\.google\.com\/spreadsheets\/d\/([\w-]+)/);
-  if (!m) return null;
-  const gid = (String(link).match(/[#&?]gid=(\d+)/) || [])[1];
-  return `https://docs.google.com/spreadsheets/d/${m[1]}/export?format=csv${gid ? `&gid=${gid}` : ""}`;
+const UA = { "User-Agent": "Mozilla/5.0" };
+
+// Lista as abas visíveis da planilha (nome e gid) pela versão "htmlview",
+// que é pública quando a planilha está aberta por link. Abas ocultas não
+// aparecem ali, e é de propósito: a GOM esconde o que não vale mais.
+async function abasVisiveis(id) {
+  const r = await fetch(`https://docs.google.com/spreadsheets/d/${id}/htmlview`, { headers: UA });
+  if (!r.ok) return [];
+  const h = await r.text();
+  return [...h.matchAll(/items\.push\(\{name: "((?:[^"\\]|\\.)*)", pageUrl: "[^"]*?gid=(\d+)/g)]
+    .map((m) => ({ aba: m[1].replace(/\\(.)/g, "$1"), gid: m[2] }));
 }
 
-async function baixarPlanilha(link) {
-  const csv = urlCsv(link);
-  const r = await fetch(csv || link, { redirect: "follow", headers: { "User-Agent": "Mozilla/5.0" } });
+async function csvDaAba(id, gid) {
+  const r = await fetch(`https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=${gid}`, { redirect: "follow", headers: UA });
   if (!r.ok) throw new Error(`planilha: HTTP ${r.status} (a planilha precisa estar aberta por link)`);
-  let t = await r.text();
-  if (!csv) t = t.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/g, " ").replace(/<[^>]+>/g, " ").replace(/[ \t]+/g, " ");
-  if (/<html/i.test(t.slice(0, 500)) && csv) throw new Error("planilha pediu login (não está aberta por link)");
+  const t = await r.text();
+  if (/<html/i.test(t.slice(0, 500))) throw new Error("planilha pediu login (não está aberta por link)");
   return t;
 }
 
-// Cabeçalho + só as linhas que citam algum dos nomes dela.
-export function linhasDela(texto, nomes) {
-  const linhas = texto.split(/\r?\n/);
+// Baixa a planilha inteira: todas as abas visíveis, não só a primeira (as
+// linhas de cada pessoa costumam ficar em abas separadas por loja ou set).
+// Devolve [{ aba, texto }].
+export async function baixarPlanilha(link) {
+  const id = (String(link || "").match(/docs\.google\.com\/spreadsheets\/d\/([\w-]+)/) || [])[1];
+  if (!id) {
+    const r = await fetch(link, { redirect: "follow", headers: UA });
+    if (!r.ok) throw new Error(`planilha: HTTP ${r.status}`);
+    const t = (await r.text()).replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/g, " ").replace(/<[^>]+>/g, " ").replace(/[ \t]+/g, " ");
+    return [{ aba: "", texto: t }];
+  }
+  const abas = await abasVisiveis(id);
+  if (!abas.length) return [{ aba: "", texto: await csvDaAba(id, (String(link).match(/[#&?]gid=(\d+)/) || [])[1] || "0") }];
+  const out = [];
+  for (const a of abas.slice(0, 60)) out.push({ aba: a.aba, texto: await csvDaAba(id, a.gid) });
+  return out;
+}
+
+// Por aba: cabeçalho + só as linhas que citam algum dos nomes dela.
+export function linhasDela(abas, nomes) {
   const nm = nomes.map((n) => n.toLowerCase()).filter(Boolean);
-  const dela = linhas.slice(1).filter((l) => nm.some((n) => l.toLowerCase().includes(n)));
-  return { cabecalho: linhas.slice(0, 3).join("\n"), dela };
+  return abas.map(({ aba, texto }) => {
+    const linhas = texto.split(/\r?\n/);
+    return { aba, cabecalho: linhas.slice(0, 3).join("\n"), dela: linhas.slice(1).filter((l) => nm.some((n) => l.toLowerCase().includes(n))) };
+  }).filter((a) => a.dela.length);
 }
 
 async function rest(url, key, path, opts = {}) {
@@ -88,9 +110,8 @@ async function rest(url, key, path, opts = {}) {
 }
 
 async function conferirCeg(client, { nomeCeg, planilha, cobs, nomes }) {
-  const texto = (await baixarPlanilha(planilha)).slice(0, MAX_CHARS * 4);
-  const { cabecalho, dela } = linhasDela(texto, nomes);
-  if (!dela.length) return { resultados: cobs.map((c) => ({ id: c.id, resultado: "nao_encontrada", nota: "" })), semNome: true };
+  const abas = linhasDela(await baixarPlanilha(planilha), nomes);
+  if (!abas.length) return { resultados: cobs.map((c) => ({ id: c.id, resultado: "nao_encontrada", nota: "" })), semNome: true };
   const lista = cobs.map((c) => `- id ${c.id}: ${c.data.referente || "(sem título)"} | ${c.data.tipo || ""} | ${brl(c.data.valor)} | status ${c.data.status} | prazo ${c.data.prazo || "—"}`).join("\n");
   const r = await client.beta.messages.create({
     model: "claude-sonnet-5-5",
@@ -99,7 +120,7 @@ async function conferirCeg(client, { nomeCeg, planilha, cobs, nomes }) {
     system: SYSTEM,
     messages: [{
       role: "user",
-      content: `CEG: ${nomeCeg}\n\nCabeçalho da planilha:\n${cabecalho}\n\nLinhas dela:\n${dela.join("\n").slice(0, MAX_CHARS)}\n\nCobranças anotadas:\n${lista}`,
+      content: `CEG: ${nomeCeg}\n\n${abas.map((a) => `Aba "${a.aba}" — cabeçalho:\n${a.cabecalho}\nLinhas dela:\n${a.dela.join("\n")}`).join("\n\n").slice(0, MAX_CHARS)}\n\nCobranças anotadas:\n${lista}`,
     }],
   });
   const json = r.content.filter((b) => b.type === "text").map((b) => b.text).join("");
