@@ -14,6 +14,7 @@
 //                  Authorization: Bearer automaticamente pra cron jobs
 //                  configurados em vercel.json (ver "Securing cron jobs"
 //                  na documentação da Vercel)
+import { conferirCobrancas } from "../../scripts/conferir-cobrancas.mjs";
 import { buscarNovosCraftenSKZ, supabaseIdsConhecidos, supabaseInserirItens, gerarColecaoJson } from "../../scripts/catalogo-core.mjs";
 
 async function comitarNoGithub(repo, token, conteudo) {
@@ -34,24 +35,33 @@ async function comitarNoGithub(repo, token, conteudo) {
   if (!putR.ok) throw new Error(`GitHub (gravar): HTTP ${putR.status} ${await putR.text()}`);
 }
 
-export default async function handler(req, res) {
-  if (req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) return res.status(401).end();
-
+async function sincronizarCatalogo() {
   const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const repo = process.env.GITHUB_REPO, token = process.env.GITHUB_TOKEN;
-  if (!url || !key || !repo || !token) return res.status(500).json({ erro: "Faltam variáveis de ambiente (Supabase e/ou GitHub)." });
+  if (!url || !key || !repo || !token) throw new Error("Faltam variáveis de ambiente (Supabase e/ou GitHub).");
+  const idsConhecidos = await supabaseIdsConhecidos(url, key);
+  const novos = await buscarNovosCraftenSKZ(idsConhecidos);
+  if (!novos.length) return { novos: 0 };
+  await supabaseInserirItens(url, key, novos);
+  const colecao = await gerarColecaoJson(url, key);
+  await comitarNoGithub(repo, token, JSON.stringify(colecao));
+  return { novos: novos.length, itens: novos.map((i) => i.i) };
+}
 
-  try {
-    const idsConhecidos = await supabaseIdsConhecidos(url, key);
-    const novos = await buscarNovosCraftenSKZ(idsConhecidos);
-    if (!novos.length) return res.status(200).json({ novos: 0 });
-
-    await supabaseInserirItens(url, key, novos);
-    const colecao = await gerarColecaoJson(url, key);
-    await comitarNoGithub(repo, token, JSON.stringify(colecao));
-    return res.status(200).json({ novos: novos.length, itens: novos.map((i) => i.i) });
-  } catch (e) {
-    console.error(e);
-    return res.status(500).json({ erro: e.message });
-  }
+// Este cron roda todo dia e faz duas coisas independentes: o catálogo e a
+// conferência das cobranças com as planilhas das GOMs (scripts/conferir-cobrancas.mjs).
+// Uma falhar não impede a outra. (Plano Hobby da Vercel: máximo 2 crons, por isso
+// a conferência entra aqui em vez de ter um cron só dela.)
+export default async function handler(req, res) {
+  if (req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) return res.status(401).end();
+  const out = {};
+  try { out.catalogo = await sincronizarCatalogo(); } catch (e) { console.error(e); out.catalogo = { erro: e.message }; }
+  if (process.env.OWNER_ID && process.env.ANTHROPIC_API_KEY) {
+    try {
+      const nomes = (process.env.MEUS_NOMES || "").split(",").map((s) => s.trim()).filter(Boolean);
+      out.cobrancas = await conferirCobrancas(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, process.env.OWNER_ID, { nomes });
+    } catch (e) { console.error(e); out.cobrancas = { erro: e.message }; }
+  } else out.cobrancas = { pulado: "falta OWNER_ID ou ANTHROPIC_API_KEY" };
+  const falhou = Object.values(out).some((v) => v && v.erro);
+  return res.status(falhou ? 500 : 200).json(out);
 }
