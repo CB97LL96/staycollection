@@ -8,7 +8,8 @@
     "migrar-wiki-skz": "node scripts/migrar-wiki-skz.mjs",
     "migrar-pocamarket": "node scripts/migrar-pocamarket.mjs",
     "sync-catalogo": "node scripts/sync-catalogo.mjs",
-    "exportar-catalogo": "node scripts/exportar-catalogo.mjs"
+    "exportar-catalogo": "node scripts/exportar-catalogo.mjs",
+    "melhorar-fotos": "node scripts/melhorar-fotos.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.132.1"

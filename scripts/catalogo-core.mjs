@@ -78,8 +78,61 @@ export async function supabaseInserirItens(url, serviceKey, itens) {
   if (!r.ok) throw new Error(`Supabase (inserir): HTTP ${r.status} ${await r.text()}`);
 }
 
+// ---- Melhor foto de cada card ----
+// As folhas de fotos (data/catalogo-fotos.json) têm cada card com 160px de
+// largura. O CraftenSKZ tem a foto original, que em muitos cards é bem maior
+// (700px+). Pra cada card, o app usa a original (só o link, nada é copiado)
+// quando ela é maior que a da folha. O tamanho de cada foto fica guardado em
+// data/catalogo-medidas.json pra não precisar medir tudo de novo.
+export const CRAFTENSKZ_FOTOS = "https://craftenskz.github.io/StrayKidsPCCollector/assets/images/photocards/";
+const MEDIDAS = new URL("../data/catalogo-medidas.json", import.meta.url);
+
+export function fotoCraftenSKZ(it) {
+  const cat = (it.o === "JP" ? "japanese_" : "korean_") + (it.t === "Álbum" ? "albums" : "pob");
+  return `${CRAFTENSKZ_FOTOS}${cat}/${it.i.split("-")[0]}/${it.i}.webp`;
+}
+
+// Largura e altura lidas do cabeçalho do arquivo (WebP), baixando só o começo.
+export async function medirFoto(url) {
+  const r = await fetch(url, { headers: { Range: "bytes=0-63" } });
+  if (r.status === 404) return null;
+  if (!r.ok && r.status !== 206) throw new Error(`${url}: HTTP ${r.status}`);
+  const b = Buffer.from(await r.arrayBuffer());
+  if (b.toString("ascii", 0, 4) !== "RIFF" || b.toString("ascii", 8, 12) !== "WEBP") return null;
+  const tipo = b.toString("ascii", 12, 16);
+  if (tipo === "VP8 ") return [b.readUInt16LE(26) & 0x3fff, b.readUInt16LE(28) & 0x3fff];
+  if (tipo === "VP8L") { const x = b.readUInt32LE(21); return [(x & 0x3fff) + 1, ((x >> 14) & 0x3fff) + 1]; }
+  if (tipo === "VP8X") return [b.readUIntLE(24, 3) + 1, b.readUIntLE(27, 3) + 1];
+  return null;
+}
+
+export function lerMedidas() {
+  try { return JSON.parse(readFileSync(MEDIDAS, "utf8")); } catch { return { celula: 160, fotos: {} }; }
+}
+
+// Mede o que falta (medir: "novos" só os cards nunca medidos; "todos" também
+// tenta de novo os que não tinham foto) e grava em cada item o link (u) e a
+// largura (w) da melhor foto. Devolve quantas fotos foram medidas agora.
+export async function aplicarMelhoresFotos(colecao, medidas, { medir = "novos" } = {}) {
+  const faltam = colecao.items.filter((it) => !it.novo && (!(it.i in medidas.fotos) || (medir === "todos" && !medidas.fotos[it.i])));
+  let i = 0;
+  await Promise.all(Array.from({ length: 8 }, async () => {
+    while (i < faltam.length) {
+      const it = faltam[i++];
+      try { medidas.fotos[it.i] = await medirFoto(fotoCraftenSKZ(it)); } catch (e) { console.warn(e.message); }
+    }
+  }));
+  for (const it of colecao.items) {
+    delete it.u; delete it.w;
+    const d = medidas.fotos[it.i];
+    if (d && d[0] > (it.p ? medidas.celula : 0)) { it.u = fotoCraftenSKZ(it); it.w = d[0]; }
+    else if (it.p) it.w = medidas.celula;
+  }
+  return faltam.length;
+}
+
 // Junta os itens do Supabase com as folhas de fotos fixas (data/catalogo-fotos.json)
-// pra montar o mesmo formato que o colecao.json sempre teve.
+// pra montar o mesmo formato que o colecao.json sempre teve, já com a melhor foto.
 export async function gerarColecaoJson(url, serviceKey) {
   const fotos = JSON.parse(readFileSync(new URL("../data/catalogo-fotos.json", import.meta.url), "utf8"));
   const linhas = await supabaseTodosItens(url, serviceKey);
@@ -88,11 +141,13 @@ export async function gerarColecaoJson(url, serviceKey) {
     if (l.p) it.p = l.p;
     return it;
   });
-  return {
+  const colecao = {
     n: fotos.n,
     m: fotos.m,
     sheets: fotos.sheets,
     items,
     fonte: `CraftenSKZ (StrayKidsPCCollector), atualizado em ${new Date().toLocaleDateString("pt-BR")}`,
   };
+  await aplicarMelhoresFotos(colecao, lerMedidas());
+  return colecao;
 }
