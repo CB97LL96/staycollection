@@ -107,6 +107,25 @@ export SUPABASE_SERVICE_ROLE_KEY="..." # idem, chave service_role (secreta)
   usuária, pocamarket, Mercari. Consultar antes de sair procurando essas
   fontes de novo.
 
+## Caixa de entrada pelo Telegram
+
+Tudo que você manda pro seu bot do Telegram (texto, print, conversa exportada
+do WhatsApp em .txt) é guardado no Supabase (`docs`, coleção `caixa`) e lido
+pelo Claude na hora (`api/telegram.js`, mesma leitura do `ler.html`, em
+`scripts/ler-core.mjs`). As sugestões aparecem no topo da aba **O que devo**,
+com a citação da mensagem; nada vira cobrança sem você tocar em **aceitar**.
+
+Configurar (uma vez):
+1. No Telegram, fale com o **@BotFather**, mande `/newbot` e siga os passos.
+   Ele te dá um **token**.
+2. Na Vercel, crie `TELEGRAM_BOT_TOKEN` (o token) e `TELEGRAM_SECRET` (um texto
+   secreto qualquer, só letras e números) e faça um redeploy.
+3. Ligue o bot ao site abrindo no navegador (trocando TOKEN e SEGREDO):
+   `https://api.telegram.org/botTOKEN/setWebhook?url=https://staycollection.vercel.app/api/telegram&secret_token=SEGREDO`
+4. Mande qualquer mensagem pro bot. Ele responde com o seu código de chat:
+   crie `TELEGRAM_CHAT_ID` na Vercel com ele e faça outro redeploy. Só esse
+   chat é atendido.
+
 ## Rodar localmente
 
 ```sh

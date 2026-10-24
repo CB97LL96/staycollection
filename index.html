@@ -1051,6 +1051,8 @@ details.cobsec:not([open])>summary .esl::after{content:" ▸";color:var(--ink2);
 .dvlink{background:none;border:none;padding:0;color:var(--ink);font-weight:700;cursor:pointer;text-decoration:underline}
 .dv form.edit{border-radius:0}
 .dvempty{padding:28px 0;text-align:center;color:var(--ink2)}
+.cxbox{margin-bottom:18px}.cxbox .dv{box-shadow:0 0 0 2px var(--accent),var(--shadow)}
+.cxr{border-top:1px solid var(--line)}
 </style>
 
 <div class="wrap">
@@ -1103,7 +1105,7 @@ const TONE={"Pendente":"bad","Não":"bad","A pedir":"bad","Sair":"bad","Claim pe
 const tone=v=>"t-"+(TONE[v]||"muted");
 
 const data={acervo:new Map()}; Object.keys(COLS).forEach(k=>data[k]=new Map());
-let meta={}; let catalogo=new Map(); let db=null; let canWrite=true; let ready=false;
+let meta={}; let caixa=new Map(); let catalogo=new Map(); let db=null; let canWrite=true; let ready=false;
 const ui={linking:null,lq:null,itf:{m:"",tipo:"",fase:"aberto"},gclosed:{},pexp:null,tab:"painel",q:"",st:{},com:"",editing:null,newOpen:false,sort:{},cat:{q:"",ceg:"",membro:"",foto:false,vagas:false,meus:false},zoom:null,cobSel:new Set()};
 try{const s=JSON.parse(localStorage.getItem("cegs-ui")||"{}"); if(s.tab&&TABS.some(t=>t[0]===s.tab)) ui.tab=s.tab; if(s.sort&&typeof s.sort==="object") ui.sort=s.sort;}catch(e){}
 const saveUi=()=>{try{localStorage.setItem("cegs-ui",JSON.stringify({tab:ui.tab,sort:ui.sort}))}catch(e){}};
@@ -1140,7 +1142,7 @@ const AREAS=[["hoje","Hoje","home",["painel"]],["devo","Devo","coin",["devo"]],[
 const areaOf=t=>(AREAS.find(a=>a[3].includes(t))||AREAS.find(a=>a[0]==="pedidos"))[0];
 const TLABEL=Object.fromEntries(TABS);
 function renderTabs(){
-  const s=stats(); const badge={cobrancas:s.pend.length,envios:s.envPedir.length};
+  const s=stats(); const badge={cobrancas:s.pend.length,envios:s.envPedir.length,devo:caixaPendentes().reduce((n,c)=>n+Math.max(1,(c.registros||[]).filter(r=>r.estado==="pendente").length),0)};
   const cur=areaOf(ui.tab);
   $("#tabs").innerHTML=AREAS.map(([k,l,ic,ts])=>{const n=ts.reduce((a,t)=>a+(badge[t]||0),0); return `<button type="button" data-area="${k}" aria-current="${cur===k?"page":"false"}">${I(ic)}<span>${esc(l)}</span>${n?`<span class="badge">${n}</span>`:""}</button>`}).join("");
   let subs="";
@@ -2179,6 +2181,40 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&cf.zoom&&ui.tab==="
 
 // ---------- O que devo: visão simples, só onde/quem/quanto ----------
 const DEVO_ST=["Pendente","A confirmar"];
+// ---------- caixa de entrada (Telegram) ----------
+// Cada mensagem mandada pro bot vira um item em "caixa", com as sugestões que o
+// Claude leu. Nada vira cobrança sem ela tocar em "aceitar".
+const DESTINO={cobrancas:"cobrança",itens:"item",envios:"envio",repasses:"repasse"};
+function caixaPendentes(){return [...caixa].map(([id,c])=>({id,...c})).filter(c=>c.estado==="erro"||c.estado==="lendo"||(c.registros||[]).some(r=>r.estado==="pendente")).sort((a,b)=>String(b.recebidoEm).localeCompare(String(a.recebidoEm)));}
+function caixaHtml(){
+  const cs=caixaPendentes(); if(!cs.length)return "";
+  const quando=t=>{try{return new Date(t).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}catch(e){return ""}};
+  const reg=(c,r,i)=>r.estado!=="pendente"?"":`<div class="cxr"><div class="dvmain"><div class="dvt"><b>${esc(r.referente||"(sem título)")} <span class="dvtag" style="background:var(--info-bg);color:var(--info)">${esc(DESTINO[r.destino]||r.destino)}</span>${r.confianca!=="alta"?`<span class="dvtag">confiança ${esc(r.confianca)}</span>`:""}</b>
+    <small>${[r.comunidade,r.ceg&&"CEG: "+r.ceg,r.prazo&&"prazo "+fd(r.prazo),r.pix&&"pix: "+r.pix].filter(Boolean).map(esc).join(" · ")}</small></div>
+    <div class="dvv ${typeof r.valor==="number"?"":"sem"}">${typeof r.valor==="number"?brl(r.valor):"sem valor"}</div>
+    ${r.trecho?`<div class="dvnota">“${esc(r.trecho)}”</div>`:""}${r.duvidas?`<div class="dvnota" style="background:var(--warn-bg);color:var(--warn)">Conferir: ${esc(r.duvidas)}</div>`:""}
+    ${canWrite?`<div class="dvact"><button type="button" class="btn small" data-cx="${esc(c.id)}" data-cxi="${i}" data-cxa="aceitar">aceitar</button><button type="button" class="btn ghost small" data-cx="${esc(c.id)}" data-cxi="${i}" data-cxa="descartar">descartar</button></div>`:""}</div></div>`;
+  return `<section class="cxbox"><div class="dvcom"><h3>Chegou pelo Telegram</h3></div>${cs.map(c=>`<article class="dv"><div class="dvmain"><div class="dvt"><b>${esc(quando(c.recebidoEm))}</b><small>${esc(c.estado==="erro"?"não consegui ler: "+(c.erro||""):c.estado==="lendo"?"lendo…":(c.resumo||""))}</small></div>
+    ${c.estado!=="lida"&&canWrite?`<div class="dvact" style="grid-column:auto"><button type="button" class="btn ghost small" data-cx="${esc(c.id)}" data-cxa="arquivar">arquivar</button></div>`:""}</div>
+    ${c.texto?`<div class="dvmain" style="padding-top:0"><div class="dvnota">${esc(c.texto)}</div></div>`:""}${(c.registros||[]).map((r,i)=>reg(c,r,i)).join("")}</article>`).join("")}</section>`;
+}
+function registroParaDoc(r,c){
+  const base={comunidade:r.comunidade||"",ceg:r.ceg||"",obs:[r.obs,r.duvidas&&"conferir: "+r.duvidas].filter(Boolean).join("\n"),prova:"Telegram "+(c.recebidoEm||"").slice(0,10)+(r.trecho?": “"+r.trecho+"”":"")};
+  if(r.destino==="cobrancas")return {...base,referente:r.referente||"",tipo:r.tipo||"",valor:typeof r.valor==="number"?r.valor:null,prazo:r.prazo||"",status:r.confianca==="alta"?"Pendente":"A confirmar",pix:r.pix||"",pagarComo:r.pagarComo||"",pagarLink:r.pagarLink||"",compOnde:r.compOnde||"",compLink:r.compLink||"",aviso:(c.recebidoEm||"").slice(0,10)};
+  if(r.destino==="itens")return {...base,item:r.referente||"",membro:r.membro||"",valor:typeof r.valor==="number"?r.valor:null,status:r.status||"A confirmar"};
+  if(r.destino==="envios")return {...base,gom:"",status:"A confirmar",prazo:r.prazo||"",itens:r.referente||""};
+  return {...base,item:r.referente||"",valor:typeof r.valor==="number"?r.valor:null,pago:"A confirmar"};
+}
+$("#view").addEventListener("click",async e=>{const b=e.target.closest("[data-cxa]"); if(!b||ui.tab!=="devo"||!db)return;
+  const id=b.dataset.cx, c=caixa.get(id); if(!c)return; const acao=b.dataset.cxa; b.disabled=true;
+  try{
+    if(acao==="arquivar"){ await db.doc("caixa/"+id).update({estado:"arquivada"}); toast("Arquivada"); return; }
+    const i=Number(b.dataset.cxi), regs=(c.registros||[]).map(r=>({...r})), r=regs[i]; if(!r)return;
+    if(acao==="aceitar"){ const col=DESTINO[r.destino]?r.destino:"cobrancas"; await db.collection(col).add(registroParaDoc(r,c)); r.estado="aceito"; toast("Adicionado em "+(COLS[col]?COLS[col].label:col)); }
+    else { r.estado="descartado"; toast("Descartado"); }
+    await db.doc("caixa/"+id).update({registros:regs});
+  }catch(err){ b.disabled=false; toast("Não deu pra salvar; tente de novo"); }
+});
 function renderDevo(){
   const cob=list("cobrancas").filter(c=>DEVO_ST.includes(c.status));
   const by=new Map(); cob.forEach(c=>{const k=c.comunidade||"Sem comunidade"; if(!by.has(k))by.set(k,[]); by.get(k).push(c)});
@@ -2203,7 +2239,7 @@ function renderDevo(){
       <label class="wide">Minha nota (pix, pra quem, onde mandar o comprovante...)<textarea name="notaMinha">${esc(d.notaMinha||"")}</textarea></label></div>
       <div class="actions"><div><button class="btn" type="submit">Salvar</button><button class="btn ghost" type="button" data-devo-edit="${esc(d.id)}">Cancelar</button></div></div></form>`+"</article>";
   };
-  $("#view").innerHTML=`<div class="dvhero"><h2>O que devo</h2><span class="dvtot">${brl(sum(pend))}</span></div>
+  $("#view").innerHTML=caixaHtml()+`<div class="dvhero"><h2>O que devo</h2><span class="dvtot">${brl(sum(pend))}</span></div>
     <p class="dvhint">${pend.length} ${pend.length===1?"cobrança pendente":"cobranças pendentes"}${cob.length>pend.length?` · ${cob.length-pend.length} pra conferir`:""}${semV?` · ${semV} sem valor`:""}. Só mostra "Pendente" e "A confirmar". Confira no grupo antes de pagar.</p>
     ${groups.map(([n,a])=>`<div class="dvcom">${comChip(n==="Sem comunidade"?"":n)}<h3>${esc(n)}</h3><b>${brl(sum(a))||"–"}</b></div>${a.map(row).join("")}`).join("")||'<div class="dvempty">Nada pendente. 🎉</div>'}`;
 }
@@ -2251,6 +2287,7 @@ function schedule(){ // não derruba um formulário aberto
   db.collection("apelidos").limit(1000).onSnapshot(snap=>{const m={};snap.docs.forEach(d=>{m[d.id]=d.data()});apel=m;if(ui.tab==="colecao"&&!document.querySelector("#colq:focus,#apin:focus"))schedule()},()=>{});
   db.collection("catalogo").limit(1000).onSnapshot(snap=>{const m=new Map();snap.docs.forEach(d=>m.set(d.id,d.data()));catalogo=m;if(ui.tab==="catalogo")schedule()},()=>{});
   db.doc("meta/info").onSnapshot(s=>{meta=s.exists?s.data():{};schedule()},()=>{});
+  db.collection("caixa").limit(500).onSnapshot(snap=>{const m=new Map();snap.docs.forEach(d=>m.set(d.id,d.data()));caixa=m;if(ui.tab==="devo"&&!document.querySelector("#view input:focus,#view textarea:focus"))schedule()},()=>{});
   db.collection("notas").limit(2000).onSnapshot(snap=>{const m={};snap.docs.forEach(d=>{m[d.id]=d.data()});notas=m;if(ui.tab==="colecao"&&!document.querySelector("#view input:focus,#view textarea:focus"))schedule()},()=>{});
   db.collection("fotos").limit(1000).onSnapshot(snap=>{const m={};snap.docs.forEach(d=>{m[d.id]=d.data()});fotos=m;if(!document.querySelector("#view input:focus"))schedule()},()=>{});
   db.collection("cardsnovos").limit(1000).onSnapshot(snap=>{const m=new Map();snap.docs.forEach(d=>m.set(d.id,d.data()));novos=m;mergeNovos();if(!document.querySelector("#view input:focus"))schedule()},()=>{});
