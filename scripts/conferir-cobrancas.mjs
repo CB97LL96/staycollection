@@ -148,6 +148,8 @@ export async function conferirCobrancas(url, key, ownerId, { nomes, hoje = hojeB
   await Promise.all([...porCeg].map(async ([nomeCeg, cobs]) => {
     const planilha = planilhas.get(nomeCeg);
     if (!planilha) { resumo.semPlanilha += cobs.length; return; }
+    // O paboracha não é planilha: tem conferência própria (conferir-paboracha.mjs).
+    if (/paboracha\.com/i.test(planilha)) { resumo.paboracha = (resumo.paboracha || 0) + cobs.length; return; }
     try {
       const { resultados } = await conferirCeg(client, { nomeCeg, planilha, cobs, nomes });
       for (const res of resultados) {
