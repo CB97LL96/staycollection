@@ -33,7 +33,12 @@ este arquivo diz **o que já está pronto e o que vem depois**.
 2. **Histórico do WhatsApp.** Ela manda os .txt pro bot. Conferir se as sugestões
    fazem sentido e ajustar o filtro (`encolher` em `api/telegram.js`) se o robô
    deixar coisa de fora.
-3. **Relatório de cobertura** (plano de verificação). Uma tela ou relatório que
+3. **Ler os grupos do WhatsApp pelo navegador** (versão nova do passo 3, pedida
+   em 25/10/2026). Grupos de comunidades, de 11/10 em diante; antes disso só
+   onde a base está confusa. Roda numa conversa do Claude Desktop no computador
+   dela, seguindo `docs/roteiro-whatsapp.md`.
+
+   Depois disso, o **relatório de cobertura** (plano de verificação). Uma tela ou relatório que
    mostre, pra cada fonte:
    - planilhas: quantas abas o robô leu e em quais achou o nome dela;
    - paboracha: se está tudo ligado;
