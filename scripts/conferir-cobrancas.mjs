@@ -2,7 +2,8 @@
 //
 // Fluxo: lê as cobranças e as CEGs da usuária no Supabase (tabela docs),
 // baixa a planilha de cada CEG (campo "planilha" da CEG), separa as linhas que
-// citam o nome dela e pede pro Claude comparar com as cobranças em aberto.
+// citam o nome dela e pede pra IA (Gemini, scripts/ia.mjs) comparar com as
+// cobranças em aberto.
 //
 // O que grava (só em cobranças em aberto, e só estes campos):
 //   - bate com a planilha  -> conferidoEm = hoje (o app mostra "conferido hoje")
@@ -12,9 +13,9 @@
 // Nunca muda valor, prazo nem marca como "Paga" sozinho.
 //
 // Roda dentro do cron diário (api/cron/sync-catalogo.js). Variáveis de ambiente:
-//   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, ANTHROPIC_API_KEY, MEUS_NOMES
+//   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, GEMINI_API_KEY, MEUS_NOMES
 //   OWNER_ID  uuid da sua conta: Supabase > Authentication > Users > User UID
-import Anthropic from "@anthropic-ai/sdk";
+import { gerarJson } from "./ia.mjs";
 
 const ABERTAS = ["Pendente", "A confirmar", "Aguardando a GOM", "Não liberado"];
 const MAX_CHARS = 120000;
@@ -109,28 +110,23 @@ async function rest(url, key, path, opts = {}) {
   return opts.method === "PATCH" ? null : r.json();
 }
 
-async function conferirCeg(client, { nomeCeg, planilha, cobs, nomes }) {
+async function conferirCeg({ nomeCeg, planilha, cobs, nomes }) {
   const abas = linhasDela(await baixarPlanilha(planilha), nomes);
   if (!abas.length) return { resultados: cobs.map((c) => ({ id: c.id, resultado: "nao_encontrada", nota: "" })), semNome: true };
   const lista = cobs.map((c) => `- id ${c.id}: ${c.data.referente || "(sem título)"} | ${c.data.tipo || ""} | ${brl(c.data.valor)} | status ${c.data.status} | prazo ${c.data.prazo || "—"}`).join("\n");
-  const r = await client.beta.messages.create({
-    model: "claude-sonnet-5-5",
-    max_tokens: 4000,
-    output_config: { format: { type: "json_schema", schema: SCHEMA } },
+  const { json } = await gerarJson({
     system: SYSTEM,
-    messages: [{
-      role: "user",
-      content: `CEG: ${nomeCeg}\n\n${abas.map((a) => `Aba "${a.aba}" — cabeçalho:\n${a.cabecalho}\nLinhas dela:\n${a.dela.join("\n")}`).join("\n\n").slice(0, MAX_CHARS)}\n\nCobranças anotadas:\n${lista}`,
-    }],
+    schema: SCHEMA,
+    maxTokens: 4000,
+    texto: `CEG: ${nomeCeg}\n\n${abas.map((a) => `Aba "${a.aba}" — cabeçalho:\n${a.cabecalho}\nLinhas dela:\n${a.dela.join("\n")}`).join("\n\n").slice(0, MAX_CHARS)}\n\nCobranças anotadas:\n${lista}`,
   });
-  const json = r.content.filter((b) => b.type === "text").map((b) => b.text).join("");
-  return JSON.parse(json);
+  return json;
 }
 
 export async function conferirCobrancas(url, key, ownerId, { nomes, hoje = hojeBR() } = {}) {
   if (!ownerId) throw new Error("Falta OWNER_ID (uuid da sua conta no Supabase).");
   if (!nomes?.length) throw new Error("Falta MEUS_NOMES.");
-  const client = new Anthropic();
+  if (!process.env.GEMINI_API_KEY) throw new Error("Falta GEMINI_API_KEY.");
   const docs = await rest(url, key, `docs?owner=eq.${ownerId}&col=in.(cobrancas,cegs)&select=col,id,data&limit=5000`);
   const planilhas = new Map(docs.filter((d) => d.col === "cegs" && d.data.planilha).map((d) => [d.data.nome, d.data.planilha]));
   const abertas = docs.filter((d) => d.col === "cobrancas" && ABERTAS.includes(d.data.status));
@@ -151,7 +147,7 @@ export async function conferirCobrancas(url, key, ownerId, { nomes, hoje = hojeB
     // O paboracha não é planilha: tem conferência própria (conferir-paboracha.mjs).
     if (/paboracha\.com/i.test(planilha)) { resumo.paboracha = (resumo.paboracha || 0) + cobs.length; return; }
     try {
-      const { resultados } = await conferirCeg(client, { nomeCeg, planilha, cobs, nomes });
+      const { resultados } = await conferirCeg({ nomeCeg, planilha, cobs, nomes });
       for (const res of resultados) {
         const c = cobs.find((x) => x.id === res.id);
         if (!c) continue;
@@ -173,7 +169,7 @@ export async function conferirCobrancas(url, key, ownerId, { nomes, hoje = hojeB
   }));
 
   // Relê cada cobrança logo antes de gravar e só mexe nos campos da conferência,
-  // pra não apagar uma edição que a usuária tenha feito enquanto o Claude lia as
+  // pra não apagar uma edição que a usuária tenha feito enquanto a IA lia as
   // planilhas. Se ela marcou como paga nesse meio tempo, não mexe.
   for (const p of patches) {
     const filtro = `docs?owner=eq.${ownerId}&col=eq.cobrancas&id=eq.${encodeURIComponent(p.id)}`;

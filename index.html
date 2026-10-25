@@ -2182,8 +2182,8 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&cf.zoom&&ui.tab==="
 // ---------- O que devo: visão simples, só onde/quem/quanto ----------
 const DEVO_ST=["Pendente","A confirmar"];
 // ---------- caixa de entrada (Telegram e paboracha) ----------
-// Cada mensagem mandada pro bot vira um item em "caixa", com as sugestões que o
-// Claude leu. A conferência diária do paboracha também deixa sugestões aqui
+// Cada mensagem mandada pro bot vira um item em "caixa", com as sugestões que a
+// IA leu (origem "whatsapp" = rodada de leitura dos grupos). A conferência diária do paboracha também deixa sugestões aqui
 // (registro.acao diz o que muda numa cobrança que já existe, em registro.alvo).
 // Nada muda sem ela tocar em "aceitar".
 const ACAO={paga:"marcar como paga",cancelada:"marcar como cancelada",valor:"valor novo",prazo:"prazo novo",ligar:"é a mesma?"};
@@ -2197,7 +2197,7 @@ function caixaHtml(){
     <div class="dvv ${typeof r.valor==="number"?"":"sem"}">${typeof r.valor==="number"?brl(r.valor):"sem valor"}</div>
     ${r.trecho?`<div class="dvnota">“${esc(r.trecho)}”</div>`:""}${r.duvidas?`<div class="dvnota" style="background:var(--warn-bg);color:var(--warn)">Conferir: ${esc(r.duvidas)}</div>`:""}
     ${canWrite?`<div class="dvact"><button type="button" class="btn small" data-cx="${esc(c.id)}" data-cxi="${i}" data-cxa="aceitar">aceitar</button><button type="button" class="btn ghost small" data-cx="${esc(c.id)}" data-cxi="${i}" data-cxa="descartar">descartar</button></div>`:""}</div></div>`;
-  return `<section class="cxbox"><div class="dvcom"><h3>Sugestões pra conferir</h3></div>${cs.map(c=>`<article class="dv"><div class="dvmain"><div class="dvt"><b>${esc((c.origem==="paboracha"?"Paboracha":"Telegram")+" · "+quando(c.recebidoEm))}</b><small>${esc(c.estado==="erro"?"não consegui ler: "+(c.erro||""):c.estado==="lendo"?"lendo…":c.origem==="paboracha"?"":(c.resumo||""))}</small></div>
+  return `<section class="cxbox"><div class="dvcom"><h3>Sugestões pra conferir</h3></div>${cs.map(c=>`<article class="dv"><div class="dvmain"><div class="dvt"><b>${esc(({paboracha:"Paboracha",whatsapp:"WhatsApp"}[c.origem]||"Telegram")+" · "+quando(c.recebidoEm))}</b><small>${esc(c.estado==="erro"?"não consegui ler: "+(c.erro||""):c.estado==="lendo"?"lendo…":c.origem==="paboracha"?"":(c.resumo||""))}</small></div>
     ${c.estado!=="lida"&&canWrite?`<div class="dvact" style="grid-column:auto"><button type="button" class="btn ghost small" data-cx="${esc(c.id)}" data-cxa="arquivar">arquivar</button></div>`:""}</div>
     ${c.texto?`<div class="dvmain" style="padding-top:0"><div class="dvnota">${esc(c.texto)}</div></div>`:""}${(c.registros||[]).map((r,i)=>reg(c,r,i)).join("")}</article>`).join("")}</section>`;
 }

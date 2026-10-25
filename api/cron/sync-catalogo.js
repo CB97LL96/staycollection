@@ -57,12 +57,12 @@ export default async function handler(req, res) {
   if (req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) return res.status(401).end();
   const out = {};
   try { out.catalogo = await sincronizarCatalogo(); } catch (e) { console.error(e); out.catalogo = { erro: e.message }; }
-  if (process.env.OWNER_ID && process.env.ANTHROPIC_API_KEY) {
+  if (process.env.OWNER_ID && process.env.GEMINI_API_KEY) {
     try {
       const nomes = (process.env.MEUS_NOMES || "").split(",").map((s) => s.trim()).filter(Boolean);
       out.cobrancas = await conferirCobrancas(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, process.env.OWNER_ID, { nomes });
     } catch (e) { console.error(e); out.cobrancas = { erro: e.message }; }
-  } else out.cobrancas = { pulado: "falta OWNER_ID ou ANTHROPIC_API_KEY" };
+  } else out.cobrancas = { pulado: "falta OWNER_ID ou GEMINI_API_KEY" };
   if (process.env.OWNER_ID && process.env.PABORACHA_PERFIL) {
     try {
       out.paboracha = await conferirPaboracha(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, process.env.OWNER_ID, { perfil: process.env.PABORACHA_PERFIL });

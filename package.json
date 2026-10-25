@@ -12,6 +12,6 @@
     "melhorar-fotos": "node scripts/melhorar-fotos.mjs"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.132.1"
+    "@google/genai": "^2.31.0"
   }
 }

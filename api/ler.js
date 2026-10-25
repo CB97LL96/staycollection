@@ -1,11 +1,10 @@
 // Lê uma mensagem ou print (WhatsApp, planilha, site da GOM) e sugere
 // registros pro app: cobranças, itens, envios e repasses.
 // Roda no Vercel. Variáveis de ambiente (Vercel > Settings > Environment Variables):
-//   ANTHROPIC_API_KEY  chave da API do Claude
+//   GEMINI_API_KEY  chave do Google AI Studio (ver scripts/ia.mjs)
 //   SUPABASE_URL, SUPABASE_ANON_KEY  os mesmos do config.js
 //   ALLOWED_EMAILS  e-mails que podem usar, separados por vírgula
 //   MEUS_NOMES  como você aparece nas planilhas e grupos, separados por vírgula
-import Anthropic from "@anthropic-ai/sdk";
 import { lerFonte, IMAGENS } from "../scripts/ler-core.mjs";
 
 async function permitido(req){
@@ -34,10 +33,9 @@ export default async function handler(req, res){
   } catch (e) {
     if (e.codigo === "recusa") return res.status(422).json({ erro: e.message });
     if (e.codigo === "grande_demais") return res.status(422).json({ erro: e.message + " Tente um trecho menor." });
-    if (e instanceof Anthropic.RateLimitError) return res.status(429).json({ erro: "Muitas leituras seguidas. Espere um pouco e tente de novo." });
-    if (e instanceof Anthropic.AuthenticationError) return res.status(500).json({ erro: "A chave da API do Claude no Vercel está errada ou faltando." });
-    if (e instanceof Anthropic.BadRequestError) return res.status(400).json({ erro: "A API recusou o pedido: " + e.message });
-    if (e instanceof Anthropic.APIError) return res.status(502).json({ erro: `A API do Claude falhou (${e.status}). Tente de novo.` });
+    if (e.codigo === "limite") return res.status(429).json({ erro: e.message });
+    if (e.codigo === "sem_chave" || e.codigo === "chave_errada") return res.status(500).json({ erro: e.message });
+    if (typeof e.status === "number") return res.status(502).json({ erro: `A API do Gemini falhou (${e.status}). Tente de novo.` });
     console.error(e);
     return res.status(500).json({ erro: "Erro inesperado na leitura." });
   }

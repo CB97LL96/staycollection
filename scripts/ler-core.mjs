@@ -1,10 +1,8 @@
-// Leitura de uma fonte (mensagem, conversa exportada ou print) pelo Claude:
-// devolve sugestões de cobranças, itens, envios e repasses, pra ela conferir
-// antes de salvar. Usado pelo api/ler.js (página de teste) e pelo
-// api/telegram.js (caixa de entrada do Telegram).
-import Anthropic from "@anthropic-ai/sdk";
-
-const client = new Anthropic();
+// Leitura de uma fonte (mensagem, conversa exportada ou print) pela IA (Gemini,
+// ver scripts/ia.mjs): devolve sugestões de cobranças, itens, envios e
+// repasses, pra ela conferir antes de salvar. Usado pelo api/ler.js (página de
+// teste) e pelo api/telegram.js (caixa de entrada do Telegram).
+import { gerarJson } from "./ia.mjs";
 
 const texto = { type: "string" };
 const REGISTRO = {
@@ -57,14 +55,14 @@ Você recebe uma fonte (texto colado, conversa exportada ou imagem) e devolve os
 
 export const IMAGENS = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
-// imagens: [{ tipo, dados (base64) }]. Lança Anthropic.APIError nos erros da API
-// e Error com .codigo ("recusa" | "grande_demais") nos outros.
+// imagens: [{ tipo, dados (base64) }]. Lança Error com .codigo
+// ("recusa" | "grande_demais" | "limite" | "sem_chave" | "chave_errada"; ver ia.mjs).
 export async function lerFonte({ fonte = "", imagens = [], contexto = {} }) {
-  const content = [];
-  for (const im of imagens) content.push({ type: "image", source: { type: "base64", media_type: im.tipo, data: im.dados } });
-  content.push({
-    type: "text",
-    text: [
+  const { json, modelo, uso } = await gerarJson({
+    system: SYSTEM,
+    schema: SCHEMA,
+    imagens,
+    texto: [
       `Hoje: ${contexto.hoje || new Date().toISOString().slice(0, 10)}`,
       `Meus nomes: ${process.env.MEUS_NOMES || "(não configurado)"}`,
       `Comunidades conhecidas: ${(contexto.comunidades || []).join("; ") || "(nenhuma)"}`,
@@ -73,17 +71,5 @@ export async function lerFonte({ fonte = "", imagens = [], contexto = {} }) {
       fonte.trim() ? `<fonte>\n${fonte}\n</fonte>` : "A fonte é a imagem acima.",
     ].join("\n"),
   });
-  const r = await client.beta.messages.create({
-    model: "claude-opus-5-5",
-    max_tokens: 16000,
-    betas: ["server-side-fallback-2026-07-01"],
-    fallbacks: "default",
-    output_config: { effort: "medium", format: { type: "json_schema", schema: SCHEMA } },
-    system: SYSTEM,
-    messages: [{ role: "user", content }],
-  });
-  if (r.stop_reason === "refusal") throw Object.assign(new Error("O Claude não quis ler essa fonte."), { codigo: "recusa" });
-  if (r.stop_reason === "max_tokens") throw Object.assign(new Error("A fonte é grande demais pra uma leitura só."), { codigo: "grande_demais" });
-  const json = r.content.filter(b => b.type === "text").map(b => b.text).join("");
-  return { ...JSON.parse(json), modelo: r.model, uso: r.usage };
+  return { ...json, modelo, uso };
 }

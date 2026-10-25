@@ -1,6 +1,6 @@
 // Caixa de entrada pelo Telegram: tudo que a Lari manda pro bot (texto, print,
-// conversa exportada do WhatsApp em .txt) é guardado no Supabase e lido pelo
-// Claude na hora. O resultado vira SUGESTÃO na aba "O que devo" do app: nada
+// conversa exportada do WhatsApp em .txt) é guardado no Supabase e lido pela
+// IA (Gemini, scripts/ia.mjs) na hora. O resultado vira SUGESTÃO na aba "O que devo" do app: nada
 // vira cobrança sem ela aceitar lá.
 //
 // Variáveis de ambiente (Vercel > Settings > Environment Variables):
@@ -9,7 +9,7 @@
 //                       mensagem, e assim ninguém mais consegue usar este endereço)
 //   TELEGRAM_CHAT_ID    o código do seu chat com o bot. Se faltar, o bot responde
 //                       dizendo qual é, pra você colar aqui.
-//   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, OWNER_ID, ANTHROPIC_API_KEY, MEUS_NOMES
+//   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, OWNER_ID, GEMINI_API_KEY, MEUS_NOMES
 import { lerFonte, IMAGENS } from "../scripts/ler-core.mjs";
 
 const TG = (m) => `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/${m}`;

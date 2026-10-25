@@ -23,7 +23,8 @@ este arquivo diz **o que já está pronto e o que vem depois**.
   3. conferência do paboracha pela API pública (`scripts/conferir-paboracha.mjs`).
 - Bot do Telegram (`api/telegram.js`): ela manda texto, print ou o .txt exportado
   do WhatsApp, e as sugestões aparecem na aba "O que devo".
-- Leitura com o Claude num lugar só (`scripts/ler-core.mjs`), usada pelo bot e
+- Leitura com IA num lugar só (`scripts/ler-core.mjs`, chamando o Gemini grátis
+  por `scripts/ia.mjs`; trocado do Claude em 25/10/2026), usada pelo bot e
   pelo `ler.html`.
 
 ## Próximos passos (em ordem)

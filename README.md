@@ -10,7 +10,7 @@ Começou como o artefato "Coleção SKZ" no claude.ai e está sendo migrado para
 - `backend.js` e `config.js`: ligam o app ao Supabase (banco, login com Google e fotos).
 - `supabase/schema.sql`: cria o banco. Roda uma vez no SQL Editor do Supabase.
 - `importar.html`: importa o backup exportado do artefato do claude.ai.
-- `ler.html` e `api/ler.js`: teste da leitura de mensagens e prints pela API do Claude.
+- `ler.html` e `api/ler.js`: teste da leitura de mensagens e prints pela IA (Gemini, `scripts/ia.mjs`).
 - `colecao.json`: catálogo de photocards. **Gerado automaticamente** a partir
   do Supabase (tabela `catalogo_itens`) + `data/catalogo-fotos.json` (as
   folhas de fotos, que não mudam de fonte) — não editar à mão, veja
@@ -41,7 +41,9 @@ Começou como o artefato "Coleção SKZ" no claude.ai e está sendo migrado para
 ### 2. Vercel
 1. Importar este repositório (sem build, sem framework).
 2. Settings > Environment Variables:
-   - `ANTHROPIC_API_KEY`: chave da API do Claude (console.anthropic.com)
+   - `GEMINI_API_KEY`: chave do Google AI Studio (aistudio.google.com > Get API key).
+     Na cota grátis, o Google pode usar o que for enviado pra melhorar os produtos dele.
+     Opcional: `GEMINI_MODEL` (padrão `gemini-3.8-flash`).
    - `SUPABASE_URL` e `SUPABASE_ANON_KEY`: os mesmos do `config.js`
    - `ALLOWED_EMAILS`: o seu e-mail (quem pode usar a leitura)
    - `MEUS_NOMES`: como você aparece nas planilhas e grupos, separado por vírgula
@@ -111,8 +113,8 @@ export SUPABASE_SERVICE_ROLE_KEY="..." # idem, chave service_role (secreta)
 
 Tudo que você manda pro seu bot do Telegram (texto, print, conversa exportada
 do WhatsApp em .txt) é guardado no Supabase (`docs`, coleção `caixa`) e lido
-pelo Claude na hora (`api/telegram.js`, mesma leitura do `ler.html`, em
-`scripts/ler-core.mjs`). As sugestões aparecem no topo da aba **O que devo**,
+pelo Gemini na hora (`api/telegram.js`, mesma leitura do `ler.html`, em
+`scripts/ler-core.mjs` e `scripts/ia.mjs`). As sugestões aparecem no topo da aba **O que devo**,
 com a citação da mensagem; nada vira cobrança sem você tocar em **aceitar**.
 
 Configurar (uma vez):
@@ -131,7 +133,7 @@ Configurar (uma vez):
 O paboracha tem uma API pública com as cobranças de cada perfil
 (`https://paboracha.com.br/api/v1/profiles/PERFIL/charges`). O cron diário
 (`api/cron/sync-catalogo.js` → `scripts/conferir-paboracha.mjs`) compara com as
-cobranças do app, sem usar o Claude:
+cobranças do app, sem usar IA:
 
 - cobrança ligada (campo `paboId`) e tudo igual → marca **conferido hoje**;
 - pagou lá, mudou valor ou prazo, ou apareceu cobrança nova → deixa uma
