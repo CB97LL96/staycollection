@@ -15,6 +15,7 @@
 //                  configurados em vercel.json (ver "Securing cron jobs"
 //                  na documentação da Vercel)
 import { conferirCobrancas } from "../../scripts/conferir-cobrancas.mjs";
+import { conferirPaboracha } from "../../scripts/conferir-paboracha.mjs";
 import { buscarNovosCraftenSKZ, supabaseIdsConhecidos, supabaseInserirItens, gerarColecaoJson } from "../../scripts/catalogo-core.mjs";
 
 async function comitarNoGithub(repo, token, conteudo) {
@@ -48,9 +49,9 @@ async function sincronizarCatalogo() {
   return { novos: novos.length, itens: novos.map((i) => i.i) };
 }
 
-// Este cron roda todo dia e faz duas coisas independentes: o catálogo e a
-// conferência das cobranças com as planilhas das GOMs (scripts/conferir-cobrancas.mjs).
-// Uma falhar não impede a outra. (Plano Hobby da Vercel: máximo 2 crons, por isso
+// Este cron roda todo dia e faz três coisas independentes: o catálogo, a
+// conferência das cobranças com as planilhas das GOMs (scripts/conferir-cobrancas.mjs)
+// e com o paboracha (scripts/conferir-paboracha.mjs). Uma falhar não impede as outras. (Plano Hobby da Vercel: máximo 2 crons, por isso
 // a conferência entra aqui em vez de ter um cron só dela.)
 export default async function handler(req, res) {
   if (req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) return res.status(401).end();
@@ -62,6 +63,11 @@ export default async function handler(req, res) {
       out.cobrancas = await conferirCobrancas(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, process.env.OWNER_ID, { nomes });
     } catch (e) { console.error(e); out.cobrancas = { erro: e.message }; }
   } else out.cobrancas = { pulado: "falta OWNER_ID ou ANTHROPIC_API_KEY" };
+  if (process.env.OWNER_ID && process.env.PABORACHA_PERFIL) {
+    try {
+      out.paboracha = await conferirPaboracha(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, process.env.OWNER_ID, { perfil: process.env.PABORACHA_PERFIL });
+    } catch (e) { console.error(e); out.paboracha = { erro: e.message }; }
+  } else out.paboracha = { pulado: "falta OWNER_ID ou PABORACHA_PERFIL" };
   const falhou = Object.values(out).some((v) => v && v.erro);
   return res.status(falhou ? 500 : 200).json(out);
 }

@@ -2181,20 +2181,23 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&cf.zoom&&ui.tab==="
 
 // ---------- O que devo: visão simples, só onde/quem/quanto ----------
 const DEVO_ST=["Pendente","A confirmar"];
-// ---------- caixa de entrada (Telegram) ----------
+// ---------- caixa de entrada (Telegram e paboracha) ----------
 // Cada mensagem mandada pro bot vira um item em "caixa", com as sugestões que o
-// Claude leu. Nada vira cobrança sem ela tocar em "aceitar".
+// Claude leu. A conferência diária do paboracha também deixa sugestões aqui
+// (registro.acao diz o que muda numa cobrança que já existe, em registro.alvo).
+// Nada muda sem ela tocar em "aceitar".
+const ACAO={paga:"marcar como paga",cancelada:"marcar como cancelada",valor:"valor novo",prazo:"prazo novo",ligar:"é a mesma?"};
 const DESTINO={cobrancas:"cobrança",itens:"item",envios:"envio",repasses:"repasse"};
 function caixaPendentes(){return [...caixa].map(([id,c])=>({id,...c})).filter(c=>c.estado==="erro"||c.estado==="lendo"||(c.registros||[]).some(r=>r.estado==="pendente")).sort((a,b)=>String(b.recebidoEm).localeCompare(String(a.recebidoEm)));}
 function caixaHtml(){
   const cs=caixaPendentes(); if(!cs.length)return "";
   const quando=t=>{try{return new Date(t).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}catch(e){return ""}};
-  const reg=(c,r,i)=>r.estado!=="pendente"?"":`<div class="cxr"><div class="dvmain"><div class="dvt"><b>${esc(r.referente||"(sem título)")} <span class="dvtag" style="background:var(--info-bg);color:var(--info)">${esc(DESTINO[r.destino]||r.destino)}</span>${r.confianca!=="alta"?`<span class="dvtag">confiança ${esc(r.confianca)}</span>`:""}</b>
+  const reg=(c,r,i)=>r.estado!=="pendente"?"":`<div class="cxr"><div class="dvmain"><div class="dvt"><b>${esc(r.referente||"(sem título)")} <span class="dvtag" style="background:var(--info-bg);color:var(--info)">${esc(ACAO[r.acao]||DESTINO[r.destino]||r.destino)}</span>${r.confianca!=="alta"?`<span class="dvtag">confiança ${esc(r.confianca)}</span>`:""}</b>
     <small>${[r.comunidade,r.ceg&&"CEG: "+r.ceg,r.prazo&&"prazo "+fd(r.prazo),r.pix&&"pix: "+r.pix].filter(Boolean).map(esc).join(" · ")}</small></div>
     <div class="dvv ${typeof r.valor==="number"?"":"sem"}">${typeof r.valor==="number"?brl(r.valor):"sem valor"}</div>
     ${r.trecho?`<div class="dvnota">“${esc(r.trecho)}”</div>`:""}${r.duvidas?`<div class="dvnota" style="background:var(--warn-bg);color:var(--warn)">Conferir: ${esc(r.duvidas)}</div>`:""}
     ${canWrite?`<div class="dvact"><button type="button" class="btn small" data-cx="${esc(c.id)}" data-cxi="${i}" data-cxa="aceitar">aceitar</button><button type="button" class="btn ghost small" data-cx="${esc(c.id)}" data-cxi="${i}" data-cxa="descartar">descartar</button></div>`:""}</div></div>`;
-  return `<section class="cxbox"><div class="dvcom"><h3>Chegou pelo Telegram</h3></div>${cs.map(c=>`<article class="dv"><div class="dvmain"><div class="dvt"><b>${esc(quando(c.recebidoEm))}</b><small>${esc(c.estado==="erro"?"não consegui ler: "+(c.erro||""):c.estado==="lendo"?"lendo…":(c.resumo||""))}</small></div>
+  return `<section class="cxbox"><div class="dvcom"><h3>Sugestões pra conferir</h3></div>${cs.map(c=>`<article class="dv"><div class="dvmain"><div class="dvt"><b>${esc((c.origem==="paboracha"?"Paboracha":"Telegram")+" · "+quando(c.recebidoEm))}</b><small>${esc(c.estado==="erro"?"não consegui ler: "+(c.erro||""):c.estado==="lendo"?"lendo…":c.origem==="paboracha"?"":(c.resumo||""))}</small></div>
     ${c.estado!=="lida"&&canWrite?`<div class="dvact" style="grid-column:auto"><button type="button" class="btn ghost small" data-cx="${esc(c.id)}" data-cxa="arquivar">arquivar</button></div>`:""}</div>
     ${c.texto?`<div class="dvmain" style="padding-top:0"><div class="dvnota">${esc(c.texto)}</div></div>`:""}${(c.registros||[]).map((r,i)=>reg(c,r,i)).join("")}</article>`).join("")}</section>`;
 }
@@ -2210,7 +2213,12 @@ $("#view").addEventListener("click",async e=>{const b=e.target.closest("[data-cx
   try{
     if(acao==="arquivar"){ await db.doc("caixa/"+id).update({estado:"arquivada"}); toast("Arquivada"); return; }
     const i=Number(b.dataset.cxi), regs=(c.registros||[]).map(r=>({...r})), r=regs[i]; if(!r)return;
-    if(acao==="aceitar"){ const col=DESTINO[r.destino]?r.destino:"cobrancas"; await db.collection(col).add(registroParaDoc(r,c)); r.estado="aceito"; toast("Adicionado em "+(COLS[col]?COLS[col].label:col)); }
+    if(acao==="aceitar"&&r.acao&&r.acao!=="nova"){
+      if(!r.alvo||!list("cobrancas").some(d=>d.id===r.alvo)){ b.disabled=false; toast("Essa cobrança não existe mais no app; descarte a sugestão"); return; }
+      const patch=r.acao==="paga"?{status:"Paga",pagoEm:r.pagoEm||isoToday()}:r.acao==="cancelada"?{status:"Cancelada"}:r.acao==="valor"?{valor:r.valor}:r.acao==="prazo"?{prazo:r.prazo}
+        :{paboId:r.novo&&r.novo.paboId,valor:r.valor,...(r.prazo?{prazo:r.prazo}:{})};
+      await db.doc("cobrancas/"+r.alvo).update({...patch,conferidoEm:isoToday()}); r.estado="aceito"; toast("Cobrança atualizada"); }
+    else if(acao==="aceitar"){ const col=DESTINO[r.destino]?r.destino:"cobrancas"; await db.collection(col).add(r.novo?{...r.novo,aviso:isoToday(),conferidoEm:isoToday()}:registroParaDoc(r,c)); r.estado="aceito"; toast("Adicionado em "+(COLS[col]?COLS[col].label:col)); }
     else { r.estado="descartado"; toast("Descartado"); }
     await db.doc("caixa/"+id).update({registros:regs});
   }catch(err){ b.disabled=false; toast("Não deu pra salvar; tente de novo"); }

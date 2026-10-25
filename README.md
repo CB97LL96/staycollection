@@ -126,6 +126,23 @@ Configurar (uma vez):
    crie `TELEGRAM_CHAT_ID` na Vercel com ele e faça outro redeploy. Só esse
    chat é atendido.
 
+## Conferência diária do paboracha
+
+O paboracha tem uma API pública com as cobranças de cada perfil
+(`https://paboracha.com.br/api/v1/profiles/PERFIL/charges`). O cron diário
+(`api/cron/sync-catalogo.js` → `scripts/conferir-paboracha.mjs`) compara com as
+cobranças do app, sem usar o Claude:
+
+- cobrança ligada (campo `paboId`) e tudo igual → marca **conferido hoje**;
+- pagou lá, mudou valor ou prazo, ou apareceu cobrança nova → deixa uma
+  **sugestão** na aba **O que devo** (junto das do Telegram). Se já existe no
+  app uma cobrança parecida (mesmo valor, membro/CEG), a sugestão é **ligar**
+  as duas, pra não repetir.
+
+Nada muda sem você aceitar. Cada sugestão tem id fixo, então uma descartada
+não volta. Configurar: crie `PABORACHA_PERFIL` na Vercel com o fim do link do
+seu perfil e faça um redeploy.
+
 ## Rodar localmente
 
 ```sh
