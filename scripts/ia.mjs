@@ -15,8 +15,9 @@
 import { GoogleGenAI, ApiError } from "@google/genai";
 
 export const MODELO_PADRAO = "gemini-3.8-flash";
-// Reserva quando o principal está lotado (também está na cota grátis).
-export const MODELO_RESERVA = "gemini-2.5-flash";
+// Reservas quando o principal está lotado (também na cota grátis). A família
+// 2.5 não está mais disponível para contas novas (404).
+export const MODELOS_RESERVA = ["gemini-3.6-flash", "gemini-3.5-flash-lite"];
 const RECUSA = ["SAFETY", "PROHIBITED_CONTENT", "BLOCKLIST", "SPII", "RECITATION", "IMAGE_SAFETY"];
 
 let cliente = null;
@@ -33,9 +34,9 @@ export async function gerarJson({ system, texto, imagens = [], schema, maxTokens
   const parts = imagens.map((im) => ({ inlineData: { mimeType: im.tipo, data: im.dados } }));
   parts.push({ text: texto });
   // Tenta o modelo principal e, se ele estiver lotado (503/500), fora do ar ou
-  // demorar, o modelo reserva. Cada um tem 50 s, pra caber nos 120 s da função.
-  const modelos = [...new Set([process.env.GEMINI_MODEL || MODELO_PADRAO, MODELO_RESERVA])];
-  let r, ultimo;
+  // demorar, os modelos reserva. Cada um tem 35 s, pra caber nos 120 s da função.
+  const modelos = [...new Set([process.env.GEMINI_MODEL || MODELO_PADRAO, ...MODELOS_RESERVA])];
+  let r; const falhas = [];
   for (const model of modelos) {
     try {
       r = await client().models.generateContent({
@@ -51,8 +52,8 @@ export async function gerarJson({ system, texto, imagens = [], schema, maxTokens
           thinkingConfig: /^gemini-2\./.test(model) ? { thinkingBudget: 1024 } : { thinkingLevel: "LOW" },
           // No máximo 2 tentativas por modelo (o padrão do SDK são 5, com
           // esperas de até 60 s, e a função morria no meio).
-          httpOptions: { timeout: 50000, retryOptions: { attempts: 2, initialDelay: 2, maxDelay: 5 } },
-          abortSignal: AbortSignal.timeout(52000),
+          httpOptions: { timeout: 33000, retryOptions: { attempts: 2, initialDelay: 1, maxDelay: 3 } },
+          abortSignal: AbortSignal.timeout(35000),
         },
       });
       break;
@@ -66,10 +67,10 @@ export async function gerarJson({ system, texto, imagens = [], schema, maxTokens
       const passageiro = (e instanceof ApiError && [500, 502, 503, 504, 404].includes(e.status))
         || (e && (e.name === "AbortError" || e.name === "TimeoutError" || /abort|timed? ?out|fetch failed/i.test(String(e.message))));
       if (!passageiro) throw e;
-      ultimo = e;
+      falhas.push(`${model}: ${e.status || e.name || "erro"}`);
     }
   }
-  if (!r) throw erro(`O Gemini está lotado ou demorando agora (${modelos.join(", ")}). Tente de novo daqui a pouco. Último erro: ${String(ultimo && ultimo.message).slice(0, 200)}`, "limite");
+  if (!r) throw erro(`O Gemini está lotado ou demorando agora (${falhas.join("; ")}). Tente de novo daqui a pouco.`, "limite");
   if (r.promptFeedback && r.promptFeedback.blockReason) throw erro("O Gemini não quis ler essa fonte.", "recusa");
   const fim = r.candidates && r.candidates[0] && r.candidates[0].finishReason;
   if (RECUSA.includes(fim)) throw erro("O Gemini não quis ler essa fonte.", "recusa");
