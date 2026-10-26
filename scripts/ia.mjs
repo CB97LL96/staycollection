@@ -40,11 +40,19 @@ export async function gerarJson({ system, texto, imagens = [], schema, maxTokens
         responseMimeType: "application/json",
         responseJsonSchema: schema,
         maxOutputTokens: maxTokens,
+        // Raciocínio curto: extrair cobranças não precisa de mais, e a função
+        // da Vercel tem limite de 120 s.
+        thinkingConfig: { thinkingLevel: "LOW" },
+        // Prazo abaixo dos 120 s da função, e no máximo 2 tentativas (o padrão
+        // do SDK são 5, com esperas de até 60 s, e a função morria no meio).
+        httpOptions: { timeout: 80000, retryOptions: { attempts: 2, initialDelay: 2, maxDelay: 5 } },
+        abortSignal: AbortSignal.timeout(85000),
       },
     });
   } catch (e) {
+    if (e && (e.name === "AbortError" || e.name === "TimeoutError" || /abort|timed? ?out/i.test(String(e.message)))) throw erro("O Gemini demorou demais pra responder. Tente de novo daqui a pouco.", "limite");
     if (e instanceof ApiError) {
-      if (e.status === 429) throw erro("A cota grátis do Gemini acabou por agora. Tente de novo mais tarde.", "limite");
+      if (e.status === 429) throw erro(`A cota grátis do Gemini recusou o pedido (429): ${String(e.message).slice(0, 300)}`, "limite");
       // A mensagem do Google vai junto (sem a chave), pra saber se é chave
       // inválida, termos não aceitos no AI Studio ou modelo indisponível.
       if (e.status === 401 || e.status === 403 || (e.status === 400 && /api key/i.test(e.message))) throw erro(`A chave do Gemini foi recusada (${e.status}): ${String(e.message).slice(0, 300)}`, "chave_errada");
