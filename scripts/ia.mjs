@@ -15,6 +15,8 @@
 import { GoogleGenAI, ApiError } from "@google/genai";
 
 export const MODELO_PADRAO = "gemini-3.8-flash";
+// Reserva quando o principal está lotado (também está na cota grátis).
+export const MODELO_RESERVA = "gemini-2.5-flash";
 const RECUSA = ["SAFETY", "PROHIBITED_CONTENT", "BLOCKLIST", "SPII", "RECITATION", "IMAGE_SAFETY"];
 
 let cliente = null;
@@ -30,40 +32,49 @@ const erro = (msg, codigo) => Object.assign(new Error(msg), { codigo });
 export async function gerarJson({ system, texto, imagens = [], schema, maxTokens = 16000 }) {
   const parts = imagens.map((im) => ({ inlineData: { mimeType: im.tipo, data: im.dados } }));
   parts.push({ text: texto });
-  let r;
-  try {
-    r = await client().models.generateContent({
-      model: process.env.GEMINI_MODEL || MODELO_PADRAO,
-      contents: [{ role: "user", parts }],
-      config: {
-        systemInstruction: system,
-        responseMimeType: "application/json",
-        responseJsonSchema: schema,
-        maxOutputTokens: maxTokens,
-        // Raciocínio curto: extrair cobranças não precisa de mais, e a função
-        // da Vercel tem limite de 120 s.
-        thinkingConfig: { thinkingLevel: "LOW" },
-        // Prazo abaixo dos 120 s da função, e no máximo 2 tentativas (o padrão
-        // do SDK são 5, com esperas de até 60 s, e a função morria no meio).
-        httpOptions: { timeout: 80000, retryOptions: { attempts: 2, initialDelay: 2, maxDelay: 5 } },
-        abortSignal: AbortSignal.timeout(85000),
-      },
-    });
-  } catch (e) {
-    if (e && (e.name === "AbortError" || e.name === "TimeoutError" || /abort|timed? ?out/i.test(String(e.message)))) throw erro(`O Gemini demorou demais pra responder (${e.name}${e.status ? " " + e.status : ""}: ${String(e.message).slice(0, 300)}). Tente de novo daqui a pouco.`, "limite");
-    if (e instanceof ApiError) {
-      if (e.status === 429) throw erro(`A cota grátis do Gemini recusou o pedido (429): ${String(e.message).slice(0, 300)}`, "limite");
-      // A mensagem do Google vai junto (sem a chave), pra saber se é chave
-      // inválida, termos não aceitos no AI Studio ou modelo indisponível.
-      if (e.status === 401 || e.status === 403 || (e.status === 400 && /api key/i.test(e.message))) throw erro(`A chave do Gemini foi recusada (${e.status}): ${String(e.message).slice(0, 300)}`, "chave_errada");
+  // Tenta o modelo principal e, se ele estiver lotado (503/500), fora do ar ou
+  // demorar, o modelo reserva. Cada um tem 50 s, pra caber nos 120 s da função.
+  const modelos = [...new Set([process.env.GEMINI_MODEL || MODELO_PADRAO, MODELO_RESERVA])];
+  let r, ultimo;
+  for (const model of modelos) {
+    try {
+      r = await client().models.generateContent({
+        model,
+        contents: [{ role: "user", parts }],
+        config: {
+          systemInstruction: system,
+          responseMimeType: "application/json",
+          responseJsonSchema: schema,
+          maxOutputTokens: maxTokens,
+          // Raciocínio curto: extrair cobranças não precisa de mais. A família
+          // 2.5 usa orçamento em tokens; a 3 usa nível.
+          thinkingConfig: /^gemini-2\./.test(model) ? { thinkingBudget: 1024 } : { thinkingLevel: "LOW" },
+          // No máximo 2 tentativas por modelo (o padrão do SDK são 5, com
+          // esperas de até 60 s, e a função morria no meio).
+          httpOptions: { timeout: 50000, retryOptions: { attempts: 2, initialDelay: 2, maxDelay: 5 } },
+          abortSignal: AbortSignal.timeout(52000),
+        },
+      });
+      break;
+    } catch (e) {
+      if (e instanceof ApiError) {
+        if (e.status === 429) throw erro(`A cota grátis do Gemini recusou o pedido (429): ${String(e.message).slice(0, 300)}`, "limite");
+        // A mensagem do Google vai junto (sem a chave), pra saber se é chave
+        // inválida, termos não aceitos no AI Studio ou modelo indisponível.
+        if (e.status === 401 || e.status === 403 || (e.status === 400 && /api key/i.test(e.message))) throw erro(`A chave do Gemini foi recusada (${e.status}): ${String(e.message).slice(0, 300)}`, "chave_errada");
+      }
+      const passageiro = (e instanceof ApiError && [500, 502, 503, 504, 404].includes(e.status))
+        || (e && (e.name === "AbortError" || e.name === "TimeoutError" || /abort|timed? ?out|fetch failed/i.test(String(e.message))));
+      if (!passageiro) throw e;
+      ultimo = e;
     }
-    throw e;
   }
+  if (!r) throw erro(`O Gemini está lotado ou demorando agora (${modelos.join(", ")}). Tente de novo daqui a pouco. Último erro: ${String(ultimo && ultimo.message).slice(0, 200)}`, "limite");
   if (r.promptFeedback && r.promptFeedback.blockReason) throw erro("O Gemini não quis ler essa fonte.", "recusa");
   const fim = r.candidates && r.candidates[0] && r.candidates[0].finishReason;
   if (RECUSA.includes(fim)) throw erro("O Gemini não quis ler essa fonte.", "recusa");
   if (fim === "MAX_TOKENS") throw erro("A fonte é grande demais pra uma leitura só.", "grande_demais");
   const txt = r.text || "";
   if (!txt.trim()) throw erro("O Gemini devolveu uma resposta vazia.", "recusa");
-  return { json: JSON.parse(txt), modelo: r.modelVersion || process.env.GEMINI_MODEL || MODELO_PADRAO, uso: r.usageMetadata };
+  return { json: JSON.parse(txt), modelo: r.modelVersion || "", uso: r.usageMetadata };
 }
