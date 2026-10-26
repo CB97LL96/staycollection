@@ -70,7 +70,9 @@ async function rest(url, key, path, opts = {}) {
     headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json", ...(opts.headers || {}) },
   });
   if (!r.ok) throw new Error(`Supabase: HTTP ${r.status} ${await r.text()}`);
-  return r.status === 201 || r.status === 204 ? null : r.json();
+  // Com return=minimal, atualizar um registro que já existe volta 200 sem corpo.
+  const t = await r.text();
+  return t.trim() ? JSON.parse(t) : null;
 }
 
 // Compara e devolve { sugestoes: [{id, registro}], conferidas: [docId] }.
