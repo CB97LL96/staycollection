@@ -36,8 +36,9 @@ export async function gerarJson({ system, texto, imagens = [], schema, maxTokens
   // Tenta o modelo principal e, se ele estiver lotado (503/500), fora do ar ou
   // demorar, os modelos reserva. Cada um tem 35 s, pra caber nos 120 s da função.
   const modelos = [...new Set([process.env.GEMINI_MODEL || MODELO_PADRAO, ...MODELOS_RESERVA])];
-  let r; const falhas = [];
+  const falhas = [];
   for (const model of modelos) {
+    let r;
     try {
       r = await client().models.generateContent({
         model,
@@ -56,7 +57,6 @@ export async function gerarJson({ system, texto, imagens = [], schema, maxTokens
           abortSignal: AbortSignal.timeout(35000),
         },
       });
-      break;
     } catch (e) {
       if (e instanceof ApiError) {
         if (e.status === 429) throw erro(`A cota grátis do Gemini recusou o pedido (429): ${String(e.message).slice(0, 300)}`, "limite");
@@ -68,14 +68,18 @@ export async function gerarJson({ system, texto, imagens = [], schema, maxTokens
         || (e && (e.name === "AbortError" || e.name === "TimeoutError" || /abort|timed? ?out|fetch failed/i.test(String(e.message))));
       if (!passageiro) throw e;
       falhas.push(`${model}: ${e.status || e.name || "erro"}`);
+      continue;
     }
+    if (r.promptFeedback && r.promptFeedback.blockReason) throw erro("O Gemini não quis ler essa fonte.", "recusa");
+    const fim = r.candidates && r.candidates[0] && r.candidates[0].finishReason;
+    if (RECUSA.includes(fim)) throw erro("O Gemini não quis ler essa fonte.", "recusa");
+    const txt = r.text || "";
+    // Resposta cortada ou vazia: tenta o próximo modelo antes de desistir.
+    let json = null;
+    try { json = JSON.parse(txt); } catch (e) { json = null; }
+    if (json && typeof json === "object") return { json, modelo: r.modelVersion || model, uso: r.usageMetadata };
+    falhas.push(`${model}: resposta ${txt.trim() ? "incompleta" : "vazia"} (fim ${fim || "?"}, ${txt.length} caracteres)`);
+    if (fim === "MAX_TOKENS" && model === modelos[modelos.length - 1]) throw erro("A fonte é grande demais pra uma leitura só.", "grande_demais");
   }
-  if (!r) throw erro(`O Gemini está lotado ou demorando agora (${falhas.join("; ")}). Tente de novo daqui a pouco.`, "limite");
-  if (r.promptFeedback && r.promptFeedback.blockReason) throw erro("O Gemini não quis ler essa fonte.", "recusa");
-  const fim = r.candidates && r.candidates[0] && r.candidates[0].finishReason;
-  if (RECUSA.includes(fim)) throw erro("O Gemini não quis ler essa fonte.", "recusa");
-  if (fim === "MAX_TOKENS") throw erro("A fonte é grande demais pra uma leitura só.", "grande_demais");
-  const txt = r.text || "";
-  if (!txt.trim()) throw erro("O Gemini devolveu uma resposta vazia.", "recusa");
-  return { json: JSON.parse(txt), modelo: r.modelVersion || "", uso: r.usageMetadata };
+  throw erro(`O Gemini não conseguiu responder agora (${falhas.join("; ")}). Tente de novo daqui a pouco.`, "limite");
 }
