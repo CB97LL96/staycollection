@@ -45,7 +45,9 @@ export async function gerarJson({ system, texto, imagens = [], schema, maxTokens
   } catch (e) {
     if (e instanceof ApiError) {
       if (e.status === 429) throw erro("A cota grátis do Gemini acabou por agora. Tente de novo mais tarde.", "limite");
-      if (e.status === 401 || e.status === 403 || (e.status === 400 && /api key/i.test(e.message))) throw erro("A chave do Gemini na Vercel está errada.", "chave_errada");
+      // A mensagem do Google vai junto (sem a chave), pra saber se é chave
+      // inválida, termos não aceitos no AI Studio ou modelo indisponível.
+      if (e.status === 401 || e.status === 403 || (e.status === 400 && /api key/i.test(e.message))) throw erro(`A chave do Gemini foi recusada (${e.status}): ${String(e.message).slice(0, 300)}`, "chave_errada");
     }
     throw e;
   }
