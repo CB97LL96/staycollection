@@ -50,7 +50,7 @@ export async function gerarJson({ system, texto, imagens = [], schema, maxTokens
       },
     });
   } catch (e) {
-    if (e && (e.name === "AbortError" || e.name === "TimeoutError" || /abort|timed? ?out/i.test(String(e.message)))) throw erro("O Gemini demorou demais pra responder. Tente de novo daqui a pouco.", "limite");
+    if (e && (e.name === "AbortError" || e.name === "TimeoutError" || /abort|timed? ?out/i.test(String(e.message)))) throw erro(`O Gemini demorou demais pra responder (${e.name}${e.status ? " " + e.status : ""}: ${String(e.message).slice(0, 300)}). Tente de novo daqui a pouco.`, "limite");
     if (e instanceof ApiError) {
       if (e.status === 429) throw erro(`A cota grátis do Gemini recusou o pedido (429): ${String(e.message).slice(0, 300)}`, "limite");
       // A mensagem do Google vai junto (sem a chave), pra saber se é chave
