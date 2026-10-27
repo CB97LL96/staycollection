@@ -58,6 +58,46 @@ Começou como o artefato "Coleção SKZ" no claude.ai e está sendo migrado para
 ### 3. Dados
 Abrir `/importar.html` no site, entrar e escolher o arquivo de backup.
 
+## Como manter o app atualizado
+
+### O que atualiza sozinho
+Duas tarefas da Vercel (`vercel.json`), sem você fazer nada:
+
+| quando | o que faz |
+|---|---|
+| **todo dia, 10h (Brasília)** | 1. confere as cobranças com as **planilhas das GOMs** (lê todas as abas visíveis): marca "conferido hoje" ou deixa uma sugestão; 2. confere com o **paboracha** (API pública): pagou, mudou valor ou prazo, cobrança nova viram sugestão; 3. procura **itens novos no CraftenSKZ** e, se achar, atualiza o catálogo e republica o site |
+| **toda segunda, 11h** | reimporta a linha do tempo, a wiki (Season's Greetings e Merch) e os preços da POCA MALL |
+
+Nada muda valor nem marca como paga sem você tocar em **aceitar** na aba **Devo**.
+Cada passo carimba a hora em `meta/fontes`, e o topo do app mostra isso (veja abaixo).
+
+### O que NÃO atualiza sozinho (você manda)
+O WhatsApp. Não existe leitura automática dos grupos. Quando você tiver informação nova:
+
+1. **Exportar a conversa** (sem mídia) e mandar o `.txt` pro bot do Telegram. Também
+   vale mandar um print ou colar o texto.
+2. O bot responde "Li! N sugestões". Abra **Devo > Sugestões pra conferir** e
+   **aceite** ou **descarte** cada uma. Mandar a mesma coisa de novo não duplica:
+   o bot reconhece o conteúdo repetido e avisa.
+3. **Rodada pelos grupos com o Claude no navegador** (`docs/roteiro-whatsapp.md`): ele lê os grupos
+   do WhatsApp Web, gera o `.txt` só com o que importa e manda pro bot.
+4. **À mão:** botão **+ Adicionar** em qualquer aba, ou editar a cobrança. Planilha de
+   uma CEG: cole o link no campo "planilha" da CEG.
+
+### Quando mudar o código
+Cada `git push origin main` dispara um redeploy na Vercel (cerca de 1 minuto).
+Mudou variável de ambiente (por exemplo `MEUS_NOMES`)? Precisa de um redeploy
+para valer. `MEUS_NOMES` deve ter seus nomes como aparecem nas planilhas **e**
+seus ids de marcação do WhatsApp (número com 55 e o id longo), porque uma
+marcação (@) no WhatsApp Web vem como número, não como nome.
+
+### Quão atualizado está?
+No topo do app, uma etiqueta por fonte (planilhas, paboracha, WhatsApp, bot,
+catálogo): **verde** até 2 dias, **amarela** até 7, **vermelha** acima disso ou
+se a última leitura falhou. "WhatsApp até 25/10" é a data da última mensagem que
+passou pelo bot. Passe o mouse (ou toque) para ver a hora exata e o erro. Vermelho no
+WhatsApp quer dizer: está na hora de mandar um `.txt` novo pro bot.
+
 ## Catálogo: como atualizar
 
 O catálogo de photocards vive no Supabase (tabela `catalogo_itens`); o
