@@ -57,12 +57,21 @@ async function rest(path, opts = {}) {
   return t.trim() ? JSON.parse(t) : null;
 }
 
+import { createHash } from "node:crypto";
 import { marcarFonte } from "../scripts/fontes.mjs";
 const owner = () => process.env.OWNER_ID;
 const salvar = (id, data) => rest(`docs?on_conflict=owner,col,id`, {
   method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
   body: JSON.stringify({ owner: owner(), col: "caixa", id, data }),
 });
+
+// Anti-duplicata: a Lari pode mandar o mesmo arquivo/print mais de uma vez.
+// 1) mesmo conteúdo (hash do texto + imagens) já lido => nem chama a IA;
+// 2) sugestão com o mesmo trecho, destino e valor de uma já existente (inclusive
+//    aceita ou descartada) => não entra de novo.
+const norm = (t) => String(t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim().slice(0, 120);
+// Trecho vazio ou curto demais não serve de chave (acusaria duplicata à toa).
+const chaveRegistro = (r) => { const t = norm(r.trecho); return t.length < 15 ? null : `${r.destino}|${r.valor ?? ""}|${t}`; };
 
 async function contexto() {
   const docs = await rest(`docs?owner=eq.${owner()}&col=in.(comunidades,cegs)&select=col,data&limit=2000`);
@@ -115,15 +124,32 @@ export default async function handler(req, res) {
     }
     if (!fonte.trim() && !imagens.length) throw new Error("Não achei texto nem imagem nessa mensagem.");
 
+    const hash = createHash("sha1").update(fonte).update(imagens.map((i) => i.dados).join("")).digest("hex");
+    const igual = await rest(`docs?owner=eq.${owner()}&col=eq.caixa&data->>hash=eq.${hash}&data->>estado=eq.lida&id=neq.${id}&select=id&limit=1`);
+    if (igual.length) {
+      await rest(`docs?owner=eq.${owner()}&col=eq.caixa&id=eq.${id}`, { method: "DELETE", headers: { Prefer: "return=minimal" } }).catch(() => {});
+      await responder(chatId, "Já li exatamente isso antes. Não criei sugestão nova, então nada duplicou na aba \"O que devo\".");
+      return res.status(200).end();
+    }
+
     const r = await lerFonte({ fonte, imagens, contexto: await contexto() });
-    const registros = (r.registros || []).map((x) => ({ ...x, estado: "pendente" }));
-    await salvar(id, { ...base, estado: "lida", resumo: r.resumo, registros });
+    const antigas = await rest(`docs?owner=eq.${owner()}&col=eq.caixa&id=neq.${id}&select=data&limit=2000`);
+    const jaTem = new Set(antigas.flatMap((d) => ((d.data && d.data.registros) || []).map(chaveRegistro)).filter(Boolean));
+    const todos = (r.registros || []).map((x) => ({ ...x, estado: "pendente" }));
+    const registros = todos.filter((x) => { const k = chaveRegistro(x); if (!k) return true; if (jaTem.has(k)) return false; jaTem.add(k); return true; });
+    const repetidos = todos.length - registros.length;
+    await salvar(id, { ...base, hash, estado: "lida", resumo: r.resumo, registros, ...(repetidos ? { repetidos } : {}) });
     await marcarFonte(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, owner(), "bot", { nota: `${registros.length} sugestão(ões)` });
     if (ultimaMsg) await marcarFonte(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, owner(), "whatsapp", { nota: "conversa enviada ao bot", ate: ultimaMsg });
     const cob = registros.filter((x) => x.destino === "cobrancas");
     const total = cob.reduce((s, x) => s + (typeof x.valor === "number" ? x.valor : 0), 0);
+    if (repetidos && !registros.length) {
+      await rest(`docs?owner=eq.${owner()}&col=eq.caixa&id=eq.${id}`, { method: "DELETE", headers: { Prefer: "return=minimal" } }).catch(() => {});
+      await responder(chatId, `Li, mas as ${repetidos} sugestões já estavam na aba "O que devo" (ou já foram aceitas/descartadas). Não criei nada repetido.`);
+      return res.status(200).end();
+    }
     await responder(chatId, registros.length
-      ? `Li! ${registros.length} sugest${registros.length === 1 ? "ão" : "ões"}${cob.length ? ` (${cob.length} cobrança${cob.length === 1 ? "" : "s"}, R$ ${total.toFixed(2).replace(".", ",")})` : ""}. Confira e aceite na aba "O que devo" do app.`
+      ? `Li! ${registros.length} sugest${registros.length === 1 ? "ão" : "ões"}${cob.length ? ` (${cob.length} cobrança${cob.length === 1 ? "" : "s"}, R$ ${total.toFixed(2).replace(".", ",")})` : ""}${repetidos ? `; ${repetidos} já existia${repetidos === 1 ? "" : "m"} e foi${repetidos === 1 ? "" : "ram"} ignorada${repetidos === 1 ? "" : "s"}` : ""}. Confira e aceite na aba "O que devo" do app.`
       : `Li, mas não achei nada seu: ${r.resumo}`);
   } catch (e) {
     console.error(e);
