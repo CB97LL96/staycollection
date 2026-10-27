@@ -3,6 +3,13 @@
 Leia isto no começo de cada chat novo. O README explica como cada parte funciona;
 este arquivo diz **o que já está pronto e o que vem depois**.
 
+## Antes de mexer: sincronizar o Git
+O projeto existe em dois lugares: o Codespace (`/workspaces/staycollection`) e a
+pasta do computador. O Codespace é o que tem o login do GitHub e faz o push. Na
+pasta do computador, rode **`git pull`** antes de qualquer coisa (já está
+configurado para fazer rebase). Quem abrir um chat novo aqui: lembre a Lari
+disso na primeira mensagem, ela pediu pra não depender de memória.
+
 ## Regras do projeto
 - O repositório é **público**. Nada de dado pessoal no código: pix, nomes, grupos
   de WhatsApp, comprovantes, backups, `.env.local`, `_whatsapp/`, perfil do
