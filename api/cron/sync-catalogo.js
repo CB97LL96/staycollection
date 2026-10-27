@@ -15,6 +15,7 @@
 //                  configurados em vercel.json (ver "Securing cron jobs"
 //                  na documentação da Vercel)
 import { conferirCobrancas } from "../../scripts/conferir-cobrancas.mjs";
+import { marcarFonte } from "../../scripts/fontes.mjs";
 import { conferirPaboracha } from "../../scripts/conferir-paboracha.mjs";
 import { buscarNovosCraftenSKZ, supabaseIdsConhecidos, supabaseInserirItens, gerarColecaoJson } from "../../scripts/catalogo-core.mjs";
 
@@ -56,17 +57,21 @@ async function sincronizarCatalogo() {
 export default async function handler(req, res) {
   if (req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) return res.status(401).end();
   const out = {};
-  try { out.catalogo = await sincronizarCatalogo(); } catch (e) { console.error(e); out.catalogo = { erro: e.message }; }
+  const U = process.env.SUPABASE_URL, K = process.env.SUPABASE_SERVICE_ROLE_KEY, O = process.env.OWNER_ID;
+  try { out.catalogo = await sincronizarCatalogo(); await marcarFonte(U, K, O, "catalogo", { nota: `${out.catalogo.novos || 0} novo(s)` }); }
+  catch (e) { console.error(e); out.catalogo = { erro: e.message }; await marcarFonte(U, K, O, "catalogo", { erro: e.message }); }
   if (process.env.OWNER_ID && process.env.GEMINI_API_KEY) {
     try {
       const nomes = (process.env.MEUS_NOMES || "").split(",").map((s) => s.trim()).filter(Boolean);
       out.cobrancas = await conferirCobrancas(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, process.env.OWNER_ID, { nomes });
-    } catch (e) { console.error(e); out.cobrancas = { erro: e.message }; }
+      await marcarFonte(U, K, O, "planilhas", { nota: "cobranças x planilhas das GOMs" });
+    } catch (e) { console.error(e); out.cobrancas = { erro: e.message }; await marcarFonte(U, K, O, "planilhas", { erro: e.message }); }
   } else out.cobrancas = { pulado: "falta OWNER_ID ou GEMINI_API_KEY" };
   if (process.env.OWNER_ID && process.env.PABORACHA_PERFIL) {
     try {
       out.paboracha = await conferirPaboracha(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, process.env.OWNER_ID, { perfil: process.env.PABORACHA_PERFIL });
-    } catch (e) { console.error(e); out.paboracha = { erro: e.message }; }
+      await marcarFonte(U, K, O, "paboracha", { nota: "cobranças x paboracha" });
+    } catch (e) { console.error(e); out.paboracha = { erro: e.message }; await marcarFonte(U, K, O, "paboracha", { erro: e.message }); }
   } else out.paboracha = { pulado: "falta OWNER_ID ou PABORACHA_PERFIL" };
   const falhou = Object.values(out).some((v) => v && v.erro);
   return res.status(falhou ? 500 : 200).json(out);

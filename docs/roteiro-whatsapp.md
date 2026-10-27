@@ -47,6 +47,12 @@ Igual ao filtro do bot (`encolher` em `api/telegram.js` e
 `scripts/filtrar-whatsapp.mjs`):
 - mensagem que cita um dos nomes dela (variável `MEUS_NOMES` na Vercel; ela
   diz quais são) e a mensagem antes e depois;
+- **marcação por número**: no WhatsApp Web uma marcação (@) aparece como um
+  número (id), não como o nome. Por isso `MEUS_NOMES` também deve ter os ids
+  dela (o número do telefone com 55 e o id longo que aparece nas listas de
+  pendência). Ao gerar o `.txt` pelo navegador, trocar a marcação dos ids dela
+  por `@larimii`, para o filtro do bot achar. Conferir também as marcações
+  comparando com o id dela, não só com o nome;
 - aviso geral com valor em R$, pix, prazo, frete, taxa, multa,
   armazenamento, liberação, fechamento, comprovante;
 - planilha ou link de cobrança postado no grupo (anotar o link).

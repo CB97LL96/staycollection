@@ -39,7 +39,9 @@ button,input,select,textarea{font:inherit;color:inherit}
 header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 16px;padding-block:20px 12px}
 header.top h1{font-size:30px;font-weight:800;letter-spacing:-.01em}
 header.top h1 span{color:var(--accent)}
-.stamp{color:var(--ink2);font-size:13px}
+.stamp{color:var(--ink2);font-size:13px;display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center}
+.stamp .f{border-radius:999px;padding:1px 9px;font-size:12px;font-weight:700;white-space:nowrap}
+.stamp .f.ok{background:var(--ok-bg);color:var(--ok)} .stamp .f.warn{background:var(--warn-bg);color:var(--warn)} .stamp .f.bad{background:var(--bad-bg);color:var(--bad)}
 
 nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;gap:4px;overflow-x:auto;padding-block:8px 0;border-bottom:2px solid var(--ink);scrollbar-width:none}
 nav.tabs::-webkit-scrollbar{display:none}
@@ -2265,11 +2267,38 @@ $("#view").addEventListener("submit",async e=>{const f=e.target.closest("form.de
   try{ await db.doc("cobrancas/"+id).update(patch); if(cegId&&plan!==null&&plan!==(prevCeg.planilha||""))await db.doc("cegs/"+cegId).update({planilha:plan}); toast("Salvo"); }
   catch(err){ data.cobrancas.set(id,prev); if(cegId)data.cegs.set(cegId,prevCeg); render(); toast("Não deu pra salvar; voltou como estava"); }
 });
+// ---------- quão atualizado está ----------
+// Cada fonte carimba meta/fontes quando é lida (cron, bot do Telegram). A
+// varredura antiga feita à mão ainda vem de meta/info.
+let fontes={};
+const FONTES_ROT=[["planilhas","planilhas"],["paboracha","paboracha"],["whatsapp","WhatsApp"],["bot","bot"],["catalogo","catálogo"]];
+function stampHtml(){
+  const dias=iso=>{const d=new Date(iso);return isNaN(d)?null:Math.floor((Date.now()-d.getTime())/864e5)};
+  const quando=n=>n<=0?"hoje":n===1?"ontem":`há ${n} dias`;
+  const chips=[];
+  FONTES_ROT.forEach(([k,rot])=>{
+    const f=fontes[k]; if(!f)return;
+    // WhatsApp conta pela data da última mensagem lida, não pela hora do envio.
+    const ref=k==="whatsapp"&&f.ate?f.ate+"T12:00:00":f.em;
+    const n=ref?dias(ref):null;
+    const falhou=!!f.erro;
+    const cls=falhou||n===null||n>7?"bad":n>2?"warn":"ok";
+    const txt=n===null?`${rot}: nunca`:`${rot} ${k==="whatsapp"&&f.ate?"até "+fd(f.ate):quando(n)}`;
+    const tip=[f.nota,f.em&&`lido em ${new Date(f.em).toLocaleString("pt-BR")}`,falhou&&`última tentativa falhou: ${f.erro}`].filter(Boolean).join(" · ");
+    chips.push(`<span class="f ${cls}" title="${esc(tip)}">${esc(txt)}${falhou?" · falhou":""}</span>`);
+  });
+  if(meta.atualizadoEm){
+    const n=dias(meta.atualizadoEm);
+    chips.push(`<span class="f ${n!==null&&n>7?"bad":n>2?"warn":"ok"}" title="${esc(meta.nota||"")}">varredura ${esc(fd(meta.atualizadoEm))}</span>`);
+  }
+  if(!chips.length)return "";
+  return `<span>atualizado:</span>${chips.join("")}`;
+}
 // ---------- render ----------
 function render(){
   if(ui.lastIn)ui.lastIn[areaOf(ui.tab)]=ui.tab;
   renderTabs();
-  $("#stamp").textContent=meta.atualizadoEm?`última varredura ${fd(meta.atualizadoEm)} · ${meta.nota||""}`:"";
+  $("#stamp").innerHTML=stampHtml();
   if(!ready){$("#view").innerHTML=`<div class="empty">Carregando cobranças, itens e envios…</div>`;return}
   if(!db){$("#view").innerHTML=`<div class="notice">Não consegui abrir a base. Confira se você entrou com a sua conta e se o config.js tem os dados do Supabase.</div>`;return}
   const total=Object.values(data).reduce((s,m)=>s+m.size,0);
@@ -2295,6 +2324,7 @@ function schedule(){ // não derruba um formulário aberto
   db.collection("apelidos").limit(1000).onSnapshot(snap=>{const m={};snap.docs.forEach(d=>{m[d.id]=d.data()});apel=m;if(ui.tab==="colecao"&&!document.querySelector("#colq:focus,#apin:focus"))schedule()},()=>{});
   db.collection("catalogo").limit(1000).onSnapshot(snap=>{const m=new Map();snap.docs.forEach(d=>m.set(d.id,d.data()));catalogo=m;if(ui.tab==="catalogo")schedule()},()=>{});
   db.doc("meta/info").onSnapshot(s=>{meta=s.exists?s.data():{};schedule()},()=>{});
+  db.doc("meta/fontes").onSnapshot(s=>{fontes=s.exists?s.data():{};schedule()},()=>{});
   db.collection("caixa").limit(500).onSnapshot(snap=>{const m=new Map();snap.docs.forEach(d=>m.set(d.id,d.data()));caixa=m;if(ui.tab==="devo"&&!document.querySelector("#view input:focus,#view textarea:focus"))schedule()},()=>{});
   db.collection("notas").limit(2000).onSnapshot(snap=>{const m={};snap.docs.forEach(d=>{m[d.id]=d.data()});notas=m;if(ui.tab==="colecao"&&!document.querySelector("#view input:focus,#view textarea:focus"))schedule()},()=>{});
   db.collection("fotos").limit(1000).onSnapshot(snap=>{const m={};snap.docs.forEach(d=>{m[d.id]=d.data()});fotos=m;if(!document.querySelector("#view input:focus"))schedule()},()=>{});

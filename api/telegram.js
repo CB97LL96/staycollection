@@ -57,6 +57,7 @@ async function rest(path, opts = {}) {
   return t.trim() ? JSON.parse(t) : null;
 }
 
+import { marcarFonte } from "../scripts/fontes.mjs";
 const owner = () => process.env.OWNER_ID;
 const salvar = (id, data) => rest(`docs?on_conflict=owner,col,id`, {
   method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
@@ -97,6 +98,7 @@ export default async function handler(req, res) {
 
   try {
     let fonte = msg.text || msg.caption || "";
+    let ultimaMsg = null; // data da última mensagem do .txt do WhatsApp
     const imagens = [];
     if (msg.photo && msg.photo.length) {
       const maior = msg.photo[msg.photo.length - 1];
@@ -106,6 +108,8 @@ export default async function handler(req, res) {
       if (IMAGENS.includes(tipo)) imagens.push({ tipo, dados: (await baixarArquivo(msg.document.file_id)).toString("base64") });
       else if (tipo.startsWith("text/") || /\.txt$/i.test(msg.document.file_name || "")) {
         const t = (await baixarArquivo(msg.document.file_id)).toString("utf8");
+        const datas = [...t.matchAll(/^(\d{2})\/(\d{2})\/(\d{4}) \d{2}:\d{2} - /gm)];
+        if (datas.length) { const d = datas[datas.length - 1]; ultimaMsg = `${d[3]}-${d[2]}-${d[1]}`; }
         fonte = [fonte, `Conversa exportada: ${msg.document.file_name || ""}`, encolher(t, nomes)].filter(Boolean).join("\n\n");
       } else throw new Error("Esse tipo de arquivo eu não leio. Mande texto, foto ou o .txt da conversa exportada.");
     }
@@ -114,6 +118,8 @@ export default async function handler(req, res) {
     const r = await lerFonte({ fonte, imagens, contexto: await contexto() });
     const registros = (r.registros || []).map((x) => ({ ...x, estado: "pendente" }));
     await salvar(id, { ...base, estado: "lida", resumo: r.resumo, registros });
+    await marcarFonte(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, owner(), "bot", { nota: `${registros.length} sugestão(ões)` });
+    if (ultimaMsg) await marcarFonte(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, owner(), "whatsapp", { nota: "conversa enviada ao bot", ate: ultimaMsg });
     const cob = registros.filter((x) => x.destino === "cobrancas");
     const total = cob.reduce((s, x) => s + (typeof x.valor === "number" ? x.valor : 0), 0);
     await responder(chatId, registros.length
