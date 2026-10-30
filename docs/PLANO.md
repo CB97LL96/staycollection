@@ -32,7 +32,17 @@ disso na primeira mensagem, ela pediu pra não depender de memória.
   do WhatsApp, e as sugestões aparecem na aba "O que devo".
 - Leitura com IA num lugar só (`scripts/ler-core.mjs`, chamando o Gemini grátis
   por `scripts/ia.mjs`; trocado do Claude em 25/10/2026), usada pelo bot e
-  pelo `ler.html`.
+  pelo `ler.html`. Se o modelo principal estiver lotado, o `ia.mjs` tenta dois
+  reservas; a chave é `GEMINI_API_KEY` na Vercel.
+- Indicador "atualizado:" no topo do app, por fonte (planilhas, paboracha,
+  catálogo, bot, WhatsApp). O bot e os crons carimbam sozinhos
+  (`scripts/fontes.mjs`). A leitura feita no navegador (passo 3) **não carimba
+  sozinha**: ao terminar, gravar `meta/fontes.whatsapp` (com `ate` = data da
+  última mensagem lida) e atualizar `meta/info.atualizadoEm`, senão o app
+  mostra a fonte como velha (foi o que deixou "varredura 12/10" parado).
+- Passo 3 feito em 24-26/10/2026: grupos de comunidades de CEG e conversas com
+  GOMs e vendedoras lidos até 25/10; as 16 sugestões foram aceitas em 30/10, e
+  os ajustes que o botão "aceitar" não faz (status, recebimento) foram à mão.
 
 ## Próximos passos (em ordem)
 1. **Conferir a 1ª rodada do paboracha.** As 5 cobranças em aberto devem aparecer
@@ -42,7 +52,8 @@ disso na primeira mensagem, ela pediu pra não depender de memória.
    fazem sentido e ajustar o filtro (`encolher` em `api/telegram.js`) se o robô
    deixar coisa de fora.
 3. **Ler os grupos do WhatsApp pelo navegador** (versão nova do passo 3, pedida
-   em 25/10/2026). Grupos de comunidades, de 11/10 em diante; antes disso só
+   em 25/10/2026; **1ª rodada feita**, repetir de 26/10 em diante quando ela
+   pedir). Grupos de comunidades, de 11/10 em diante; antes disso só
    onde a base está confusa. Roda numa conversa do Claude Desktop no computador
    dela, seguindo `docs/roteiro-whatsapp.md`.
 
@@ -67,6 +78,20 @@ disso na primeira mensagem, ela pediu pra não depender de memória.
    - Bias Room só pelo Chrome dela, pra nomes e versões.
    
    Fontes mapeadas em `docs/fontes-catalogo.md`.
+
+## Pendências abertas (30/10/2026)
+Nomes e valores ficam no app (Cobranças, filtro "A confirmar"), nunca aqui.
+- Taxa RF que venceu em 20/10 e cujos itens a GOM disse ter repassado: conferir
+  com a GOM se foi paga.
+- "Set 20" de uma comunidade: valor e item estavam numa imagem; ler no app da GOM.
+- Fretes de duas caixas que venciam em 26/10: marcar como paga ou pendente.
+- Multa da HeyDay sem valor e taxa de atraso da MANIAC: preencher o valor.
+- Um repasse "karma regular" que talvez já tenha sido pago em 26/09: confirmar.
+- 5 números de repasses antigos (Notion "claims perdidas por aí"): a combinação
+  foi no privado e não aparece no WhatsApp Web; só perguntando a quem vendeu.
+- Cinco comunidades de CEG novas foram lidas (sem mensagens dela), mas o roteiro
+  ainda cita só as 20 primeiras.
+- Do plano: relatório de cobertura, casos de teste, reforma de Cobranças.
 
 ## Pontos em aberto
 - Plano Hobby da Vercel: no máximo 2 crons, por isso tudo que é diário entra no
