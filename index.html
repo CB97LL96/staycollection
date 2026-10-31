@@ -1266,6 +1266,32 @@ nav.tabs.areas button[aria-current="page"] .badge{background:var(--accent-ink);c
   .n-btn.mini{min-height:36px}
 }
 @media (prefers-reduced-motion:reduce){.n-tk{transition:none}}
+
+/* ===== CEGs em tabela e liquidar em lote ===== */
+.n-tabw{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.n-tab{width:100%;border-collapse:collapse;font-size:14px}
+.n-tab th,.n-tab td{padding:8px 12px;text-align:left;border-top:1px solid var(--line);vertical-align:middle}
+.n-tab thead th{border-top:0;color:var(--ink2);font-size:12.5px;font-weight:700;white-space:nowrap}
+.n-tab .n-num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.n-tab tbody th{font-weight:700}
+.n-cr:hover{background:var(--sunk)}
+.n-cb{appearance:none;background:none;border:0;color:inherit;font:inherit;font-weight:700;display:flex;gap:6px;align-items:center;cursor:pointer;min-height:36px;padding:0;text-align:left}
+.n-cb .i{transition:transform .18s ease-out}.n-cr.open .n-cb .i{transform:rotate(180deg)}
+.n-cb:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.n-okc{color:var(--ok);font-weight:800}
+.n-devo{color:var(--bad);font-weight:800}
+.n-cd>td{background:var(--bg);padding:10px 12px 14px}
+.n-itab{background:var(--surface)}
+.n-itab small{color:var(--ink2)}
+.n-cgrp{display:grid;gap:8px}
+.n-cgrp h2{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:17px;margin:6px 0 0}
+.n-cgrp .n-dica{margin-left:auto}
+.n-chips .n-sel{min-height:40px;border-radius:999px;padding:0 14px}
+.n-selbar{position:sticky;bottom:12px;z-index:5;display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--surface);border:1px solid var(--ink2);border-radius:12px;padding:10px 14px}
+.n-selbar span{flex:1 1 180px}
+.n-line .n-chk{width:22px;height:22px;accent-color:var(--accent)}
+@media (max-width:720px){.n-hide{display:none}.n-tab th,.n-tab td{padding:8px}.n-cgrp .n-dica{margin-left:0;flex-basis:100%}}
+.n-detact{align-items:flex-start}
 </style>
 
 <div class="wrap">
@@ -1366,7 +1392,7 @@ function stats(){
 }
 
 // ---------- tabs ----------
-const AREAS=[["hoje","Hoje","home",["painel"]],["pedidos","Pedidos","box",["pedidos","cegs","comunidades","repasses"]],["colecao","Coleção","cards",["colecao"]]];
+const AREAS=[["hoje","Hoje","home",["painel"]],["pedidos","Pedidos","box",["pedidos","comunidades","repasses"]],["cegs","CEGs","group",["cegs"]],["colecao","Coleção","cards",["colecao"]]];
 const areaOf=t=>(AREAS.find(a=>a[3].includes(t))||AREAS.find(a=>a[0]==="pedidos"))[0];
 const TLABEL=Object.fromEntries(TABS);
 function renderTabs(){
@@ -1374,7 +1400,7 @@ function renderTabs(){
   const cur=areaOf(ui.tab);
   $("#tabs").innerHTML=AREAS.map(([k,l,ic,ts])=>{const n=ts.reduce((a,t)=>a+(badge[t]||0),0); return `<button type="button" data-area="${k}" aria-current="${cur===k?"page":"false"}">${I(ic)}<span>${esc(l)}</span>${n?`<span class="badge">${n}</span>`:""}</button>`}).join("");
   let subs="";
-  if(["cegs","comunidades","repasses"].includes(ui.tab)) subs=[["pedidos","← Pedidos"],["cegs","CEGs"],["comunidades","Comunidades"],["repasses","Repasses"]].map(([t,l])=>`<button type="button" data-tab="${t}" aria-current="${ui.tab===t?"page":"false"}">${esc(l)}</button>`).join("");
+  if(["comunidades","repasses"].includes(ui.tab)) subs=[["pedidos","← Pedidos"],["comunidades","Comunidades"],["repasses","Repasses"]].map(([t,l])=>`<button type="button" data-tab="${t}" aria-current="${ui.tab===t?"page":"false"}">${esc(l)}</button>`).join("");
   else if(cur==="colecao"){ const nC=COL?cfQueue().q.filter(([d])=>!(Array.isArray(d.cards)&&d.cards.length)).length:0;
     subs=[["pc","Photocards",""],["outras","Outras coisas",""],["eventos","Eventos",""],["loja","Loja",""],["conf","Confirmar cards",nC]].map(([v,l,n])=>`<button type="button" data-cv="${v}" aria-current="${cf.view===v?"page":"false"}">${esc(l)}${n?`<span class="c">${n}</span>`:""}</button>`).join(""); }
   const st=$("#subtabs"); st.innerHTML=subs; st.hidden=!subs;
@@ -1512,8 +1538,10 @@ function nLinha(k,d){
   const meta=k==="cobrancas"?[d.prazo?"prazo "+fd(d.prazo):"",d.tipo].filter(Boolean).join(" · "):k==="envios"?[d.tipo,d.prazo?"prazo "+fd(d.prazo):""].filter(Boolean).join(" · "):[cegLbl(d)||d.ceg,d.comQuem?"com "+d.comQuem:""].filter(Boolean).join(" · ");
   const titulo=k==="itens"?[d.item,d.membro].filter(Boolean).join(" · "):c.title(d);
   const u=k==="envios"&&d.status==="A pedir"?firstUrl(d.comoPedir):"";
+  const selPin=ui.cobSel.size?(data.cobrancas.get([...ui.cobSel][0])||{}).comunidade||"":null;
+  const chk=k==="cobrancas"&&d.status==="Pendente"&&canWrite?`<input type="checkbox" class="n-chk" data-n-sel="${esc(d.id)}" ${ui.cobSel.has(d.id)?"checked":""} ${selPin!=null&&(d.comunidade||"")!==selPin?"disabled":""} aria-label="Selecionar para liquidar em lote: ${esc(d.referente||"cobrança")}" title="selecionar para liquidar em lote (uma comunidade por vez)">`:"";
   return `<div class="n-line ${k==="cobrancas"&&devoC(d)&&vencida(d)?"late":""}" data-k="${k}" id="row-${esc(d.id)}">
-    <span class="n-l-main"><b>${esc(titulo||"sem título")}</b><small>${esc(meta)}</small></span>
+    ${chk}<span class="n-l-main"><b>${esc(titulo||"sem título")}</b><small>${esc(meta)}</small></span>
     ${typeof d.valor==="number"?`<b class="n-val">${brl(d.valor)}</b>`:""}${u?`<a class="n-btn" href="${esc(u)}" target="_blank" rel="noopener">pedir ↗</a>`:""}${sel}
     ${canWrite?`<button type="button" class="n-btn ghost" data-edit="${esc(d.id)}">${ui.editing===d.id?"fechar":"editar"}</button>`:""}
     ${ui.editing===d.id?`<div class="n-l-form">${formHtml(k,d.id,d)}</div>`:""}</div>`;
@@ -1552,7 +1580,7 @@ function renderPedidos(){
       const porCeg=new Map(); r.i.filter(x=>!["Recebido","Cancelado","Abandonado","Repassei","Claim perdida"].includes(x.status)).forEach(x=>{const g=cegLbl(x)||x.ceg||"sem CEG"; if(!porCeg.has(g))porCeg.set(g,[]); porCeg.get(g).push(x)});
       body=`<div class="n-com-b">
         ${comInfo(r.n)&&comInfo(r.n).pix&&canWrite?`<p class="n-pixl">pix da comunidade <button type="button" class="n-btn mini" data-copy="${esc(comInfo(r.n).pix)}">copiar</button></p>`:""}
-        ${r.aberto.length?cabec("Cobranças",r.aberto.length)+`<div class="n-lines">${r.aberto.sort(byPrazo).map(d=>nLinha("cobrancas",d)).join("")}</div>`:""}
+        ${r.aberto.length?cabec("Cobranças",r.aberto.length)+(canWrite&&r.aberto.some(x=>x.status==="Pendente")?`<div class="n-detact"><button type="button" class="n-btn mini" data-n-selall="${esc(r.n)}">selecionar as pendentes (${r.aberto.filter(x=>x.status==="Pendente").length}) pra liquidar em lote</button></div>`:"")+`<div class="n-lines">${r.aberto.sort(byPrazo).map(d=>nLinha("cobrancas",d)).join("")}</div>`:""}
         ${r.envAtivos.length?cabec("Envio",r.envAtivos.length)+`<div class="n-lines">${r.envAtivos.map(d=>nLinha("envios",d)).join("")}</div>`:""}
         ${porCeg.size?cabec("Itens",[...porCeg.values()].reduce((a,x)=>a+x.length,0))+[...porCeg].map(([g,a])=>`<details class="n-ceg" data-gkey="n|ceg|${esc(r.n)}|${esc(g)}" ${ui.gclosed["n|ceg|"+r.n+"|"+g]===false||porCeg.size===1?"open":""}><summary>${esc(g)}<span class="n-cnt">${a.length}</span></summary><div class="n-lines">${a.map(d=>nLinha("itens",d)).join("")}</div></details>`).join(""):""}
         ${r.pagas.length?`<details class="n-ceg" data-gkey="n|pg|${esc(r.n)}"><summary>Pagas<span class="n-cnt">${r.pagas.length}</span></summary><div class="n-lines">${r.pagas.sort((a,b)=>(b.pagoEm||"").localeCompare(a.pagoEm||"")).map(d=>nLinha("cobrancas",d)).join("")}</div></details>`:""}
@@ -1565,11 +1593,82 @@ function renderPedidos(){
       <input type="search" id="nq" placeholder="Buscar item, GOM, CEG ou comunidade" value="${esc(ui.pq)}" aria-label="Buscar nos pedidos">
       <div class="n-chips" role="group" aria-label="Mostrar"><button type="button" class="n-chip" data-n-f="fazer" aria-pressed="${ui.pf==="fazer"&&!q}">Pra fazer<span class="n-cnt">${nF}</span></button><button type="button" class="n-chip" data-n-f="espera" aria-pressed="${ui.pf==="espera"&&!q}">Esperando<span class="n-cnt">${nE}</span></button><button type="button" class="n-chip" data-n-f="tudo" aria-pressed="${ui.pf==="tudo"&&!q}">Tudo</button></div>
       ${canWrite?`<div class="n-add"><span>adicionar</span><button type="button" class="n-btn" data-n-new="cobrancas">cobrança</button><button type="button" class="n-btn" data-n-new="itens">item</button><button type="button" class="n-btn" data-n-new="envios">envio</button></div>`:""}
-      <p class="n-cad">Cadastros: <button type="button" class="n-link" data-goto="cegs">CEGs</button> · <button type="button" class="n-link" data-goto="comunidades">Comunidades</button> · <button type="button" class="n-link" data-goto="repasses">Repasses</button></p>
+      <p class="n-cad">Cadastros: <button type="button" class="n-link" data-goto="comunidades">Comunidades</button> · <button type="button" class="n-link" data-goto="repasses">Repasses</button></p>
     </section>${novo}
-    <ul class="n-coms">${rows.map(card).join("")||`<li class="n-vazio">${q?"nada encontrado":ui.pf==="fazer"?"nada pra fazer agora":"nenhuma comunidade aqui"}</li>`}</ul></div>`;
+    <ul class="n-coms">${rows.map(card).join("")||`<li class="n-vazio">${q?"nada encontrado":ui.pf==="fazer"?"nada pra fazer agora":"nenhuma comunidade aqui"}</li>`}</ul>${nSelBar()}</div>`;
   const qi=$("#nq"); if(qi)qi.addEventListener("input",()=>{ui.pq=qi.value;const pos=qi.selectionStart;renderPedidos();const n=$("#nq");n.focus();n.setSelectionRange(pos,pos)});
 }
+// ---------- liquidar em lote (Pedidos) ----------
+function nSelBar(){
+  if(!ui.cobSel.size||!canWrite)return "";
+  const rows=[...ui.cobSel].map(id=>data.cobrancas.get(id)).filter(d=>d&&d.status==="Pendente");
+  const tot=rows.reduce((a,d)=>a+(typeof d.valor==="number"?d.valor:0),0), sem=rows.filter(d=>typeof d.valor!=="number").length;
+  return `<div class="n-selbar" role="region" aria-label="Seleção para liquidar em lote"><span><b>${rows.length}</b> ${rows.length===1?"selecionada":"selecionadas"}${tot?` · <b>${brl(tot)}</b>`:""}${sem?` · ${sem} sem valor`:""}</span><button type="button" class="n-btn ghost" data-n-limpar>limpar</button><button type="button" class="n-btn pri" data-n-liq data-t="marcar como pagas">marcar como pagas</button></div>`;
+}
+async function nLiquidar(ids){
+  const prevs=new Map(); ids.forEach(id=>{const d=data.cobrancas.get(id); if(d&&d.status==="Pendente")prevs.set(id,d)});
+  let ok=0; const fail=[];
+  for(const [id,d] of prevs){ try{await db.doc("cobrancas/"+id).update({status:"Paga",pagoEm:d.pagoEm||isoToday()});ok++}catch(e){fail.push(id)} }
+  ui.cobSel.clear();
+  const undo=async()=>{let bad=0; for(const [id,d] of prevs){ if(fail.includes(id))continue; try{await db.doc("cobrancas/"+id).update({status:d.status,pagoEm:d.pagoEm||null})}catch(e){bad++} } toast(bad?`Desfeito, mas ${bad} não salvou`:"Desfeito")};
+  render();
+  toast(fail.length?`${ok} marcadas como pagas; ${fail.length} não salvaram`:`${ok} ${ok===1?"cobrança marcada":"cobranças marcadas"} como pagas`,{label:"desfazer",fn:undo});
+}
+// ---------- CEGs: tabela por comunidade, com os itens de cada CEG ----------
+ui.cf=ui.cf||"aberto"; ui.cq=ui.cq||""; ui.cc=ui.cc||"";
+function renderCegs(){
+  if(!COL)loadCol();
+  const cegs=list("cegs"), it=list("itens"), cob=list("cobrancas"), q=ui.cq.trim().toLowerCase();
+  const m=new Map();
+  const get=(com,ceg)=>{const c=com||"(sem comunidade)", n=ceg||"(sem CEG)", k=c+"||"+n; if(!m.has(k))m.set(k,{k,com:c,nome:n,doc:null,it:[],cob:[]}); return m.get(k)};
+  cegs.forEach(c=>{get(c.comunidade,c.nome).doc=c});
+  it.forEach(i=>get(i.comunidade,i.ceg).it.push(i));
+  cob.filter(devoC).forEach(c=>get(c.comunidade,c.ceg).cob.push(c));
+  let rows=[...m.values()].map(r=>{
+    const cnt={lib:0,br:0,cam:0,esp:0,ped:0}; let rec=0;
+    r.it.forEach(i=>{const b=bkOf(i.status); if(b)cnt[b]++; else if(i.status==="Recebido")rec++});
+    const ativos=cnt.lib+cnt.br+cnt.cam+cnt.esp+cnt.ped;
+    const devo=r.cob.reduce((a,c)=>a+(typeof c.valor==="number"?c.valor:0),0);
+    const aberta=ativos>0||r.cob.length>0||(r.doc&&!["Concluída","Recebido"].includes(r.doc.status));
+    const hay=(r.com+" "+r.nome+" "+(r.doc?[r.doc.gom,r.doc.grupo].join(" "):"")+" "+r.it.map(i=>[i.item,i.membro].join(" ")).join(" ")).toLowerCase();
+    return {...r,cnt,rec,ativos,devo,aberta,hay};
+  }).filter(r=>(!ui.cc||r.com===ui.cc)&&(q?r.hay.includes(q):ui.cf==="tudo"||r.aberta));
+  const ord=comOrder(); const nAb=[...m.values()].length;
+  const by=new Map(); rows.forEach(r=>{if(!by.has(r.com))by.set(r.com,[]); by.get(r.com).push(r)});
+  const coms=[...by.keys()].sort((a,b)=>((ord.indexOf(a)+1||99)-(ord.indexOf(b)+1||99))||a.localeCompare(b,"pt-BR"));
+  const nomesCom=[...new Set(list("comunidades").sort((a,b)=>(a.ordem??99)-(b.ordem??99)).map(x=>x.nome))];
+  const itemRow=d=>{const c=COLS.itens, sv=d.status||""; const opts=[...new Set([...c.opts,sv])].filter(o=>o!=="");
+    return `<tr class="n-ir" data-k="itens" id="row-${esc(d.id)}"><td>${esc(d.membro||"")}</td><td>${esc(d.item||"")}${d.comQuem?`<small> · com ${esc(d.comQuem)}</small>`:""}</td><td>${canWrite?`<select class="n-sel" data-status="${esc(d.id)}" aria-label="Status de ${esc(d.item||"item")}">${opts.map(o=>`<option ${o===sv?"selected":""}>${esc(o)}</option>`).join("")}</select>`:esc(sv)}</td><td class="n-num">${typeof d.valor==="number"?brl(d.valor):""}</td><td>${canWrite?`<button type="button" class="n-btn ghost" data-edit="${esc(d.id)}">${ui.editing===d.id?"fechar":"editar"}</button>`:""}</td></tr>${ui.editing===d.id?`<tr><td colspan="5">${formHtml("itens",d.id,d)}</td></tr>`:""}`;};
+  const cegRow=r=>{
+    const key="ng|"+r.k, open=ui.gclosed[key]===false||(!!q&&rows.length<=3), doc=r.doc;
+    const head=`<tr class="n-cr ${open?"open":""}"><th scope="row"><button type="button" class="n-cb" data-n-ceg="${esc(key)}" aria-expanded="${open}">${I("chev",open?"up":"")}<span>${esc(r.nome)}</span></button></th><td class="n-hide">${esc(doc&&doc.gom||"")}</td><td>${doc?esc(doc.status||""):""}</td><td class="n-num">${r.ativos||"–"}</td><td class="n-num n-hide ${r.cnt.lib?"n-okc":""}">${r.cnt.lib||"–"}</td><td class="n-num n-hide">${r.cnt.br||"–"}</td><td class="n-num n-hide">${r.cnt.cam||"–"}</td><td class="n-num n-hide">${r.cnt.esp||"–"}</td><td class="n-num n-hide">${r.rec||"–"}</td><td class="n-num ${r.devo?"n-devo":""}">${r.devo?brl(r.devo):"–"}</td></tr>`;
+    if(!open)return head;
+    const sheet=doc&&safeUrl(doc.planilha);
+    const itens=r.it.filter(i=>!["Cancelado","Abandonado","Repassei","Claim perdida"].includes(i.status)).sort((a,b)=>String(a.membro||"").localeCompare(String(b.membro||""),"pt-BR")||String(a.item||"").localeCompare(String(b.item||""),"pt-BR"));
+    const det=`<tr class="n-cd"><td colspan="10">${doc&&ui.editing===doc.id?formHtml("cegs",doc.id,doc):`<div class="n-detact">${doc?nFacts([["GOM",esc(doc.gom||"")],["grupo",esc(doc.grupo||"")],["origem",esc(doc.origem||"")],["planilha",sheet?`<a href="${esc(sheet)}" target="_blank" rel="noopener">abrir ↗</a>`:""],["nota",doc.obs?linkify(doc.obs):""]]):`<p class="n-dica2">essa CEG não está cadastrada; os itens vêm do nome que aparece neles</p>`}${doc&&canWrite?`<button type="button" class="n-btn" data-edit="${esc(doc.id)}">editar CEG</button>`:""}</div>`}
+      ${itens.length?`<div class="n-tabw"><table class="n-tab n-itab"><thead><tr><th>Membro</th><th>Item</th><th>Status</th><th class="n-num">Valor</th><th></th></tr></thead><tbody>${itens.map(itemRow).join("")}</tbody></table></div>`:`<p class="n-dica2">nenhum item nessa CEG</p>`}</td></tr>`;
+    return head+det;
+  };
+  const tabela=n=>{const g=by.get(n), ci=comInfo(n), tot=g.reduce((a,r)=>a+r.devo,0), nIt=g.reduce((a,r)=>a+r.ativos,0);
+    return `<section class="n-cgrp" style="--c:${okHex(ci&&ci.cor)}"><h2>${comChip(n)}<span>${esc(n)}</span><span class="n-cnt">${g.length} ${g.length===1?"CEG":"CEGs"}</span><span class="n-dica">${nIt} ${nIt===1?"item":"itens"} em andamento${tot?` · devo ${brl(tot)}`:""}</span></h2>
+      <div class="n-tabw"><table class="n-tab"><thead><tr><th scope="col">CEG</th><th class="n-hide">GOM</th><th>Situação</th><th class="n-num">Itens</th><th class="n-num n-hide" title="liberados pra pedir">Lib.</th><th class="n-num n-hide" title="no Brasil, sem liberar">Brasil</th><th class="n-num n-hide">A caminho</th><th class="n-num n-hide">Esperando</th><th class="n-num n-hide">Recebidos</th><th class="n-num">Devo</th></tr></thead><tbody>${g.sort((a,b)=>(b.devo-a.devo)||(b.ativos-a.ativos)||a.nome.localeCompare(b.nome,"pt-BR")).map(cegRow).join("")}</tbody></table></div></section>`;};
+  $("#view").innerHTML=`<div class="n-page"><section class="n-barra">
+    <input type="search" id="ncq" placeholder="Buscar CEG, GOM, membro ou item" value="${esc(ui.cq)}" aria-label="Buscar nas CEGs">
+    <div class="n-chips"><select id="ncc" class="n-sel" aria-label="Filtrar por comunidade"><option value="">Todas as comunidades</option>${nomesCom.map(n=>`<option ${n===ui.cc?"selected":""}>${esc(n)}</option>`).join("")}</select>
+    <button type="button" class="n-chip" data-n-cf="aberto" aria-pressed="${ui.cf==="aberto"&&!q}">Em andamento</button><button type="button" class="n-chip" data-n-cf="tudo" aria-pressed="${ui.cf==="tudo"&&!q}">Todas (${nAb})</button></div></section>
+    ${coms.map(tabela).join("")||`<p class="n-vazio">${q?"nada encontrado":"nenhuma CEG em andamento"}</p>`}</div>`;
+  const qi=$("#ncq"); if(qi)qi.addEventListener("input",()=>{ui.cq=qi.value;const pos=qi.selectionStart;renderCegs();const n=$("#ncq");n.focus();n.setSelectionRange(pos,pos)});
+  const cs=$("#ncc"); if(cs)cs.addEventListener("change",()=>{ui.cc=cs.value;renderCegs()});
+}
+$("#view").addEventListener("click",async e=>{
+  const lq=e.target.closest("[data-n-liq]"); if(lq){ if(!lq.classList.contains("armed")){lq.classList.add("armed");lq.textContent="Confirmar: marcar como pagas";setTimeout(()=>{if(lq.isConnected){lq.classList.remove("armed");lq.textContent=lq.dataset.t}},4000);return}
+    lq.disabled=true; await nLiquidar([...ui.cobSel]); return}
+  if(e.target.closest("[data-n-limpar]")){ui.cobSel.clear();render();return}
+  const sa=e.target.closest("[data-n-selall]"); if(sa){const n=sa.dataset.nSelall; ui.cobSel.clear(); list("cobrancas").filter(c=>c.status==="Pendente"&&(c.comunidade||"(sem comunidade)")===n).forEach(c=>ui.cobSel.add(c.id)); render(); return}
+  const cg=e.target.closest("[data-n-ceg]"); if(cg){const k=cg.dataset.nCeg; ui.gclosed[k]=ui.gclosed[k]===false?true:false; ui.editing=null; render(); return}
+  const cf2=e.target.closest("[data-n-cf]"); if(cf2){ui.cf=cf2.dataset.nCf; ui.cq=""; render(); return}
+});
+$("#view").addEventListener("change",e=>{const c=e.target.closest("[data-n-sel]"); if(!c)return; const id=c.dataset.nSel; if(c.checked)ui.cobSel.add(id); else ui.cobSel.delete(id); render();});
 $("#view").addEventListener("click",async e=>{
   const o=e.target.closest("[data-n-open]"); if(o){ui.nopen=ui.nopen===o.dataset.nOpen?null:o.dataset.nOpen;ui.editing=null;render();return}
   const st=e.target.closest("[data-n-set]"); if(st){const [k,id,v,msg]=st.dataset.nSet.split("|"); const patch={status:v}; if(k==="cobrancas"&&v==="Paga"){const cur=data.cobrancas.get(id); patch.pagoEm=(cur&&cur.pagoEm)||isoToday()} else if(k==="cobrancas"&&v==="Pendente")patch.pagoEm=null; st.disabled=true; await nSet(k,id,patch,msg); return}
@@ -2438,7 +2537,7 @@ function render(){
   if(!db){$("#view").innerHTML=`<div class="notice">Não consegui abrir a base. Confira se você entrou com a sua conta e se o config.js tem os dados do Supabase.</div>`;return}
   const total=Object.values(data).reduce((s,m)=>s+m.size,0);
   if(!total){$("#view").innerHTML=`<div class="empty">A base ainda está vazia. Peça pro Claude fazer a varredura, ou use "+ Adicionar" em qualquer aba.</div>`;return}
-  if(ui.tab==="painel")renderPainel(); else if(ui.tab==="catalogo")renderCatalogo(); else if(ui.tab==="colecao")renderColecao(); else if(ui.tab==="pedidos")renderPedidos(); else renderList(ui.tab);
+  if(ui.tab==="painel")renderPainel(); else if(ui.tab==="catalogo")renderCatalogo(); else if(ui.tab==="colecao")renderColecao(); else if(ui.tab==="pedidos")renderPedidos(); else if(ui.tab==="cegs")renderCegs(); else renderList(ui.tab);
 }
 let pend=null;
 function schedule(){ // não derruba um formulário aberto
