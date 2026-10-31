@@ -1296,6 +1296,9 @@ nav.tabs.areas button[aria-current="page"] .badge{background:var(--accent-ink);c
 .n-ph .thumb{width:48px;height:64px;border-radius:6px}
 .n-acts{white-space:nowrap;text-align:right}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.n-ph{width:76px!important}
+.n-guess{display:grid;gap:4px;justify-items:center}
+.thumb.guess{outline:2px dashed var(--ink2);outline-offset:2px}
 </style>
 
 <div class="wrap">
@@ -1620,6 +1623,13 @@ async function nLiquidar(ids){
 }
 // ---------- CEGs: tabela por comunidade, com os itens de cada CEG ----------
 ui.cf=ui.cf||"aberto"; ui.cq=ui.cq||""; ui.cc=ui.cc||"";
+function nThumb(d){
+  const linked=Array.isArray(d.cards)&&d.cards.length;
+  if(linked||!COL||tipoDe(d)!=="Photocard / set")return itemThumb(d);
+  const g=guessCards(d).c[0]; if(!g)return itemThumb(d);
+  const sp=colSpr(g); if(!okSpr(sp))return itemThumb(d);
+  return `<span class="n-guess"><span class="thumb has guess" title="palpite: ${esc(g.e+" · "+g.v+" · "+g.m)}"><span class="thimg" style="${spr(sp)}"></span></span>${canWrite?`<button type="button" class="n-btn mini" data-pk="${esc(g.i)}" data-pkitem="${esc(d.id)}" title="palpite: ${esc(g.e+" · "+g.v+" · "+g.m)}. Toque para confirmar que este é o card do pedido">é esse</button>`:""}</span>`;
+}
 function renderCegs(){
   if(!COL)loadCol();
   const cegs=list("cegs"), it=list("itens"), cob=list("cobrancas"), q=ui.cq.trim().toLowerCase();
@@ -1642,7 +1652,7 @@ function renderCegs(){
   const coms=[...by.keys()].sort((a,b)=>((ord.indexOf(a)+1||99)-(ord.indexOf(b)+1||99))||a.localeCompare(b,"pt-BR"));
   const nomesCom=[...new Set(list("comunidades").sort((a,b)=>(a.ordem??99)-(b.ordem??99)).map(x=>x.nome))];
   const itemRow=d=>{const c=COLS.itens, sv=d.status||""; const opts=[...new Set([...c.opts,sv])].filter(o=>o!=="");
-    return `<tr class="n-ir" data-k="itens" id="row-${esc(d.id)}"><td class="n-ph">${itemThumb(d)}</td><td>${esc(d.membro||"")}</td><td>${esc(d.item||"")}${d.comQuem?`<small> · com ${esc(d.comQuem)}</small>`:""}</td><td>${canWrite?`<select class="n-sel" data-status="${esc(d.id)}" aria-label="Status de ${esc(d.item||"item")}">${opts.map(o=>`<option ${o===sv?"selected":""}>${esc(o)}</option>`).join("")}</select>`:esc(sv)}</td><td class="n-num">${typeof d.valor==="number"?brl(d.valor):""}</td><td class="n-acts">${canWrite&&tipoDe(d)==="Photocard / set"?`<button type="button" class="n-btn ghost" data-link="${esc(d.id)}" aria-expanded="${ui.linking===d.id}" title="ligar este item aos photocards do catálogo">cards${Array.isArray(d.cards)&&d.cards.length?` (${d.cards.length})`:""}</button>`:""}${canWrite?`<button type="button" class="n-btn ghost" data-edit="${esc(d.id)}">${ui.editing===d.id?"fechar":"editar"}</button>`:""}</td></tr>${ui.linking===d.id?`<tr><td colspan="6">${pickerHtml(d)}</td></tr>`:""}${ui.editing===d.id?`<tr><td colspan="6">${formHtml("itens",d.id,d)}</td></tr>`:""}`;};
+    return `<tr class="n-ir" data-k="itens" id="row-${esc(d.id)}"><td class="n-ph">${nThumb(d)}</td><td>${esc(d.membro||"")}</td><td>${esc(d.item||"")}${d.comQuem?`<small> · com ${esc(d.comQuem)}</small>`:""}</td><td>${canWrite?`<select class="n-sel" data-status="${esc(d.id)}" aria-label="Status de ${esc(d.item||"item")}">${opts.map(o=>`<option ${o===sv?"selected":""}>${esc(o)}</option>`).join("")}</select>`:esc(sv)}</td><td class="n-num">${typeof d.valor==="number"?brl(d.valor):""}</td><td class="n-acts">${canWrite&&tipoDe(d)==="Photocard / set"?`<button type="button" class="n-btn ghost" data-link="${esc(d.id)}" aria-expanded="${ui.linking===d.id}" title="ligar este item aos photocards do catálogo">cards${Array.isArray(d.cards)&&d.cards.length?` (${d.cards.length})`:""}</button>`:""}${canWrite?`<button type="button" class="n-btn ghost" data-edit="${esc(d.id)}">${ui.editing===d.id?"fechar":"editar"}</button>`:""}</td></tr>${ui.linking===d.id?`<tr><td colspan="6">${pickerHtml(d)}</td></tr>`:""}${ui.editing===d.id?`<tr><td colspan="6">${formHtml("itens",d.id,d)}</td></tr>`:""}`;};
   const cegRow=r=>{
     const key="ng|"+r.k, open=ui.gclosed[key]===false||(!!q&&rows.length<=3), doc=r.doc;
     const head=`<tr class="n-cr ${open?"open":""}"><th scope="row"><button type="button" class="n-cb" data-n-ceg="${esc(key)}" aria-expanded="${open}">${I("chev",open?"up":"")}<span>${esc(r.nome)}</span></button></th><td class="n-hide">${esc(doc&&doc.gom||"")}</td><td>${doc?esc(doc.status||""):""}</td><td class="n-num">${r.ativos||"–"}</td><td class="n-num n-hide ${r.cnt.lib?"n-okc":""}">${r.cnt.lib||"–"}</td><td class="n-num n-hide">${r.cnt.br||"–"}</td><td class="n-num n-hide">${r.cnt.cam||"–"}</td><td class="n-num n-hide">${r.cnt.esp||"–"}</td><td class="n-num n-hide">${r.rec||"–"}</td><td class="n-num ${r.devo?"n-devo":""}">${r.devo?brl(r.devo):"–"}</td></tr>`;
