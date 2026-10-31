@@ -1158,6 +1158,14 @@ nav.tabs.areas button[aria-current="page"] .badge{background:var(--accent-ink);c
 @container (max-width:460px){.task{grid-template-columns:var(--stub) minmax(0,1fr)}.task .tdate{grid-row:span 2}.task .tside{grid-column:2/-1;padding:0 12px 12px;justify-content:flex-start}}
 @media (max-width:520px){:root{--stub:62px}.tdate b{font-size:22px}.crmain{grid-template-columns:var(--stub) minmax(0,1fr) auto 20px}.crmain.haschk{grid-template-columns:var(--stub) 22px minmax(0,1fr) auto 20px}.crmain .crd{display:none}.crmain .crtrust{grid-column:2/-1;padding-top:0}.crmain.haschk .crtrust{grid-column:3/-1}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/* ===== etapa 6: cabeçalho mais leve ===== */
+.stampd>summary{cursor:pointer;list-style:none;display:inline-flex;align-items:center;min-height:32px}
+.stampd>summary::-webkit-details-marker{display:none}
+.stampd>summary::after{content:"";margin-left:6px;width:6px;height:6px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg) translateY(-2px)}
+.stampd[open]>summary::after{transform:rotate(-135deg) translateY(-1px)}
+.stampl{display:flex;flex-wrap:wrap;gap:4px 6px;margin-top:6px}
+#ajudaAtualizar{background:none;border:none;padding:0;margin-top:2px!important;font-size:13px;color:var(--ink2)}
+#ajudaAtualizar>summary{min-height:32px;display:flex;align-items:center}
 </style>
 
 <div class="wrap">
@@ -1987,7 +1995,7 @@ function colMatch(it,q){ if(!q)return true; const h=hayOf(it);
   return qTokens(q).every(x=>{ if(x.num!=null) return h.n.has(x.num)||(x.num===1&&h.n.size===0);
     const t=x.t; if(h.s.includes(t))return true; const s1=SYN[t]&&deac(SYN[t]), s2=SYN2[t]&&deac(SYN2[t]); if((s1&&h.s.includes(s1))||(s2&&h.s.includes(s2)))return true;
     return t.length>=4&&h.w.some(w=>near1(t,w)||(w.length>t.length&&near1(t,w.slice(0,t.length)))); }); }
-const cf={view:"pc",m:"",era:"",tipo:"",origem:"",st:"",q:"",lim:96,zoom:null};
+const cf={view:"pc",m:"",era:"",tipo:"",origem:"",st:"meus",q:"",lim:96,zoom:null};
 const of={tipo:"",st:"",m:"",q:""};
 let EVT=null, evtErr=false; const ef={tipo:"",q:""};
 async function loadEvt(){ if(EVT||evtErr)return; try{const r=await fetch("/api/eventos"); if(!r.ok)throw 0; const j=await r.json(); EVT=j.eventos||[];}catch(e){evtErr=true;} if(ui.tab==="colecao"&&cf.view==="eventos")render(); }
@@ -2228,7 +2236,7 @@ function renderColecao(){
   const q=cf.q.trim().toLowerCase();
   const base=all.filter(it=>(!cf.m||it.m===cf.m)&&(!cf.era||(it.o+"|"+it.e)===cf.era)&&(!cf.tipo||it.t===cf.tipo)&&(!cf.origem||it.o===cf.origem)&&colMatch(it,q));
   const cnt={tenho:0,caminho:0,quero:0}; base.forEach(it=>{const s=stOf(it); if(cnt[s]!=null)cnt[s]++;});
-  const rows=base.filter(it=>!cf.st||(cf.st==="nao"?!stOf(it):stOf(it)===cf.st));
+  const rows=base.filter(it=>!cf.st||(cf.st==="meus"?(cf.q.trim()||["tenho","caminho"].includes(stOf(it))):cf.st==="nao"?!stOf(it):stOf(it)===cf.st));
   const card=it=>{const sp=colSpr(it), s=stOf(it), nt=notas[it.i]&&notas[it.i].texto;
     return `<article class="cc ${s?"is-"+s:""}"><button type="button" class="ccinfo ${nt?"has":""}" data-czoom="${esc(it.i)}" aria-label="${nt?"ver detalhes e nota de":"ver detalhes de"} ${esc(it.m+" "+it.e+" "+it.v)}" title="${nt?"tem nota: "+esc(nt.slice(0,80)):"detalhes e notas"}">${I(nt?"note":"dots")}</button>
       ${okSpr(sp)?`<button type="button" class="ccimg" data-czoom="${esc(it.i)}" aria-label="Ampliar ${esc(it.m+" "+it.e+" "+it.v)}"><span style="${spr(sp)}"></span></button>`:canUpload?`<button type="button" class="ccimg empty up" data-foto="${esc(it.i)}" aria-label="Enviar foto de ${esc(it.m+" "+it.e+" "+it.v)}"><span>${I("camera")}enviar foto</span></button>`:`<div class="ccimg empty"><span>sem foto</span></div>`}
@@ -2255,6 +2263,7 @@ function renderColecao(){
     </div>
     ${ui.novoCol?`<div class="ccnovo">${newCardForm({e:cf.era?cf.era.split("|")[1]:"",m:cf.m})}</div>`:""}
     <div class="chips" role="group" aria-label="Mostrar">
+      <button class="chip" data-cs="meus" aria-pressed="${cf.st==="meus"}" title="o que você tem ou já está a caminho; ao buscar, aparecem todos">Tenho + a caminho<span class="c">${cnt.tenho+cnt.caminho}</span></button>
       <button class="chip" data-cs="" aria-pressed="${!cf.st}">Todos<span class="c">${base.length}</span></button>
       <button class="chip" data-cs="tenho" aria-pressed="${cf.st==="tenho"}">Tenho<span class="c">${cnt.tenho}</span></button>
       <button class="chip" data-cs="caminho" aria-pressed="${cf.st==="caminho"}">A caminho<span class="c">${cnt.caminho}</span></button>
@@ -2439,7 +2448,9 @@ function stampHtml(){
     chips.push(`<span class="f ${n!==null&&n>7?"bad":n>2?"warn":"ok"}" title="${esc(meta.nota||"")}">varredura ${esc(fd(meta.atualizadoEm))}</span>`);
   }
   if(!chips.length)return "";
-  return `<span>atualizado:</span>${chips.join("")}`;
+  const pior=chips.some(c=>c.includes('class="f bad"'))?"bad":chips.some(c=>c.includes('class="f warn"'))?"warn":"ok";
+  const aberto=ui.gclosed["stamp"]===false;
+  return `<details class="stampd" data-gkey="stamp" ${aberto?"open":""}><summary class="f ${pior}">${pior==="ok"?"fontes em dia":pior==="warn"?"alguma fonte está atrasada":"alguma fonte está velha"}</summary><div class="stampl">${chips.join("")}</div></details>`;
 }
 // ---------- render ----------
 function render(){
