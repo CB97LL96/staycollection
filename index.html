@@ -1299,6 +1299,9 @@ nav.tabs.areas button[aria-current="page"] .badge{background:var(--accent-ink);c
 .n-ph{width:76px!important}
 .n-guess{display:grid;gap:4px;justify-items:center}
 .thumb.guess{outline:2px dashed var(--ink2);outline-offset:2px}
+.n-ico{display:inline-block;width:20px;height:20px;border-radius:50%;background-size:cover;background-position:center;vertical-align:middle;margin-right:5px;flex:none;box-shadow:0 0 0 1px var(--line)}
+.cchip.has-ico{display:inline-flex;align-items:center;padding-left:3px}
+.n-ico.g{width:26px;height:26px;margin:0 8px 0 0}
 </style>
 
 <div class="wrap">
@@ -1655,7 +1658,7 @@ function renderCegs(){
     return `<tr class="n-ir" data-k="itens" id="row-${esc(d.id)}"><td class="n-ph">${nThumb(d)}</td><td>${esc(d.membro||"")}</td><td>${esc(d.item||"")}${d.comQuem?`<small> · com ${esc(d.comQuem)}</small>`:""}</td><td>${canWrite?`<select class="n-sel" data-status="${esc(d.id)}" aria-label="Status de ${esc(d.item||"item")}">${opts.map(o=>`<option ${o===sv?"selected":""}>${esc(o)}</option>`).join("")}</select>`:esc(sv)}</td><td class="n-num">${typeof d.valor==="number"?brl(d.valor):""}</td><td class="n-acts">${canWrite&&tipoDe(d)==="Photocard / set"?`<button type="button" class="n-btn ghost" data-link="${esc(d.id)}" aria-expanded="${ui.linking===d.id}" title="ligar este item aos photocards do catálogo">cards${Array.isArray(d.cards)&&d.cards.length?` (${d.cards.length})`:""}</button>`:""}${canWrite?`<button type="button" class="n-btn ghost" data-edit="${esc(d.id)}">${ui.editing===d.id?"fechar":"editar"}</button>`:""}</td></tr>${ui.linking===d.id?`<tr><td colspan="6">${pickerHtml(d)}</td></tr>`:""}${ui.editing===d.id?`<tr><td colspan="6">${formHtml("itens",d.id,d)}</td></tr>`:""}`;};
   const cegRow=r=>{
     const key="ng|"+r.k, open=ui.gclosed[key]===false||(!!q&&rows.length<=3), doc=r.doc;
-    const head=`<tr class="n-cr ${open?"open":""}"><th scope="row"><button type="button" class="n-cb" data-n-ceg="${esc(key)}" aria-expanded="${open}">${I("chev",open?"up":"")}<span>${esc(r.nome)}</span></button></th><td class="n-hide">${esc(doc&&doc.gom||"")}</td><td>${doc?esc(doc.status||""):""}</td><td class="n-num">${r.ativos||"–"}</td><td class="n-num n-hide ${r.cnt.lib?"n-okc":""}">${r.cnt.lib||"–"}</td><td class="n-num n-hide">${r.cnt.br||"–"}</td><td class="n-num n-hide">${r.cnt.cam||"–"}</td><td class="n-num n-hide">${r.cnt.esp||"–"}</td><td class="n-num n-hide">${r.rec||"–"}</td><td class="n-num ${r.devo?"n-devo":""}">${r.devo?brl(r.devo):"–"}</td></tr>`;
+    const head=`<tr class="n-cr ${open?"open":""}"><th scope="row"><button type="button" class="n-cb" data-n-ceg="${esc(key)}" aria-expanded="${open}">${I("chev",open?"up":"")}${iconImg("grp",r.doc&&r.doc.grupo,"g")}<span>${esc(r.nome)}</span></button></th><td class="n-hide">${esc(doc&&doc.gom||"")}</td><td>${doc?esc(doc.status||""):""}</td><td class="n-num">${r.ativos||"–"}</td><td class="n-num n-hide ${r.cnt.lib?"n-okc":""}">${r.cnt.lib||"–"}</td><td class="n-num n-hide">${r.cnt.br||"–"}</td><td class="n-num n-hide">${r.cnt.cam||"–"}</td><td class="n-num n-hide">${r.cnt.esp||"–"}</td><td class="n-num n-hide">${r.rec||"–"}</td><td class="n-num ${r.devo?"n-devo":""}">${r.devo?brl(r.devo):"–"}</td></tr>`;
     if(!open)return head;
     const sheet=doc&&safeUrl(doc.planilha);
     const itens=r.it.filter(i=>!["Cancelado","Abandonado","Repassei","Claim perdida"].includes(i.status)).sort((a,b)=>String(a.membro||"").localeCompare(String(b.membro||""),"pt-BR")||String(a.item||"").localeCompare(String(b.item||""),"pt-BR"));
@@ -1934,7 +1937,9 @@ $("#view").addEventListener("submit",async e=>{const f=e.target.closest("form.cn
   }catch(err){btn.disabled=false; toast("Não deu pra criar o card")} });
 function comInfo(name){if(!name)return null;for(const c of data.comunidades.values()){if(c.nome===name)return c;}return null;}
 const okHex=c=>/^#[0-9a-f]{6}$/i.test(c||"")?c:"#8A8F99";
-function comChip(name){const c=comInfo(name); const sg=name?((c&&c.sigla)||name.replace(/[^A-Za-z]/g,"").slice(0,4).toUpperCase()):"?"; return `<span class="cchip" style="--c:${okHex(c&&c.cor)}" title="${esc(name||"sem comunidade")}">${esc(sg)}</span>`;}
+const iconKey=(t,n)=>{let h=5381; const x=String(n||"").toLowerCase().normalize("NFD").replace(/[^a-z0-9]/g,""); for(let i=0;i<x.length;i++)h=((h<<5)+h+x.charCodeAt(i))>>>0; return "icon-"+t+"-"+h.toString(16)};
+const iconImg=(t,n,cls="")=>{const f=n&&typeof fotoSpr==="function"?fotoSpr(iconKey(t,n)):null; return f&&okSpr(f)?`<span class="n-ico ${cls}" style="background-image:url('${f.u}')" aria-hidden="true"></span>`:""};
+function comChip(name){const c=comInfo(name); const sg=name?((c&&c.sigla)||name.replace(/[^A-Za-z]/g,"").slice(0,4).toUpperCase()):"?"; const ic=iconImg("com",name); return `<span class="cchip ${ic?"has-ico":""}" style="--c:${okHex(c&&c.cor)}" title="${esc(name||"sem comunidade")}">${ic}${esc(sg)}</span>`;}
 function cegInfo(name){if(!name)return null;for(const g of data.cegs.values()){if(g.nome===name)return g;}return null;}
 const grupoDe=d=>d.grupo||((cegInfo(d.ceg)||{}).grupo)||"";
 const ABERTO={cobrancas:["Pendente","A confirmar","Aguardando a GOM","Não liberado"],envios:["A pedir","A confirmar","Aguardando liberação"]};
@@ -2143,6 +2148,22 @@ function pickFoto(key){ if(!canUpload){toast("Enviar foto só funciona pra quem 
 async function saveFoto(key,file){ const blob=await shrink(file); const ty=["image/jpeg","image/png","image/webp","image/gif"].includes(blob.type)?blob.type:null; if(!ty)throw {code:"unsupported_type"};
   const r=await assetsNs.upload(blob,{type:ty}); const prev=fotos[key]; const doc={asset:r.id,at:new Date().toISOString()}; fotos={...fotos,[key]:doc}; render();
   await db.doc("fotos/"+key).set(doc); if(prev&&prev.asset&&prev.asset!==r.id){try{await assetsNs.delete(prev.asset)}catch(e){}} }
+// Ponte usada uma vez por rodada: lista os nomes conhecidos e recebe {titulo: dataUrl} lidos no WhatsApp Web.
+const nnorm=x=>String(x||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]/g,"");
+window.stayIcons={
+  targets(){return {com:list("comunidades").map(c=>c.nome).filter(Boolean),grupo:[...new Set(list("cegs").map(c=>c.grupo).filter(Boolean))]}},
+  async import(map){
+    if(!db||!assetsNs||!canUpload)return {erro:"sem permissão ou sem armazenamento"};
+    const tg=this.targets(), alvo=[...tg.com.map(n=>["com",n]),...tg.grupo.map(n=>["grp",n])];
+    const casa=(a,b)=>{const x=nnorm(a),y=nnorm(b); return x&&y&&(x===y||(Math.min(x.length,y.length)>=8&&(x.includes(y)||y.includes(x))))};
+    const feitos={com:0,grp:0}, sem=[]; const entradas=Object.entries(map);
+    for(const [t,n] of alvo){
+      const hit=entradas.find(([titulo])=>casa(titulo,n)); if(!hit){sem.push(t+":"+n);continue}
+      try{ const blob=await (await fetch(hit[1])).blob(); await saveFoto(iconKey(t,n),blob); feitos[t]++; }catch(e){sem.push(t+":"+n+" (falhou)")}
+    }
+    return {feitos,semIcone:sem.length,exemplosSem:sem.slice(0,6)};
+  }
+};
 const fotoErr=err=>toast(err&&err.code==="too_large"?"Foto grande demais":err&&err.code==="unsupported_type"?"Esse formato não dá; use JPG ou PNG":err&&err.code==="quota_or_state"?"Acabou o espaço de fotos do app":"Não deu pra enviar a foto");
 $("#fotoin").addEventListener("change",async e=>{const f=e.target.files&&e.target.files[0]; const key=fotoKey; fotoKey=null; if(!f||!key||!db||!assetsNs)return; toast("Enviando foto…"); try{await saveFoto(key,f); toast("Foto salva")}catch(err){fotoErr(err)}});
 document.addEventListener("click",async e=>{
