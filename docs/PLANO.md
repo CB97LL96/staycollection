@@ -68,8 +68,8 @@ disso na primeira mensagem, ela pediu pra não depender de memória.
 4. **Casos de teste.** Guardar exemplos de erros reais e conferir que continuam
    certos a cada mudança: planilha com várias abas, "9,45" lido como 945, robô
    apagando edição dela.
-5. **Reforma da tela de Cobranças.** Ela pediu pra lembrar: a reforma nunca foi
-   publicada.
+5. **Reforma da tela de Cobranças.** Feita em 31/10 dentro do redesenho do canhoto
+   (ver seção abaixo); falta o fluxo "checkout" de várias cobranças da mesma GOM.
 6. **Catálogo** (quando ela quiser):
    - um catálogo só, juntando várias fontes;
    - preferir a melhor informação e a foto de maior resolução;
@@ -78,6 +78,23 @@ disso na primeira mensagem, ela pediu pra não depender de memória.
    - Bias Room só pelo Chrome dela, pra nomes e versões.
    
    Fontes mapeadas em `docs/fontes-catalogo.md`.
+
+## Redesenho "Canhoto de ingresso" (31/10/2026)
+Direção em `.impeccable/surfaces/index-html.md`; mundo construído em `DESIGN.md`.
+Feito e publicado, cada etapa conferida no app (desktop e, no celular, numa janela de 390 px):
+1. `stats()` e uma só conta de "o que devo" (Pendente + "A confirmar" vencido) em Hoje, Devo e Cobranças.
+2. Devo abre com a dívida por prazo; sugestões do robô recolhidas, com "aceitar as novas de alta confiança" (pede um segundo toque).
+3. Faixa "Vencidos" em Hoje; "desfazer" em selects de status (Itens, Cobranças) e nos botões da Coleção.
+4. Celular e acessibilidade: `lang="pt-BR"`, alvos de 44 px, botões fora de `role="button"`, contraste dos contadores.
+5. Visual do canhoto (paleta lavanda e petróleo, picote, pílula cheia ou tracejada, carimbo só em vencido, claro e escuro) em Hoje, Devo e Cobranças; Itens e Coleção só ganharam a paleta nova.
+6. Cabeçalho com chip-resumo das fontes; Coleção abre em "Tenho + A caminho" (a busca mostra tudo); fontes do Google removidas.
+
+Falta ou ficou parcial:
+- Peso na Coleção: ainda carrega ~11 MB de folhas de sprites (as capas das eras no topo usam ~18 folhas). Hoje, Devo e Cobranças carregam quase nada. Ideia: capas de era menores ou sob demanda.
+- O desfazer grava dados dela, então só foi conferido pela sintaxe, não clicado ao vivo.
+- CSS ainda tem camadas antigas empilhadas; o bloco "etapa 5" no fim do `<style>` manda. Limpar as camadas velhas é uma etapa à parte.
+- Alvos de toque ainda pequenos na Coleção (botão "info" dos cards, mitigado com área de clique maior).
+- Não conferi o escuro em Itens e Coleção, nem a faixa de contraste de todos os chips de comunidade (cores por comunidade).
 
 ## Pendências abertas (30/10/2026)
 Nomes e valores ficam no app (Cobranças, filtro "A confirmar"), nunca aqui.
