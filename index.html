@@ -1141,10 +1141,14 @@ function toast(msg,action){const t=$("#toast");
   toast._t=setTimeout(()=>t.hidden=true,fn?6000:2200)}
 
 // ---------- derived ----------
+// Uma só conta de "o que devo": cobrança Pendente, mais a "A confirmar" que já passou do prazo
+// (se venceu e ninguém confirmou o pagamento, ela precisa ver). Hoje, Devo e Cobranças usam esta conta.
+const vencida=c=>{const n=daysTo(c.prazo);return n!=null&&n<0};
+const devoC=c=>c.status==="Pendente"||(c.status==="A confirmar"&&vencida(c));
 function stats(){
   const cob=list("cobrancas"), env=list("envios");
-  const pend=cob.filter(c=>c.status==="Pendente");
-  const venc=pend.filter(c=>{const n=daysTo(c.prazo);return n!=null&&n<0});
+  const pend=cob.filter(devoC);
+  const venc=pend.filter(vencida);
   const sem7=pend.filter(c=>{const n=daysTo(c.prazo);return n!=null&&n>=0&&n<=7});
   const sum=a=>a.reduce((s,c)=>s+(typeof c.valor==="number"?c.valor:0),0);
   return {pend,venc,sem7,sum,envPedir:env.filter(e=>e.status==="A pedir"),conf:cob.filter(c=>c.status==="A confirmar")};
@@ -1204,10 +1208,11 @@ function renderPainel(){
   const s=stats();
   const cob=list("cobrancas"), env=list("envios"), it=list("itens");
   const byDue=(a,b)=>(a.prazo||"9999").localeCompare(b.prazo||"9999");
-  const pagar=cob.filter(c=>c.status==="Pendente").sort(byDue);
+  const pagar=cob.filter(devoC).sort(byDue);
   const pedir=env.filter(e=>e.status==="A pedir").sort(byDue);
-  const conferir=[...cob.filter(c=>c.status==="A confirmar").map(c=>({k:"cobrancas",d:c})),...env.filter(e=>e.status==="A confirmar").map(e=>({k:"envios",d:e}))].sort((a,b)=>byDue(a.d,b.d));
-  const late=pagar.filter(c=>c.prazo&&daysTo(c.prazo)<0);
+  const conferir=[...cob.filter(c=>c.status==="A confirmar"&&!devoC(c)).map(c=>({k:"cobrancas",d:c})),...env.filter(e=>e.status==="A confirmar").map(e=>({k:"envios",d:e}))].sort((a,b)=>byDue(a.d,b.d));
+  const late=pagar.filter(vencida);
+  const pagarConf=pagar.filter(c=>c.status==="A confirmar").length;
   const libPor=n=>it.filter(x=>x.comunidade===n&&x.status==="Envio liberado").length;
   const task=(k,d,kind)=>{const key=k+":"+d.id;
     if(ui.pexp===key) return `<div class="pexp">${rowHtml(k,d)}<button class="btn ghost small" data-pexp="${esc(key)}" aria-expanded="true">${I("chev","up")}recolher</button></div>`;
@@ -1224,14 +1229,14 @@ function renderPainel(){
       <div class="tside">${dueChip(d.prazo)}${typeof d.valor==="number"?`<span class="tval">${brl(d.valor)}</span>`:""}${cta}<span class="tmore" aria-hidden="true">${I("chev")}</span></div>
     </div>`;};
   const sumPagar=s.sum(pagar);
-  const coms=list("comunidades").sort((a,b)=>(a.ordem??99)-(b.ordem??99)).map(c=>({c,pend:cob.filter(x=>x.comunidade===c.nome&&x.status==="Pendente").reduce((a,x)=>a+(x.valor||0),0),lib:libPor(c.nome),ep:env.filter(x=>x.comunidade===c.nome&&x.status==="A pedir").length})).filter(r=>r.pend||r.lib||r.ep).map(r=>({...r,prox:[...cob.filter(x=>x.comunidade===r.c.nome&&x.status==="Pendente"),...env.filter(x=>x.comunidade===r.c.nome&&x.status==="A pedir")].map(x=>x.prazo).filter(Boolean).sort()[0]||""})).sort((a,b)=>(a.prox||"9999").localeCompare(b.prox||"9999")||b.pend-a.pend);
+  const coms=list("comunidades").sort((a,b)=>(a.ordem??99)-(b.ordem??99)).map(c=>({c,pend:cob.filter(x=>x.comunidade===c.nome&&devoC(x)).reduce((a,x)=>a+(x.valor||0),0),lib:libPor(c.nome),ep:env.filter(x=>x.comunidade===c.nome&&x.status==="A pedir").length})).filter(r=>r.pend||r.lib||r.ep).map(r=>({...r,prox:[...cob.filter(x=>x.comunidade===r.c.nome&&devoC(x)),...env.filter(x=>x.comunidade===r.c.nome&&x.status==="A pedir")].map(x=>x.prazo).filter(Boolean).sort()[0]||""})).sort((a,b)=>(a.prox||"9999").localeCompare(b.prox||"9999")||b.pend-a.pend);
   const faltam=["cobrancas","envios"].reduce((a,k)=>a+list(k).filter(d=>ABERTO[k].includes(d.status)&&falta(k,d).length).length,0);
   $("#view").innerHTML=`
   <div class="dash"><div class="colL">
     <section class="hero" aria-labelledby="h-pagar">
       <div class="herotop">
         <div><p class="eyebrow">${I("coin")}pra pagar</p><p class="big" id="h-pagar">${brl(sumPagar)}</p>
-        <p class="herosub">${pagar.length} ${pagar.length===1?"cobrança":"cobranças"}${late.length?` · <b class="lateb">${I("alert")}${late.length} atrasada${late.length>1?"s":""}</b>`:" · nada atrasado"}</p></div>
+        <p class="herosub">${pagar.length} ${pagar.length===1?"cobrança":"cobranças"}${pagarConf?` (${pagarConf} a confirmar, já vencida${pagarConf>1?"s":""})`:""}${late.length?` · <b class="lateb">${I("alert")}${late.length} atrasada${late.length>1?"s":""}</b>`:" · nada atrasado"}</p></div>
       </div>
       <div class="tasks">${pagar.map(d=>task("cobrancas",d,"pagar")).join("")||`<div class="allok">${I("check")}nada pra pagar agora</div>`}</div>
     </section>
@@ -1443,7 +1448,7 @@ async function undoCobBatch(ids,prevs){
 function cobBoard(rows){
   const by=(a,b)=>(a.prazo||"9999").localeCompare(b.prazo||"9999");
   const sec=(sts)=>rows.filter(d=>sts.includes(d.status)).sort(by);
-  const pend=sec(["Pendente"]), conf=sec(["A confirmar"]), fut=sec(["Aguardando a GOM","Futura","Não liberado"]), pagas=sec(["Paga"]).sort((a,b)=>(b.pagoEm||"").localeCompare(a.pagoEm||"")), sem=sec(["Set não fechou","Cancelada"]);
+  const pend=rows.filter(devoC).sort(by), conf=sec(["A confirmar"]).filter(d=>!devoC(d)), fut=sec(["Aguardando a GOM","Futura","Não liberado"]), pagas=sec(["Paga"]).sort((a,b)=>(b.pagoEm||"").localeCompare(a.pagoEm||"")), sem=sec(["Set não fechou","Cancelada"]);
   const sum=a=>a.reduce((x,d)=>x+(typeof d.valor==="number"?d.valor:0),0);
   const semValor=a=>a.filter(d=>typeof d.valor!=="number").length;
   const abertas=[...pend,...conf]; const frescas=abertas.filter(d=>{const t=trustOf(d);return t.cls==="ok"}).length;
@@ -1452,7 +1457,7 @@ function cobBoard(rows){
   const block=(key,title,sub,arr,ic,cls,closedDef,grouped)=>{ if(!arr.length)return ""; const isOpen=ui.gclosed["cob|"+key]!=null?ui.gclosed["cob|"+key]===false:!closedDef;
     return `<details class="cobsec ${cls}" data-gkey="cob|${key}" ${isOpen?"open":""}><summary><span class="esic">${I(ic)}</span><span class="esl">${title}</span><span class="esn">${arr.length}</span>${sum(arr)?`<span class="cobsum">${brl(sum(arr))}</span>`:""}<span class="esd">${sub}</span></summary><div class="crlist">${grouped?byDay(arr):arr.map(cobRow).join("")}</div></details>`;};
   return `<div class="cobtop">
-      <div class="cobk bad"><span>pra pagar</span><b>${brl(sum(pend))}</b><small>${pend.length} ${pend.length===1?"cobrança":"cobranças"}${semValor(pend)?` · ${semValor(pend)} sem valor informado`:""}</small></div>
+      <div class="cobk bad"><span>pra pagar</span><b>${brl(sum(pend))}</b><small>${pend.length} ${pend.length===1?"cobrança":"cobranças"}${pend.some(d=>d.status==="A confirmar")?` · ${pend.filter(d=>d.status==="A confirmar").length} a confirmar já vencida${pend.filter(d=>d.status==="A confirmar").length>1?"s":""}`:""}${semValor(pend)?` · ${semValor(pend)} sem valor informado`:""}</small></div>
       <div class="cobk warn"><span>você pagou?</span><b>${conf.length}</b><small>${conf.length?brl(sum(conf))+" em dúvida"+(semValor(conf)?` · ${semValor(conf)} sem valor`:""):"nada em dúvida"}</small></div>
       <div class="cobk info"><span>ainda vão cobrar</span><b>${fut.length}</b><small>${sum(fut)?"uns "+brl(sum(fut)):"valores ainda não definidos"}</small></div>
       <div class="cobk ${!abertas.length?"muted":frescas===abertas.length?"ok":"warn"}" title="Quantas cobranças em aberto (pra pagar + você pagou?) foram conferidas com a fonte (planilha, grupo etc.) nos últimos 2 dias. Depois de 2 dias sem conferir o badge da cobrança fica amarelo; depois de 7 dias, ou se nunca foi conferida, fica vermelho."><span>confiança</span><b>${abertas.length?`${frescas}/${abertas.length}`:"–"}</b><small>${abertas.length?"em aberto conferidas nos últimos 2 dias":"nada em aberto pra conferir"}</small></div>
@@ -1572,7 +1577,7 @@ function comGrid(rows){
   const cob=list("cobrancas"), it=list("itens"), env=list("envios"), cg=list("cegs");
   return `<div class="comgrid">${rows.map(d=>{
     const n=d.nome; const ci=d;
-    const pend=cob.filter(x=>x.comunidade===n&&x.status==="Pendente").reduce((a,x)=>a+(x.valor||0),0);
+    const pend=cob.filter(x=>x.comunidade===n&&devoC(x)).reduce((a,x)=>a+(x.valor||0),0);
     const abertos=it.filter(x=>x.comunidade===n&&bkOf(x.status)).length;
     const lib=it.filter(x=>x.comunidade===n&&x.status==="Envio liberado").length;
     const nceg=cg.filter(x=>x.comunidade===n).length;
@@ -2240,7 +2245,7 @@ function renderDevo(){
   const cob=list("cobrancas").filter(c=>DEVO_ST.includes(c.status));
   const by=new Map(); cob.forEach(c=>{const k=c.comunidade||"Sem comunidade"; if(!by.has(k))by.set(k,[]); by.get(k).push(c)});
   const sum=a=>a.reduce((s,c)=>s+(typeof c.valor==="number"?c.valor:0),0);
-  const pend=cob.filter(c=>c.status==="Pendente");
+  const pend=cob.filter(devoC);
   const semV=cob.filter(c=>typeof c.valor!=="number").length;
   const groups=[...by].map(([n,a])=>[n,a.sort((x,y)=>(x.prazo||"9").localeCompare(y.prazo||"9")||String(x.referente).localeCompare(String(y.referente)))]).sort((a,b)=>sum(b[1])-sum(a[1]));
   const row=d=>{
@@ -2261,7 +2266,7 @@ function renderDevo(){
       <div class="actions"><div><button class="btn" type="submit">Salvar</button><button class="btn ghost" type="button" data-devo-edit="${esc(d.id)}">Cancelar</button></div></div></form>`+"</article>";
   };
   $("#view").innerHTML=caixaHtml()+`<div class="dvhero"><h2>O que devo</h2><span class="dvtot">${brl(sum(pend))}</span></div>
-    <p class="dvhint">${pend.length} ${pend.length===1?"cobrança pendente":"cobranças pendentes"}${cob.length>pend.length?` · ${cob.length-pend.length} pra conferir`:""}${semV?` · ${semV} sem valor`:""}. Só mostra "Pendente" e "A confirmar". Confira no grupo antes de pagar.</p>
+    <p class="dvhint">${pend.length} ${pend.length===1?"cobrança pra pagar":"cobranças pra pagar"}${pend.some(c=>c.status==="A confirmar")?` (inclui ${pend.filter(c=>c.status==="A confirmar").length} "a confirmar" já vencida${pend.filter(c=>c.status==="A confirmar").length>1?"s":""})`:""}${cob.length>pend.length?` · ${cob.length-pend.length} pra conferir, ainda no prazo, fora do total`:""}${semV?` · ${semV} sem valor`:""}. Confira no grupo antes de pagar.</p>
     ${groups.map(([n,a])=>`<div class="dvcom">${comChip(n==="Sem comunidade"?"":n)}<h3>${esc(n)}</h3><b>${brl(sum(a))||"–"}</b></div>${a.map(row).join("")}`).join("")||'<div class="dvempty">Nada pendente. 🎉</div>'}`;
 }
 $("#view").addEventListener("click",e=>{const b=e.target.closest("[data-devo-edit]"); if(!b||ui.tab!=="devo")return; const id=b.dataset.devoEdit; ui.devoEdit=ui.devoEdit===id?null:id; render();});
