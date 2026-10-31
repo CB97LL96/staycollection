@@ -1053,6 +1053,12 @@ details.cobsec:not([open])>summary .esl::after{content:" ▸";color:var(--ink2);
 .dvlink{background:none;border:none;padding:0;color:var(--ink);font-weight:700;cursor:pointer;text-decoration:underline}
 .dv form.edit{border-radius:0}
 .dvempty{padding:28px 0;text-align:center;color:var(--ink2)}
+.cxfold{margin:18px 0 8px;border:1px solid var(--line,rgba(0,0,0,.12));border-radius:14px;padding:0 12px}
+.cxfold>summary{cursor:pointer;padding:12px 2px;font-weight:600;list-style:none;display:flex;gap:10px;align-items:center;min-height:44px}
+.cxfold>summary::-webkit-details-marker{display:none}
+.cxfold>summary .cxn{font-family:var(--f-num);font-weight:700}
+.cxall{margin:0 0 12px}
+.dvq{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:2px}
 .cxbox{margin-bottom:18px}.cxbox .dv{box-shadow:0 0 0 2px var(--accent),var(--shadow)}
 .cxr{border-top:1px solid var(--line)}
 </style>
@@ -2241,17 +2247,29 @@ $("#view").addEventListener("click",async e=>{const b=e.target.closest("[data-cx
     await db.doc("caixa/"+id).update({registros:regs});
   }catch(err){ b.disabled=false; toast("Não deu pra salvar; tente de novo"); }
 });
+$("#view").addEventListener("click",async e=>{const b=e.target.closest("[data-cxall]"); if(!b||ui.tab!=="devo"||!db)return;
+  if(!b.classList.contains("armed")){b.classList.add("armed");b.textContent="Confirmar: aceitar todas";setTimeout(()=>{if(b.isConnected){b.classList.remove("armed");b.textContent=b.dataset.t||"aceitar todas de alta confiança"}},4000);return}
+  b.disabled=true; let ok=0, fail=0;
+  for(const c of caixaPendentes()){
+    const regs=(c.registros||[]).map(r=>({...r})); let mudou=false;
+    for(const r of regs){ if(r.estado!=="pendente"||r.confianca!=="alta"||(r.acao&&r.acao!=="nova"))continue;
+      try{ const col=DESTINO[r.destino]?r.destino:"cobrancas"; await db.collection(col).add(r.novo?{...r.novo,aviso:isoToday(),conferidoEm:isoToday()}:registroParaDoc(r,c)); r.estado="aceito"; mudou=true; ok++; }catch(err){ fail++; } }
+    if(mudou){ try{ await db.doc("caixa/"+c.id).update({registros:regs}); }catch(err){ fail++; } }
+  }
+  toast(fail?`${ok} aceitas, ${fail} não salvaram; tente de novo`:`${ok} aceitas`);
+});
 function renderDevo(){
   const cob=list("cobrancas").filter(c=>DEVO_ST.includes(c.status));
   const by=new Map(); cob.forEach(c=>{const k=c.comunidade||"Sem comunidade"; if(!by.has(k))by.set(k,[]); by.get(k).push(c)});
   const sum=a=>a.reduce((s,c)=>s+(typeof c.valor==="number"?c.valor:0),0);
   const pend=cob.filter(devoC);
   const semV=cob.filter(c=>typeof c.valor!=="number").length;
-  const groups=[...by].map(([n,a])=>[n,a.sort((x,y)=>(x.prazo||"9").localeCompare(y.prazo||"9")||String(x.referente).localeCompare(String(y.referente)))]).sort((a,b)=>sum(b[1])-sum(a[1]));
+  const ordered=[...cob].sort((x,y)=>(x.prazo||"9").localeCompare(y.prazo||"9")||String(x.referente).localeCompare(String(y.referente)));
   const row=d=>{
     const sheet=safeUrl(cegSheet(d.ceg)), grupo=grupoDe(d), editing=ui.devoEdit===d.id;
     const ceg=cegLbl(d);
     const head=`<div class="dvmain"><div class="dvt"><b>${esc(d.referente||"sem título")}${d.status==="A confirmar"?'<span class="dvtag">conferir</span>':""}</b>
+      <div class="dvq">${dueChip(d.prazo)}${comChip(d.comunidade||"")}</div>
       <small>${[ceg&&"CEG: "+esc(ceg), grupo?"grupo: "+esc(grupo):'<span style="color:var(--warn)">sem nome do grupo</span>'].filter(Boolean).join(" · ")}</small></div>
       <div class="dvv ${typeof d.valor==="number"?"":"sem"}">${typeof d.valor==="number"?brl(d.valor):"sem valor"}</div>
       ${d.notaMinha?`<div class="dvnota">${esc(d.notaMinha)}</div>`:""}
@@ -2265,9 +2283,12 @@ function renderDevo(){
       <label class="wide">Minha nota (pix, pra quem, onde mandar o comprovante...)<textarea name="notaMinha">${esc(d.notaMinha||"")}</textarea></label></div>
       <div class="actions"><div><button class="btn" type="submit">Salvar</button><button class="btn ghost" type="button" data-devo-edit="${esc(d.id)}">Cancelar</button></div></div></form>`+"</article>";
   };
-  $("#view").innerHTML=caixaHtml()+`<div class="dvhero"><h2>O que devo</h2><span class="dvtot">${brl(sum(pend))}</span></div>
+  const nSug=caixaPendentes().reduce((n,c)=>n+(c.registros||[]).filter(r=>r.estado==="pendente").length,0);
+  const nAlta=caixaPendentes().reduce((n,c)=>n+(c.registros||[]).filter(r=>r.estado==="pendente"&&r.confianca==="alta"&&(!r.acao||r.acao==="nova")).length,0);
+  const sug=caixaPendentes().length?`<details class="cxfold" data-gkey="devo|sug" ${ui.gclosed["devo|sug"]===false?"open":""}><summary>${I("chev")}Sugestões do robô <span class="cxn">${nSug}</span><span class="hint">ele só sugere; você decide</span></summary>${nAlta&&canWrite?`<div class="cxall"><button type="button" class="btn small" data-cxall data-t="aceitar as ${nAlta} novas de alta confiança">aceitar as ${nAlta} novas de alta confiança</button></div>`:""}${caixaHtml()}</details>`:"";
+  $("#view").innerHTML=`<div class="dvhero"><h2>O que devo</h2><span class="dvtot">${brl(sum(pend))}</span></div>
     <p class="dvhint">${pend.length} ${pend.length===1?"cobrança pra pagar":"cobranças pra pagar"}${pend.some(c=>c.status==="A confirmar")?` (inclui ${pend.filter(c=>c.status==="A confirmar").length} "a confirmar" já vencida${pend.filter(c=>c.status==="A confirmar").length>1?"s":""})`:""}${cob.length>pend.length?` · ${cob.length-pend.length} pra conferir, ainda no prazo, fora do total`:""}${semV?` · ${semV} sem valor`:""}. Confira no grupo antes de pagar.</p>
-    ${groups.map(([n,a])=>`<div class="dvcom">${comChip(n==="Sem comunidade"?"":n)}<h3>${esc(n)}</h3><b>${brl(sum(a))||"–"}</b></div>${a.map(row).join("")}`).join("")||'<div class="dvempty">Nada pendente. 🎉</div>'}`;
+    ${ordered.map(row).join("")||'<div class="dvempty">Nada pendente. 🎉</div>'}${sug}`;
 }
 $("#view").addEventListener("click",e=>{const b=e.target.closest("[data-devo-edit]"); if(!b||ui.tab!=="devo")return; const id=b.dataset.devoEdit; ui.devoEdit=ui.devoEdit===id?null:id; render();});
 $("#view").addEventListener("submit",async e=>{const f=e.target.closest("form.devoform"); if(!f||!db)return; e.preventDefault();
