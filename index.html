@@ -1053,6 +1053,11 @@ details.cobsec:not([open])>summary .esl::after{content:" ▸";color:var(--ink2);
 .dvlink{background:none;border:none;padding:0;color:var(--ink);font-weight:700;cursor:pointer;text-decoration:underline}
 .dv form.edit{border-radius:0}
 .dvempty{padding:28px 0;text-align:center;color:var(--ink2)}
+.vencfaixa{margin:6px 0 14px;border:1px solid var(--bad);border-radius:14px;padding:0 12px;background:var(--bad-bg)}
+.vencfaixa>summary{cursor:pointer;display:flex;align-items:center;gap:10px;min-height:48px;list-style:none;font-weight:700;color:var(--bad)}
+.vencfaixa>summary::-webkit-details-marker{display:none}
+.vencfaixa .vn{font-family:var(--f-num);font-size:20px}.vencfaixa .vs{margin-left:auto;font-family:var(--f-num)}
+.vencfaixa .tasks{padding-bottom:10px}
 .cxfold{margin:18px 0 8px;border:1px solid var(--line,rgba(0,0,0,.12));border-radius:14px;padding:0 12px}
 .cxfold>summary{cursor:pointer;padding:12px 2px;font-weight:600;list-style:none;display:flex;gap:10px;align-items:center;min-height:44px}
 .cxfold>summary::-webkit-details-marker{display:none}
@@ -1219,6 +1224,9 @@ function renderPainel(){
   const conferir=[...cob.filter(c=>c.status==="A confirmar"&&!devoC(c)).map(c=>({k:"cobrancas",d:c})),...env.filter(e=>e.status==="A confirmar").map(e=>({k:"envios",d:e}))].sort((a,b)=>byDue(a.d,b.d));
   const late=pagar.filter(vencida);
   const pagarConf=pagar.filter(c=>c.status==="A confirmar").length;
+  const pedirLate=pedir.filter(vencida);
+  const vencidos=[...late.map(d=>({k:"cobrancas",d,kind:"pagar"})),...pedirLate.map(d=>({k:"envios",d,kind:"pedir"}))].sort((a,b)=>byDue(a.d,b.d));
+  const sumVenc=s.sum(late);
   const libPor=n=>it.filter(x=>x.comunidade===n&&x.status==="Envio liberado").length;
   const task=(k,d,kind)=>{const key=k+":"+d.id;
     if(ui.pexp===key) return `<div class="pexp">${rowHtml(k,d)}<button class="btn ghost small" data-pexp="${esc(key)}" aria-expanded="true">${I("chev","up")}recolher</button></div>`;
@@ -1238,13 +1246,14 @@ function renderPainel(){
   const coms=list("comunidades").sort((a,b)=>(a.ordem??99)-(b.ordem??99)).map(c=>({c,pend:cob.filter(x=>x.comunidade===c.nome&&devoC(x)).reduce((a,x)=>a+(x.valor||0),0),lib:libPor(c.nome),ep:env.filter(x=>x.comunidade===c.nome&&x.status==="A pedir").length})).filter(r=>r.pend||r.lib||r.ep).map(r=>({...r,prox:[...cob.filter(x=>x.comunidade===r.c.nome&&devoC(x)),...env.filter(x=>x.comunidade===r.c.nome&&x.status==="A pedir")].map(x=>x.prazo).filter(Boolean).sort()[0]||""})).sort((a,b)=>(a.prox||"9999").localeCompare(b.prox||"9999")||b.pend-a.pend);
   const faltam=["cobrancas","envios"].reduce((a,k)=>a+list(k).filter(d=>ABERTO[k].includes(d.status)&&falta(k,d).length).length,0);
   $("#view").innerHTML=`
+  ${vencidos.length?`<details class="vencfaixa" data-gkey="hoje|venc" ${ui.gclosed["hoje|venc"]===true?"":"open"}><summary>${I("alert")}<span class="vl">Vencidos</span><span class="vn">${vencidos.length}</span>${sumVenc?`<span class="vs">${brl(sumVenc)}</span>`:""}</summary><div class="tasks">${vencidos.map(x=>task(x.k,x.d,x.kind)).join("")}</div></details>`:""}
   <div class="dash"><div class="colL">
     <section class="hero" aria-labelledby="h-pagar">
       <div class="herotop">
         <div><p class="eyebrow">${I("coin")}pra pagar</p><p class="big" id="h-pagar">${brl(sumPagar)}</p>
         <p class="herosub">${pagar.length} ${pagar.length===1?"cobrança":"cobranças"}${pagarConf?` (${pagarConf} a confirmar, já vencida${pagarConf>1?"s":""})`:""}${late.length?` · <b class="lateb">${I("alert")}${late.length} atrasada${late.length>1?"s":""}</b>`:" · nada atrasado"}</p></div>
       </div>
-      <div class="tasks">${pagar.map(d=>task("cobrancas",d,"pagar")).join("")||`<div class="allok">${I("check")}nada pra pagar agora</div>`}</div>
+      <div class="tasks">${pagar.filter(d=>!vencida(d)).map(d=>task("cobrancas",d,"pagar")).join("")||(pagar.length?"":`<div class="allok">${I("check")}nada pra pagar agora</div>`)}</div>
     </section>
     <section class="blockp pconf" aria-labelledby="h-conf"><h2 id="h-conf">${I("help")}Conferir</h2><p class="hint">não sei se já foi pago ou pedido; confirme e mude o status</p>
       <div class="tasks">${conferir.map(x=>task(x.k,x.d,"conf")).join("")||`<div class="allok">${I("check")}nada pra conferir</div>`}</div></section>
@@ -1256,7 +1265,7 @@ function renderPainel(){
       ${faltam?`<p class="quiet">${I("spark")}${faltam} cobranças ou envios em aberto sem grupo, prazo ou link</p>`:""}
     </aside>
     <section class="blockp pedir" aria-labelledby="h-pedir"><h2 id="h-pedir">${I("truck")}Pedir envio</h2>
-      <div class="tasks">${pedir.map(d=>task("envios",d,"pedir")).join("")||`<div class="allok">${I("check")}nenhum envio pra pedir</div>`}</div></section>
+      <div class="tasks">${pedir.filter(d=>!vencida(d)).map(d=>task("envios",d,"pedir")).join("")||(pedir.length?"":`<div class="allok">${I("check")}nenhum envio pra pedir</div>`)}</div></section>
     </div>
 
     ${coms.length?`<section class="blockp wide" aria-labelledby="h-com"><h2 id="h-com">${I("chat")}Por comunidade</h2><p class="hint">o que tem pra fazer em cada uma. Toque no número pra ir direto pro que ele conta.</p>
@@ -1786,7 +1795,10 @@ $("#view").addEventListener("change",async e=>{
   const s=e.target.closest("[data-status]"); if(!s)return;
   const k=kindOf(s), c=COLS[k], patch={[c.status]:s.value};
   if(k==="cobrancas"&&s.value==="Paga"){const cur=data[k].get(s.dataset.status);if(cur&&!cur.pagoEm)patch.pagoEm=isoToday();}
-  const save=async()=>{ try{await db.doc(k+"/"+s.dataset.status).update(patch);toast(s.value==="Paga"?"Marcada como paga":"Status: "+s.value)}
+  const id=s.dataset.status, prev=data[k].get(id), back={[c.status]:prev?prev[c.status]??"":""};
+  if(k==="cobrancas")back.pagoEm=(prev&&prev.pagoEm)||null;
+  const undo=async()=>{ try{await db.doc(k+"/"+id).update(back);toast("Desfeito")}catch(err){toast("Não deu pra desfazer",undo)} };
+  const save=async()=>{ try{await db.doc(k+"/"+id).update(patch);toast(s.value==="Paga"?"Marcada como paga":"Status: "+s.value,{label:"desfazer",fn:undo})}
     catch(err){ render(); toast("Não deu pra salvar; o status voltou como estava",save) } };
   await save();
 });
@@ -2183,8 +2195,10 @@ $("#view").addEventListener("click",async e=>{
   const slug=MSLUG(it.m); const cur={...(posse[slug]||{})};
   const novo=cur[it.i]===b.dataset.cst?"":b.dataset.cst;
   if(novo)cur[it.i]=novo; else delete cur[it.i];
+  const antes={...(posse[slug]||{})};
   posse={...posse,[slug]:cur}; renderColecao();
-  try{await db.doc("colecao/"+slug).set({s:cur});}catch(err){toast("Não deu pra salvar; tente de novo")}
+  const undo=async()=>{ posse={...posse,[slug]:antes}; renderColecao(); try{await db.doc("colecao/"+slug).set({s:antes});toast("Desfeito")}catch(err){toast("Não deu pra desfazer")} };
+  try{await db.doc("colecao/"+slug).set({s:cur});toast(novo?"Marcado: "+novo:"Marca removida",{label:"desfazer",fn:undo})}catch(err){posse={...posse,[slug]:antes};renderColecao();toast("Não deu pra salvar; voltou como estava")}
 });
 
 $("#view").addEventListener("submit",async e=>{const f=e.target.closest("#ovform"); if(!f||!db)return; e.preventDefault();
