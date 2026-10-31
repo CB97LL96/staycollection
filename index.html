@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html lang="pt-BR"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Coleção SKZ</title>
 <script>(function(){var t="light";try{var v=localStorage.getItem("cegs-theme");if(v==="dark"||v==="light")t=v;}catch(e){}document.documentElement.setAttribute("data-theme",t);})();</script>
 <meta name="color-scheme" content="light dark">
@@ -1066,6 +1066,19 @@ details.cobsec:not([open])>summary .esl::after{content:" ▸";color:var(--ink2);
 .dvq{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:2px}
 .cxbox{margin-bottom:18px}.cxbox .dv{box-shadow:0 0 0 2px var(--accent),var(--shadow)}
 .cxr{border-top:1px solid var(--line)}
+/* ---- etapa 4: toque, contraste e foco (celular e acessibilidade) ---- */
+nav.tabs .badge,nav.tabs.areas .badge,nav.subtabs .badge{background:#A82D63;color:#fff}
+.cobk.warn b,.cobk.info b,.cobk.ok b{color:var(--ink)}
+.cobk.bad b{color:var(--bad)}
+.tmain{cursor:pointer}
+.tmain:focus-visible,.crt:focus-visible,.ername:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
+@media (pointer:coarse),(max-width:720px){
+  .cta,.ctname,.ctv,.dvlink,.icon-btn,a.lnk,.btn.small,.themebtn,.seg button,nav.tabs button,nav.subtabs button,.toastbtn,details>summary{min-height:44px}
+  .cta,.ctv,.dvlink,.icon-btn,a.lnk,.toastbtn,.ctname{min-width:44px;display:inline-flex;align-items:center;justify-content:center}
+  .themebtn{height:44px}
+  .seg button{min-width:44px}
+  .hint a,.pcact a,.crsrc a{display:inline-flex;align-items:center;min-height:44px}
+}
 </style>
 
 <div class="wrap">
@@ -1237,9 +1250,9 @@ function renderPainel(){
     const title=kind==="pedir"?(d.gom||d.comunidade):k==="envios"?"envio: "+(d.gom||d.comunidade):d.referente;
     const cl=cegLbl(d)||d.ceg||""; const sub=kind==="pedir"?`${libPor(d.comunidade)?`<b>${libPor(d.comunidade)} itens liberados</b> · `:""}${esc(d.comunidade||"")}`:esc([cl,d.comunidade].filter((x,i,a)=>x&&a.indexOf(x)===i).join(" · "));
     const ci=comInfo(d.comunidade);
-    return `<div class="task ${kind==="conf"?"tconf":kind} ${d.prazo&&daysTo(d.prazo)<0?"is-late":""}" style="--c:${okHex(ci&&ci.cor)}" data-pexp="${esc(key)}" role="button" tabindex="0" aria-expanded="false">
+    return `<div class="task ${kind==="conf"?"tconf":kind} ${d.prazo&&daysTo(d.prazo)<0?"is-late":""}" style="--c:${okHex(ci&&ci.cor)}" data-pexp="${esc(key)}">
       <span class="tic">${I(ic)}</span>
-      <div class="tmain"><div class="tt">${esc(title||"")}</div><div class="ts">${comChip(d.comunidade)}${sub}</div></div>
+      <div class="tmain" role="button" tabindex="0" aria-expanded="false"><div class="tt">${esc(title||"")}</div><div class="ts">${comChip(d.comunidade)}${sub}</div></div>
       <div class="tside">${dueChip(d.prazo)}${typeof d.valor==="number"?`<span class="tval">${brl(d.valor)}</span>`:""}${cta}<span class="tmore" aria-hidden="true">${I("chev")}</span></div>
     </div>`;};
   const sumPagar=s.sum(pagar);
@@ -1283,7 +1296,7 @@ function renderPainel(){
 }
 $("#view").addEventListener("click",e=>{if(ui.tab!=="painel")return; if(e.target.closest("a,select,input,textarea,form,[data-copy],[data-edit],[data-del],[data-cancel],[data-goto],[data-link]"))return; const g=e.target.closest("[data-pexp]");if(!g)return;ui.pexp=ui.pexp===g.dataset.pexp?null:g.dataset.pexp;ui.editing=null;render();});
 $("#view").addEventListener("click",e=>{const g=e.target.closest("[data-genv]"); if(!g)return; const n=g.dataset.genv; ui.tab="envios"; ui.com=n; ui.envAll=true; ui.gclosed["envrow|"+n]=false; ui.q=""; ui.editing=null; saveUi(); render(); window.scrollTo({top:0});});
-$("#view").addEventListener("keydown",e=>{if(ui.tab!=="painel"||(e.key!=="Enter"&&e.key!==" "))return; const g=e.target.closest(".task[data-pexp]"); if(!g||e.target!==g)return; e.preventDefault(); g.click();});
+$("#view").addEventListener("keydown",e=>{if(ui.tab!=="painel"||(e.key!=="Enter"&&e.key!==" "))return; const g=e.target.closest(".tmain[role=button]"); if(!g||e.target!==g)return; e.preventDefault(); g.click();});
 
 // ---------- lists ----------
 const SORTS={padrao:"Status (padrão)",prazo:"Prazo mais próximo",valorDesc:"Maior valor",valorAsc:"Menor valor",comunidade:"Comunidade",ceg:"CEG",nome:"Nome (A a Z)",membro:"Membro"};
@@ -1404,9 +1417,9 @@ function cobRow(d){
   const selBlocked=d.status==="Pendente"&&selPin!=null&&(d.comunidade||"")!==selPin;
   const chk=d.status==="Pendente"&&canWrite?`<label class="cobchk" title="${selBlocked?"a seleção pra liquidar em lote é limitada a uma comunidade por vez":"selecionar pra liquidar em lote"}"><input type="checkbox" data-cobchk="${esc(d.id)}" ${ui.cobSel.has(d.id)?"checked":""} ${selBlocked?"disabled":""} aria-label="Selecionar pra liquidar em lote: ${esc(d.referente||"sem título")}, ${typeof d.valor==="number"?brl(d.valor):"valor não informado"}"></label>`:"";
   return `<div class="crow ${late?"is-late":""} ${open?"open":""} ${ui.cobSel.has(d.id)?"is-sel":""}" data-k="cobrancas" id="row-${esc(d.id)}" style="--c:${okHex((comInfo(d.comunidade)||{}).cor)}">
-    <div class="crmain ${chk?"haschk":""}" data-cexp="${esc(d.id)}" role="button" tabindex="0" aria-expanded="${open}">
+    <div class="crmain ${chk?"haschk":""}" data-cexp="${esc(d.id)}">
       ${chk}
-      <div class="crt">${comChip(d.comunidade)}<b>${esc(d.referente||"")}</b><span class="crs">${esc([cegLbl(d)||d.ceg,d.tipo].filter(Boolean).join(" · "))}</span></div>
+      <div class="crt" role="button" tabindex="0" aria-expanded="${open}">${comChip(d.comunidade)}<b>${esc(d.referente||"")}</b><span class="crs">${esc([cegLbl(d)||d.ceg,d.tipo].filter(Boolean).join(" · "))}</span></div>
       <div class="crv">${typeof d.valor==="number"?`<b>${brl(d.valor)}</b>`:`<small class="nota">valor não informado</small>`}</div>
       <div class="crd">${["Pendente","A confirmar"].includes(d.status)?dueChip(d.prazo):d.status==="Paga"&&d.pagoEm?`<span class="due none">${I("check")}paga ${fd(d.pagoEm)}</span>`:""}</div>
       <div class="crtrust ${tr.cls}" title="${esc((tr.cls==="ok"?"Conferida com a fonte há pouco tempo. ":tr.cls==="warn"?"Já faz um tempo que não é conferida com a fonte; vale confirmar de novo. ":"Ainda não foi comparada com a fonte original. ")+(d.prova||"sem fonte anotada"))}">${I(tr.ic)}${esc(tr.txt)}</div>
@@ -1501,7 +1514,7 @@ $("#view").addEventListener("click",async e=>{ if(ui.tab!=="cobrancas")return;
       catch(err){ data.cobrancas.set(id,prev); render(); toast("Não deu pra salvar; a cobrança voltou como estava",save) } };
     await save(); return; }
   const h=e.target.closest("[data-cexp]"); if(!h)return; ui.cexp=ui.cexp===h.dataset.cexp?null:h.dataset.cexp; ui.editing=null; render(); });
-$("#view").addEventListener("keydown",e=>{if(ui.tab!=="cobrancas"||(e.key!=="Enter"&&e.key!==" "))return; const h=e.target.closest(".crmain"); if(!h||e.target!==h)return; e.preventDefault(); h.click();});
+$("#view").addEventListener("keydown",e=>{if(ui.tab!=="cobrancas"||(e.key!=="Enter"&&e.key!==" "))return; const h=e.target.closest(".crt[role=button]"); if(!h||e.target!==h)return; e.preventDefault(); h.click();});
 function bodyFor(k,rows){
   const grouped=(ui.sort[k]||"padrao")==="padrao";
   if(k==="comunidades") return grouped?comGrid(rows):`<div class="list">${rows.map(d=>rowHtml(k,d)).join("")||EMPTY}</div>`;
@@ -1559,8 +1572,8 @@ function envBoard(envRows){
     const ci=comInfo(r.n), key="envrow|"+r.n, open=ui.gclosed[key]===false; const m=r.main;
     const u=m&&firstUrl(m.comoPedir), pu=m&&!u&&safeUrl(m.provaLink);
     const VERB={"A pedir":"pedir pra","A confirmar":"conferir com","Aguardando liberação":"esperando","Pedido":"pedido com","Enviado":"enviado por","Recebido":"recebido de"};
-    const head=`<div class="erow ${r.sec}" data-gtoggle="${esc(key)}" role="button" tabindex="0" aria-expanded="${open}" style="--c:${okHex(ci&&ci.cor)}">
-      <div class="ername">${comChip(r.n)}<div><b>${esc(r.n)}</b><small>${m?`${esc(VERB[m.status]||"")} ${esc(m.gom||"")}`:"sem envio anotado"}${r.who.length?` · itens com ${esc(r.who.slice(0,3).join(", "))}${r.who.length>3?"…":""}`:""}</small></div></div>
+    const head=`<div class="erow ${r.sec}" data-gtoggle="${esc(key)}" style="--c:${okHex(ci&&ci.cor)}">
+      <div class="ername" role="button" tabindex="0" aria-expanded="${open}">${comChip(r.n)}<div><b>${esc(r.n)}</b><small>${m?`${esc(VERB[m.status]||"")} ${esc(m.gom||"")}`:"sem envio anotado"}${r.who.length?` · itens com ${esc(r.who.slice(0,3).join(", "))}${r.who.length>3?"…":""}`:""}</small></div></div>
       <div class="erbar">${bar(r)}<small>${r.cnt.lib?`<b>${r.cnt.lib}</b> de ${r.total} liberados`:`${r.total} ${r.total===1?"item":"itens"}, nenhum liberado`}</small></div>
       <div class="eract"><span class="stg ${r.sec}">${esc(LBL[r.sec])}</span>${m&&["A pedir","A confirmar","Aguardando liberação"].includes(m.status)?dueChip(m.prazo):""}${r.sec==="pedir"&&u?`<a class="cta" href="${esc(u)}" target="_blank" rel="noopener">pedir${I("ext")}</a>`:r.sec==="pedir"&&pu?`<a class="cta sec" href="${esc(pu)}" target="_blank" rel="noopener">onde pedir${I("ext")}</a>`:""}<span class="tmore">${I("chev",open?"up":"")}</span></div>
     </div>`;
@@ -1766,7 +1779,7 @@ function formHtml(k,id,d){
 
 // list interactions
 $("#view").addEventListener("click",e=>{const ea=e.target.closest("[data-envall]"); if(ea){ui.envAll=ea.dataset.envall==="1"; render(); return}});
-$("#view").addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches(".erow")){e.preventDefault();e.target.click();}});
+$("#view").addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches(".ername")){e.preventDefault();e.target.click();}});
 $("#view").addEventListener("click",e=>{if(e.target.closest("a,button:not([data-gtoggle]),select,input,textarea,form"))return; const t=e.target.closest("[data-gtoggle]"); if(!t)return; const k=t.dataset.gtoggle; ui.gclosed[k]=ui.gclosed[k]===false?true:false; render();});
 $("#view").addEventListener("click",async e=>{
   const lb=e.target.closest("[data-link]"); if(lb){ui.linking=ui.linking===lb.dataset.link?null:lb.dataset.link; ui.lq=null; render(); return}
