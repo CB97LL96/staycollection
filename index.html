@@ -1167,6 +1167,104 @@ nav.tabs.areas button[aria-current="page"] .badge{background:var(--accent-ink);c
 .stampl{display:flex;flex-wrap:wrap;gap:4px 6px;margin-top:6px}
 #ajudaAtualizar{background:none;border:none;padding:0;margin-top:2px!important;font-size:13px;color:var(--ink2)}
 #ajudaAtualizar>summary{min-height:32px;display:flex;align-items:center}
+
+/* ===== estrutura nova (n-*): componentes do zero para Hoje e Pedidos ===== */
+.n-page{display:grid;gap:22px;margin-top:14px}
+.n-resumo{display:grid;gap:4px}
+.n-total{margin:0;font-size:40px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1}
+.n-total span{font-size:15px;font-weight:600;color:var(--ink2);letter-spacing:0;margin-left:8px}
+.n-sub{margin:0;color:var(--ink2)}
+.n-bad{color:var(--bad)}
+.n-sec h2,.n-fold>summary{display:flex;align-items:baseline;gap:10px;font-size:17px;font-weight:700;margin:0 0 10px}
+.n-sec.venc h2{color:var(--bad)}
+.n-soma{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums}
+.n-cnt{font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink2);background:var(--sunk);border-radius:999px;padding:0 8px;min-width:22px;text-align:center}
+.n-vazio{color:var(--ink2);margin:0;padding:4px 0}
+.n-dica,.n-dica2{color:var(--ink2);font-size:13px;font-weight:400}
+.n-dica2{margin:8px 0 0}
+.n-tks{display:grid;gap:10px}
+.n-tk{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;transition:border-color .18s ease-out}
+.n-tk:hover{border-color:var(--ink2)}
+.n-tk-main{appearance:none;background:none;border:0;color:inherit;font:inherit;text-align:left;cursor:pointer;display:grid;grid-template-columns:var(--stub) minmax(0,1fr) auto;align-items:stretch;padding:0;width:100%;min-width:0}
+.n-tk-main:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:10px}
+.n-tk-body{display:grid;gap:3px;padding:12px;align-self:center;min-width:0}
+.n-tk-t{font-weight:700;overflow-wrap:anywhere;line-height:1.25}
+.n-tk-s{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;color:var(--ink2);font-size:13.5px;overflow-wrap:anywhere}
+.n-ok{color:var(--ok)}
+.n-tk-r{display:grid;justify-items:end;align-content:center;gap:4px;padding:12px 12px 12px 0}
+.n-val{font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.n-val.sem{font-weight:400;font-size:13px;color:var(--ink2)}
+.n-tk-st{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.n-tk-act{display:flex;gap:8px;align-items:center;padding:12px 12px 12px 0;flex-wrap:wrap;justify-content:flex-end}
+.n-tk .n-det{grid-column:1/-1}
+.n-tk::before,.n-tk::after,.n-com-h::before,.n-com-h::after{content:"";position:absolute;left:calc(var(--stub) - 8px);width:14px;height:14px;border-radius:50%;background:var(--bg);border:1px solid var(--line);z-index:1;pointer-events:none}
+.n-tk::before{top:-8px;clip-path:inset(50% 0 0 0)}.n-tk::after{bottom:-8px;clip-path:inset(0 0 50% 0)}
+.n-btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:0 14px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-weight:700;font-size:14px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.n-btn:hover{border-color:var(--ink2)}
+.n-btn.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.n-btn.ghost{border-color:transparent;background:none;color:var(--ink2)}
+.n-btn.mini{min-height:28px;padding:0 10px;font-size:13px}
+.n-btn:disabled{opacity:.5;cursor:default}
+.n-btn:focus-visible,.n-sel:focus-visible,.n-chip:focus-visible,.n-com-h:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.n-det{border-top:2px dotted var(--line);padding:12px 14px 14px}
+.n-facts{display:grid;gap:6px;margin:0 0 10px}
+.n-facts div{display:grid;grid-template-columns:110px minmax(0,1fr);gap:10px}
+.n-facts dt{color:var(--ink2);font-size:13px}.n-facts dd{margin:0;overflow-wrap:anywhere}
+.n-facts code{background:var(--sunk);border-radius:6px;padding:1px 6px;font-size:13px}
+.n-tr.ok{color:var(--ok);font-weight:700}.n-tr.bad{font-weight:700}
+.n-detact{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}
+.n-fold{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:0 14px}
+.n-fold>summary{cursor:pointer;list-style:none;min-height:48px;align-items:center;margin:0}
+.n-fold>summary::-webkit-details-marker{display:none}
+.n-fold[open]{padding-bottom:12px}
+.n-lines{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.n-fold .n-lines{border:0}
+.n-line{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;padding:10px 12px;border-top:1px solid var(--line)}
+.n-line:first-child{border-top:0}
+.n-line.late .n-l-main small{color:var(--bad)}
+.n-l-main{flex:1 1 200px;min-width:0;display:grid;gap:1px}
+.n-l-main b{font-weight:600;overflow-wrap:anywhere}.n-l-main small{color:var(--ink2);font-size:13px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.n-l-form{flex-basis:100%}
+.n-sel{min-height:36px;border:1px solid var(--line);border-radius:8px;background:var(--sunk);color:var(--ink);font:inherit;font-size:13.5px;padding:0 8px;max-width:100%}
+.n-tag{font-size:13px;color:var(--ink2)}
+.n-barra{display:grid;gap:12px}
+.n-barra input[type=search]{width:100%;min-height:44px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:0 14px;font:inherit}
+.n-chips{display:flex;gap:8px;flex-wrap:wrap}
+.n-chip{appearance:none;min-height:40px;display:inline-flex;align-items:center;gap:8px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-weight:600;cursor:pointer}
+.n-chip[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.n-chip[aria-pressed="true"] .n-cnt{background:transparent;color:var(--surface)}
+.n-add{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.n-add span{color:var(--ink2);font-size:13.5px}
+.n-cad{margin:0;color:var(--ink2);font-size:13.5px}
+.n-link{appearance:none;background:none;border:0;padding:0;color:var(--ink);font:inherit;font-weight:700;text-decoration:underline;cursor:pointer;min-height:32px}
+.n-novo{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px}
+.n-coms{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.n-com{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.n-com-h{position:relative;appearance:none;background:none;border:0;color:inherit;font:inherit;text-align:left;cursor:pointer;display:grid;grid-template-columns:var(--stub) minmax(0,1fr) auto;align-items:stretch;width:100%;padding:0}
+.n-com-h::before{top:-8px;clip-path:inset(50% 0 0 0)}.n-com-h::after{bottom:-8px;clip-path:inset(0 0 50% 0)}
+.n-com-a{align-self:center;padding:0 14px;color:var(--ink2);font-size:13.5px;text-align:right}
+.n-com-a.fazer{color:var(--ink);font-weight:800}
+.n-com-b{padding:2px 12px 14px;display:grid;gap:10px;border-top:2px dotted var(--line)}
+.n-com-b h3{margin:8px 0 0;font-size:14px;color:var(--ink2);display:flex;gap:8px;align-items:baseline;font-weight:700}
+.n-pixl{margin:8px 0 0;color:var(--ink2);font-size:13.5px}
+.n-ceg{border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.n-ceg>summary{cursor:pointer;list-style:none;min-height:44px;display:flex;align-items:center;gap:10px;padding:0 12px;font-weight:600}
+.n-ceg>summary::-webkit-details-marker{display:none}
+.n-ceg .n-lines{border:0;border-top:1px solid var(--line);border-radius:0 0 10px 10px}
+@media (max-width:720px){
+  .n-tk{grid-template-columns:minmax(0,1fr)}
+  .n-tk-main{grid-template-columns:var(--stub) minmax(0,1fr)}
+  .n-tk-main .tdate{grid-row:span 2}
+  .n-tk-r{grid-column:2;grid-template-columns:auto 1fr;justify-items:start;align-items:center;gap:8px 12px;padding:0 12px 12px}
+  .n-tk-st{justify-content:flex-start}
+  .n-tk-act{padding:0 12px 12px calc(var(--stub) + 12px);justify-content:flex-start}
+  .n-total{font-size:34px}
+  .n-facts div{grid-template-columns:1fr;gap:0}
+  .n-com-h{grid-template-columns:var(--stub) minmax(0,1fr)}
+  .n-com-a{grid-column:2;text-align:left;padding:0 12px 12px}
+  .n-btn,.n-sel,.n-chip{min-height:44px}
+  .n-btn.mini{min-height:36px}
+}
+@media (prefers-reduced-motion:reduce){.n-tk{transition:none}}
 </style>
 
 <div class="wrap">
@@ -1221,7 +1319,7 @@ const COLS = {
     title:d=>[d.era,d.item].filter(Boolean).join(" · "), meta:d=>[["tenho",d.tenho],["falta",d.falta],["no catálogo",d.catalogo]],
     fields:[["era","Era","text"],["item","Item / versão","text"],["tenho","Já tenho","text","wide"],["falta","Falta","text","wide"],["status","Status","sel"],["catalogo","No catálogo da coleção","text","wide"],["obs","Obs","area","wide"]]}
 };
-const TABS=[["painel","Painel"],...Object.entries(COLS).filter(([k])=>k!=="wishlist").map(([k,v])=>[k,v.label]),["devo","O que devo"],["colecao","Minha coleção"]];
+const TABS=[["painel","Painel"],...Object.entries(COLS).filter(([k])=>k!=="wishlist").map(([k,v])=>[k,v.label]),["pedidos","Pedidos"],["colecao","Minha coleção"]];
 const TONE={"Pendente":"bad","Não":"bad","A pedir":"bad","Sair":"bad","Claim perdida":"muted",
  "A confirmar":"warn","Tentativa de claim":"warn","Saindo":"warn","Procurando":"warn",
  "Futura":"muted","Não liberado":"muted","Aguardando a GOM":"muted","Set não fechou":"muted","Cancelada":"muted","Ainda não cobrado":"muted","Cobrado, não pago":"bad","Aguardando":"muted","Aguardando cobrança":"muted","Aguardando liberação":"muted","Em andamento":"muted","Resolvida":"muted","Sem itens":"muted","Desisti":"muted","Repassei":"muted",
@@ -1267,15 +1365,15 @@ function stats(){
 }
 
 // ---------- tabs ----------
-const AREAS=[["hoje","Hoje","home",["painel"]],["devo","Devo","coin",["devo"]],["pedidos","Pedidos","box",["cobrancas","envios","itens","cegs","comunidades","repasses"]],["colecao","Coleção","cards",["colecao"]]];
+const AREAS=[["hoje","Hoje","home",["painel"]],["pedidos","Pedidos","box",["pedidos","cegs","comunidades","repasses"]],["colecao","Coleção","cards",["colecao"]]];
 const areaOf=t=>(AREAS.find(a=>a[3].includes(t))||AREAS.find(a=>a[0]==="pedidos"))[0];
 const TLABEL=Object.fromEntries(TABS);
 function renderTabs(){
-  const s=stats(); const badge={cobrancas:s.pend.length,envios:s.envPedir.length,devo:caixaPendentes().reduce((n,c)=>n+Math.max(1,(c.registros||[]).filter(r=>r.estado==="pendente").length),0)};
+  const s=stats(); const badge={painel:s.pend.length+s.envPedir.length};
   const cur=areaOf(ui.tab);
   $("#tabs").innerHTML=AREAS.map(([k,l,ic,ts])=>{const n=ts.reduce((a,t)=>a+(badge[t]||0),0); return `<button type="button" data-area="${k}" aria-current="${cur===k?"page":"false"}">${I(ic)}<span>${esc(l)}</span>${n?`<span class="badge">${n}</span>`:""}</button>`}).join("");
   let subs="";
-  if(cur==="pedidos") subs=AREAS.find(a=>a[0]==="pedidos")[3].map(t=>`<button type="button" data-tab="${t}" aria-current="${ui.tab===t?"page":"false"}">${I(TABICON[t]||"spark")}${esc(TLABEL[t]||t)}${badge[t]?`<span class="badge">${badge[t]}</span>`:""}</button>`).join("");
+  if(["cegs","comunidades","repasses"].includes(ui.tab)) subs=[["pedidos","← Pedidos"],["cegs","CEGs"],["comunidades","Comunidades"],["repasses","Repasses"]].map(([t,l])=>`<button type="button" data-tab="${t}" aria-current="${ui.tab===t?"page":"false"}">${esc(l)}</button>`).join("");
   else if(cur==="colecao"){ const nC=COL?cfQueue().q.filter(([d])=>!(Array.isArray(d.cards)&&d.cards.length)).length:0;
     subs=[["pc","Photocards",""],["outras","Outras coisas",""],["eventos","Eventos",""],["loja","Loja",""],["conf","Confirmar cards",nC]].map(([v,l,n])=>`<button type="button" data-cv="${v}" aria-current="${cf.view===v?"page":"false"}">${esc(l)}${n?`<span class="c">${n}</span>`:""}</button>`).join(""); }
   const st=$("#subtabs"); st.innerHTML=subs; st.hidden=!subs;
@@ -1320,75 +1418,165 @@ function dueChip(dt){ if(!dt)return `<span class="due none">${I("cal")}sem prazo
 const PH={cobrancas:"o que as GOMs cobraram ou vão cobrar",itens:"cada coisa que você pediu e em que ponto ela está",envios:"o que dá pra pedir pra mandar pra sua casa, por comunidade",repasses:"o que você comprou de alguém ou passou pra frente",cegs:"as compras coletivas em que você está, por comunidade",comunidades:"os grupos de CEG, com pix, regras e contatos",colecao:"photocards e outras coisas de Stray Kids, e o que você tem"};
 const KICON={cobrancas:"coin",itens:"box",envios:"truck",repasses:"swap",cegs:"group",comunidades:"chat",wishlist:"heart"};
 const pageHead=(k,extra="")=>`<header class="ph"><span class="phic">${I(TABICON[k]||"spark")}</span><div><h2>${esc(k==="colecao"?"Minha coleção":COLS[k].label)}</h2><p>${esc(PH[k]||"")}</p></div>${extra}</header>`;
-function renderPainel(){
-  const s=stats();
-  const cob=list("cobrancas"), env=list("envios"), it=list("itens");
-  const byDue=(a,b)=>(a.prazo||"9999").localeCompare(b.prazo||"9999");
-  const pagar=cob.filter(devoC).sort(byDue);
-  const pedir=env.filter(e=>e.status==="A pedir").sort(byDue);
-  const conferir=[...cob.filter(c=>c.status==="A confirmar"&&!devoC(c)).map(c=>({k:"cobrancas",d:c})),...env.filter(e=>e.status==="A confirmar").map(e=>({k:"envios",d:e}))].sort((a,b)=>byDue(a.d,b.d));
-  const late=pagar.filter(vencida);
-  const pagarConf=pagar.filter(c=>c.status==="A confirmar").length;
-  const pedirLate=pedir.filter(vencida);
-  const vencidos=[...late.map(d=>({k:"cobrancas",d,kind:"pagar"})),...pedirLate.map(d=>({k:"envios",d,kind:"pedir"}))].sort((a,b)=>byDue(a.d,b.d));
-  const sumVenc=s.sum(late);
-  const libPor=n=>it.filter(x=>x.comunidade===n&&x.status==="Envio liberado").length;
-  const task=(k,d,kind)=>{const key=k+":"+d.id;
-    if(ui.pexp===key) return `<div class="pexp">${rowHtml(k,d)}<button class="btn ghost small" data-pexp="${esc(key)}" aria-expanded="true">${I("chev","up")}recolher</button></div>`;
-    let cta="";
-    if(kind==="pagar"){const u=safeUrl(d.pagarLink)||(/^(forms\.gle|docs\.google)/.test(d.pagarLink||"")?"https://"+d.pagarLink:""); cta=u?`<a class="cta" href="${esc(u)}" target="_blank" rel="noopener">pagar${I("ext")}</a>`:d.pix?`<button class="cta" type="button" data-copy="${esc(d.pix)}">copiar pix${I("copy")}</button>`:"";}
-    if(kind==="pedir"){const u=firstUrl(d.comoPedir); cta=u?`<a class="cta" href="${esc(u)}" target="_blank" rel="noopener">pedir${I("ext")}</a>`:"";}
-    const ic=kind==="pagar"?"coin":kind==="pedir"?"truck":"help";
-    const title=kind==="pedir"?(d.gom||d.comunidade):k==="envios"?"envio: "+(d.gom||d.comunidade):d.referente;
-    const cl=cegLbl(d)||d.ceg||""; const sub=kind==="pedir"?`${libPor(d.comunidade)?`<b>${libPor(d.comunidade)} itens liberados</b> · `:""}${esc(d.comunidade||"")}`:esc([cl,d.comunidade].filter((x,i,a)=>x&&a.indexOf(x)===i).join(" · "));
-    const ci=comInfo(d.comunidade);
-    return `<div class="task ${kind==="conf"?"tconf":kind} ${d.prazo&&daysTo(d.prazo)<0?"is-late":""}" style="--c:${okHex(ci&&ci.cor)}" data-pexp="${esc(key)}">
-      ${stub(d.prazo)}
-      <div class="tmain" role="button" tabindex="0" aria-expanded="false"><div class="tt">${esc(title||"")}</div><div class="ts">${comChip(d.comunidade)}${sub}</div></div>
-      <div class="tside">${k==="cobrancas"?pill(d):""}${dueChip(d.prazo)}${typeof d.valor==="number"?`<span class="tval">${brl(d.valor)}</span>`:""}${cta}<span class="tmore" aria-hidden="true">${I("chev")}</span></div>
-    </div>`;};
-  const sumPagar=s.sum(pagar);
-  const coms=list("comunidades").sort((a,b)=>(a.ordem??99)-(b.ordem??99)).map(c=>({c,pend:cob.filter(x=>x.comunidade===c.nome&&devoC(x)).reduce((a,x)=>a+(x.valor||0),0),lib:libPor(c.nome),ep:env.filter(x=>x.comunidade===c.nome&&x.status==="A pedir").length})).filter(r=>r.pend||r.lib||r.ep).map(r=>({...r,prox:[...cob.filter(x=>x.comunidade===r.c.nome&&devoC(x)),...env.filter(x=>x.comunidade===r.c.nome&&x.status==="A pedir")].map(x=>x.prazo).filter(Boolean).sort()[0]||""})).sort((a,b)=>(a.prox||"9999").localeCompare(b.prox||"9999")||b.pend-a.pend);
-  const faltam=["cobrancas","envios"].reduce((a,k)=>a+list(k).filter(d=>ABERTO[k].includes(d.status)&&falta(k,d).length).length,0);
-  $("#view").innerHTML=`
-  ${vencidos.length?`<details class="vencfaixa" data-gkey="hoje|venc" ${ui.gclosed["hoje|venc"]===true?"":"open"}><summary>${I("alert")}<span class="vl">Vencidos</span><span class="vn">${vencidos.length}</span>${sumVenc?`<span class="vs">${brl(sumVenc)}</span>`:""}</summary><div class="tasks">${vencidos.map(x=>task(x.k,x.d,x.kind)).join("")}</div></details>`:""}
-  <div class="dash"><div class="colL">
-    <section class="hero" aria-labelledby="h-pagar">
-      <div class="herotop">
-        <div><p class="big" id="h-pagar">${brl(sumPagar)} <span class="bigl">pra pagar</span></p>
-        <p class="herosub">${pagar.length} ${pagar.length===1?"cobrança":"cobranças"}${pagarConf?` (${pagarConf} a confirmar, já vencida${pagarConf>1?"s":""})`:""}${late.length?` · <b class="lateb">${I("alert")}${late.length} atrasada${late.length>1?"s":""}</b>`:" · nada atrasado"}</p></div>
-      </div>
-      <div class="tasks">${pagar.filter(d=>!vencida(d)).map(d=>task("cobrancas",d,"pagar")).join("")||(pagar.length?"":`<div class="allok">${I("check")}nada pra pagar agora</div>`)}</div>
-    </section>
-    <section class="blockp pconf" aria-labelledby="h-conf"><h2 id="h-conf">${I("help")}Conferir</h2><p class="hint">não sei se já foi pago ou pedido; confirme e mude o status</p>
-      <div class="tasks">${conferir.map(x=>task(x.k,x.d,"conf")).join("")||`<div class="allok">${I("check")}nada pra conferir</div>`}</div></section>
-    </div><div class="colR">
-    <aside class="side">
-      <button class="stat" data-goto="envios" data-gst="A pedir">${I("truck")}<span><b>${pedir.length}</b> envios a pedir</span></button>
-      <button class="stat" data-goto="cobrancas" data-gst="A confirmar">${I("help")}<span><b>${conferir.length}</b> pra conferir</span></button>
-      <button class="stat" data-goto="itens" data-gfase="lib">${I("box")}<span><b>${it.filter(x=>x.status==="Envio liberado").length}</b> itens liberados</span></button>
-      ${faltam?`<p class="quiet">${I("spark")}${faltam} cobranças ou envios em aberto sem grupo, prazo ou link</p>`:""}
-    </aside>
-    <section class="blockp pedir" aria-labelledby="h-pedir"><h2 id="h-pedir">${I("truck")}Pedir envio</h2>
-      <div class="tasks">${pedir.filter(d=>!vencida(d)).map(d=>task("envios",d,"pedir")).join("")||(pedir.length?"":`<div class="allok">${I("check")}nenhum envio pra pedir</div>`)}</div></section>
-    </div>
-
-    ${coms.length?`<section class="blockp wide" aria-labelledby="h-com"><h2 id="h-com">${I("chat")}Por comunidade</h2><p class="hint">o que tem pra fazer em cada uma. Toque no número pra ir direto pro que ele conta.</p>
-      <div class="ctab" role="table" aria-label="Pendências por comunidade">
-        <div class="ctr cth" role="row"><span role="columnheader">comunidade</span><span role="columnheader">a pagar</span><span role="columnheader">envios a pedir</span><span role="columnheader">itens liberados</span><span role="columnheader">próximo prazo</span></div>
-        ${coms.map(r=>{const n=r.c.nome; return `<div class="ctr" role="row" style="--c:${okHex(r.c.cor)}">
-          <span class="ctn" role="cell">${comChip(n)}<button class="ctname" data-goto="comunidades" data-gcom="${esc(n)}" title="abrir ${esc(n)} em Comunidades">${esc(n)}</button></span>
-          <span role="cell" data-l="a pagar">${r.pend?`<button class="ctv bad" data-goto="cobrancas" data-gcom="${esc(n)}" data-gst="Pendente" title="ver cobranças pendentes de ${esc(n)}">${brl(r.pend)}</button>`:`<span class="ct0">–</span>`}</span>
-          <span role="cell" data-l="envios a pedir">${r.ep?`<button class="ctv info" data-genv="${esc(n)}" title="ver envios de ${esc(n)}">${r.ep}</button>`:`<span class="ct0">–</span>`}</span>
-          <span role="cell" data-l="itens liberados">${r.lib?`<button class="ctv ok" data-genv="${esc(n)}" title="ver itens liberados de ${esc(n)}">${r.lib}</button>`:`<span class="ct0">–</span>`}</span>
-          <span role="cell" data-l="próximo prazo">${r.prox?dueChip(r.prox):`<span class="ct0">sem prazo</span>`}</span>
-        </div>`}).join("")}
-      </div></section>`:""}
-  </div>`;
+// ===== Estrutura nova: Hoje (agir), Pedidos (por comunidade), Coleção =====
+// Componentes feitos do zero (prefixo n-): canhoto, linha, comunidade, ações com desfazer.
+ui.nopen=null;
+const byPrazo=(a,b)=>(a.prazo||"9999").localeCompare(b.prazo||"9999")||String(a.referente||a.gom||"").localeCompare(String(b.referente||b.gom||""));
+const nVal=d=>typeof d.valor==="number"?`<b class="n-val">${brl(d.valor)}</b>`:`<span class="n-val sem">sem valor</span>`;
+async function nSet(k,id,patch,msg){
+  const prev=data[k].get(id); if(!prev||!db)return;
+  const back={}; Object.keys(patch).forEach(f=>{back[f]=prev[f]===undefined?null:prev[f]});
+  const undo=async()=>{try{await db.doc(k+"/"+id).update(back);toast("Desfeito")}catch(e){toast("Não deu pra desfazer",undo)}};
+  try{await db.doc(k+"/"+id).update(patch);toast(msg,{label:"desfazer",fn:undo})}
+  catch(e){toast("Não deu pra salvar; tente de novo",()=>nSet(k,id,patch,msg))}
 }
-$("#view").addEventListener("click",e=>{if(ui.tab!=="painel")return; if(e.target.closest("a,select,input,textarea,form,[data-copy],[data-edit],[data-del],[data-cancel],[data-goto],[data-link]"))return; const g=e.target.closest("[data-pexp]");if(!g)return;ui.pexp=ui.pexp===g.dataset.pexp?null:g.dataset.pexp;ui.editing=null;render();});
-$("#view").addEventListener("click",e=>{const g=e.target.closest("[data-genv]"); if(!g)return; const n=g.dataset.genv; ui.tab="envios"; ui.com=n; ui.envAll=true; ui.gclosed["envrow|"+n]=false; ui.q=""; ui.editing=null; saveUi(); render(); window.scrollTo({top:0});});
-$("#view").addEventListener("keydown",e=>{if(ui.tab!=="painel"||(e.key!=="Enter"&&e.key!==" "))return; const g=e.target.closest(".tmain[role=button]"); if(!g||e.target!==g)return; e.preventDefault(); g.click();});
+function nFacts(rows){const r=rows.filter(x=>x&&x[1]); return r.length?`<dl class="n-facts">${r.map(([l,v])=>`<div><dt>${esc(l)}</dt><dd>${v}</dd></div>`).join("")}</dl>`:"";}
+function nDetalhe(k,d){
+  if(ui.editing===d.id) return `<div class="n-det">${formHtml(k,d.id,d)}</div>`;
+  const btn=canWrite?`<div class="n-detact"><button type="button" class="n-btn" data-edit="${esc(d.id)}">editar</button></div>`:"";
+  if(k==="cobrancas"){
+    const tr=trustOf(d), sheet=safeUrl(cegSheet(d.ceg)), lk=u=>safeUrl(u)||(/^(forms\.gle|docs\.google)/.test(u||"")?"https://"+u:"");
+    const links=[sheet&&`<a href="${esc(sheet)}" target="_blank" rel="noopener">planilha da GOM ↗</a>`,lk(d.pagarLink)&&`<a href="${esc(lk(d.pagarLink))}" target="_blank" rel="noopener">link de pagamento ↗</a>`,lk(d.compLink)&&`<a href="${esc(lk(d.compLink))}" target="_blank" rel="noopener">onde mandar o comprovante ↗</a>`].filter(Boolean).join(" · ");
+    return `<div class="n-det">${nFacts([["origem",esc([d.comunidade,cegLbl(d)||d.ceg].filter(Boolean).join(" · "))],["grupo",esc(grupoDe(d)||"")],["tipo",esc(d.tipo||"")],["como pagar",esc(d.pagarComo||"")],["pix",d.pix?`<code>${esc(d.pix)}</code> <button type="button" class="n-btn mini" data-copy="${esc(d.pix)}">copiar</button>`:""],["comprovante",esc(d.compOnde||"")],["de onde veio",linkify(d.prova||"nenhuma fonte anotada")],["conferência",`<span class="n-tr ${tr.cls}">${esc(tr.txt)}</span>`],["nota",d.notaMinha?esc(d.notaMinha):d.obs?linkify(d.obs):""],["links",links]])}
+      ${canWrite?`<div class="n-detact"><button type="button" class="n-btn" data-n-conf="${esc(d.id)}">está igual, conferi hoje</button><button type="button" class="n-btn" data-edit="${esc(d.id)}">editar</button></div>`:""}</div>`;
+  }
+  return `<div class="n-det">${nFacts([["itens",esc(d.itens||"")],["como pedir",linkify(d.comoPedir||"")],["nota",d.obs?linkify(d.obs):""],["rastreio",esc(d.rastreio||"")],["de onde veio",linkify(d.prova||"")]])}${btn}</div>`;
+}
+// canhoto: data à esquerda, picote, título e origem, valor; ações numa linha só
+function nTicket(k,d,kind,libN){
+  const key=k+":"+d.id, open=ui.nopen===key, late=vencida(d);
+  const title=k==="envios"?"Envio: "+(d.gom||d.comunidade||""):(d.referente||"sem título");
+  const sub=k==="envios"?[libN?`<b class="n-ok">${libN} ${libN===1?"item liberado":"itens liberados"}</b>`:"",esc(d.itens||"")].filter(Boolean).join(" · "):esc([cegLbl(d)||d.ceg,d.tipo].filter(Boolean).join(" · "));
+  const lk=u=>safeUrl(u)||(/^(forms\.gle|docs\.google)/.test(u||"")?"https://"+u:"");
+  let acts="";
+  if(canWrite||true){
+    if(k==="cobrancas"){
+      const u=lk(d.pagarLink);
+      acts+=u?`<a class="n-btn" href="${esc(u)}" target="_blank" rel="noopener">pagar ↗</a>`:d.pix?`<button type="button" class="n-btn" data-copy="${esc(d.pix)}">copiar pix</button>`:"";
+      if(canWrite){acts+=`<button type="button" class="n-btn pri" data-n-set="cobrancas|${esc(d.id)}|Paga|Marcada como paga">paguei</button>`;
+        if(d.status==="A confirmar")acts+=`<button type="button" class="n-btn" data-n-set="cobrancas|${esc(d.id)}|Pendente|Voltou pra pagar">ainda devo</button>`;}
+    } else {
+      const u=firstUrl(d.comoPedir)||safeUrl(d.provaLink);
+      if(d.status==="A pedir"){acts+=u?`<a class="n-btn" href="${esc(u)}" target="_blank" rel="noopener">pedir ↗</a>`:""; if(canWrite)acts+=`<button type="button" class="n-btn pri" data-n-set="envios|${esc(d.id)}|Pedido|Envio marcado como pedido">pedi</button>`;}
+      else if(canWrite&&d.status==="A confirmar")acts+=`<button type="button" class="n-btn pri" data-n-set="envios|${esc(d.id)}|Pedido|Envio marcado como pedido">já pedi</button><button type="button" class="n-btn" data-n-set="envios|${esc(d.id)}|A pedir|Voltou pra pedir">ainda não</button>`;
+    }
+  }
+  const ci=comInfo(d.comunidade);
+  return `<article class="n-tk ${late?"late":""} ${open?"open":""}" data-k="${k}" id="tk-${esc(d.id)}" style="--c:${okHex(ci&&ci.cor)}">
+    <button type="button" class="n-tk-main" data-n-open="${esc(key)}" aria-expanded="${open}">
+      ${stub(d.prazo)}
+      <span class="n-tk-body"><span class="n-tk-t">${esc(title)}</span><span class="n-tk-s">${comChip(d.comunidade)}${sub}</span></span>
+      <span class="n-tk-r">${k==="cobrancas"?nVal(d):""}<span class="n-tk-st">${k==="cobrancas"?pill(d):""}${dueChip(d.prazo)}</span></span>
+    </button>
+    ${acts?`<div class="n-tk-act">${acts}</div>`:""}
+    ${open?nDetalhe(k,d):""}
+  </article>`;
+}
+function nSec(titulo,n,corpo,o={}){
+  if(!n&&!o.vazio)return "";
+  return `<section class="n-sec ${o.cls||""}"><h2><span>${esc(titulo)}</span><span class="n-cnt">${n}</span>${o.extra||""}</h2>${n?corpo:`<p class="n-vazio">${esc(o.vazio)}</p>`}</section>`;
+}
+function renderPainel(){
+  const cob=list("cobrancas"), env=list("envios"), it=list("itens");
+  const s=stats();
+  const pagar=cob.filter(devoC).sort(byPrazo), nConfPag=pagar.filter(c=>c.status==="A confirmar").length;
+  const pedir=env.filter(e=>e.status==="A pedir").sort(byPrazo);
+  const conferir=[...cob.filter(c=>c.status==="A confirmar"&&!devoC(c)).map(d=>({k:"cobrancas",d})),...env.filter(e=>e.status==="A confirmar").map(d=>({k:"envios",d}))].sort((a,b)=>byPrazo(a.d,b.d));
+  const lib={}; it.forEach(i=>{if(i.status==="Envio liberado")lib[i.comunidade]=(lib[i.comunidade]||0)+1});
+  const venc=[...pagar.filter(vencida).map(d=>({k:"cobrancas",d})),...pedir.filter(vencida).map(d=>({k:"envios",d}))].sort((a,b)=>byPrazo(a.d,b.d));
+  const emDia=pagar.filter(d=>!vencida(d)), pedirDia=pedir.filter(d=>!vencida(d));
+  const sumVenc=s.sum(venc.filter(x=>x.k==="cobrancas").map(x=>x.d));
+  const pagas=cob.filter(c=>c.status==="Paga").sort((a,b)=>(b.pagoEm||"").localeCompare(a.pagoEm||"")).slice(0,12);
+  const nRobo=caixaPendentes().length;
+  const nSug=caixaPendentes().reduce((n,c)=>n+(c.registros||[]).filter(r=>r.estado==="pendente").length,0);
+  const nAlta=caixaPendentes().reduce((n,c)=>n+(c.registros||[]).filter(r=>r.estado==="pendente"&&r.confianca==="alta"&&(!r.acao||r.acao==="nova")).length,0);
+  const tk=(k,d,l)=>nTicket(k,d,"",lib[d.comunidade]||0);
+  const resumo=`<section class="n-resumo"><p class="n-total">${brl(s.sum(pagar))}<span>pra pagar</span></p>
+    <p class="n-sub">${pagar.length} ${pagar.length===1?"cobrança":"cobranças"}${venc.length?` · <b class="n-bad">${venc.filter(x=>x.k==="cobrancas").length} vencida${venc.filter(x=>x.k==="cobrancas").length===1?"":"s"}</b>`:""}${nConfPag?` · ${nConfPag} ainda a confirmar`:""}${pedir.length?` · ${pedir.length} ${pedir.length===1?"envio":"envios"} pra pedir`:""}</p></section>`;
+  const robo=nRobo?`<details class="n-fold" data-gkey="n|robo" ${ui.gclosed["n|robo"]===false?"open":""}><summary><span>Sugestões do robô</span><span class="n-cnt">${nSug}</span><span class="n-dica">ele só sugere; você decide</span></summary>${nAlta&&canWrite?`<div class="n-detact"><button type="button" class="n-btn pri" data-cxall data-t="aceitar as ${nAlta} novas de alta confiança">aceitar as ${nAlta} novas de alta confiança</button></div>`:""}${caixaHtml()}</details>`:"";
+  const pg=pagas.length?`<details class="n-fold" data-gkey="n|pagas" ${ui.gclosed["n|pagas"]===false?"open":""}><summary><span>Pagas recentes</span><span class="n-cnt">${pagas.length}</span></summary><div class="n-lines">${pagas.map(d=>`<div class="n-line" data-k="cobrancas"><span class="n-l-main"><b>${esc(d.referente||"")}</b><small>${comChip(d.comunidade)}${d.pagoEm?"paga em "+fd(d.pagoEm):""}</small></span>${nVal(d)}${canWrite?`<button type="button" class="n-btn" data-n-set="cobrancas|${esc(d.id)}|Pendente|Voltou pra pagar">voltar pra pagar</button>`:""}</div>`).join("")}</div></details>`:"";
+  $("#view").innerHTML=`<div class="n-page">${resumo}
+    ${nSec("Vencidos",venc.length,`<div class="n-tks">${venc.map(x=>tk(x.k,x.d)).join("")}</div>`,{cls:"venc",extra:sumVenc?`<span class="n-soma">${brl(sumVenc)}</span>`:""})}
+    ${nSec("Pagar",emDia.length,`<div class="n-tks">${emDia.map(d=>tk("cobrancas",d)).join("")}</div>`,{vazio:venc.length?"o resto está em dia":"nada pra pagar agora"})}
+    ${nSec("Pedir envio",pedirDia.length,`<div class="n-tks">${pedirDia.map(d=>tk("envios",d)).join("")}</div>`,{vazio:pedir.length?"":"nenhum envio pra pedir"})}
+    ${nSec("Conferir",conferir.length,`<div class="n-tks">${conferir.map(x=>tk(x.k,x.d)).join("")}</div><p class="n-dica2">não sei se já foi pago ou pedido; confirme e mude o status</p>`)}
+    ${robo}${pg}</div>`;
+}
+// ---------- Pedidos: uma lista só, por comunidade ----------
+ui.pf=ui.pf||"fazer"; ui.pq=ui.pq||"";
+function nLinha(k,d){
+  const c=COLS[k], sv=d[c.status]||"";
+  const opts=[...new Set([...c.opts,sv])].filter(o=>o!=="");
+  const sel=canWrite?`<select class="n-sel ${tone(sv)}" data-status="${esc(d.id)}" aria-label="Status de ${esc(c.title(d))}">${opts.map(o=>`<option ${o===sv?"selected":""}>${esc(o)}</option>`).join("")}</select>`:`<span class="n-tag ${tone(sv)}">${esc(sv)}</span>`;
+  const meta=k==="cobrancas"?[d.prazo?"prazo "+fd(d.prazo):"",d.tipo].filter(Boolean).join(" · "):k==="envios"?[d.tipo,d.prazo?"prazo "+fd(d.prazo):""].filter(Boolean).join(" · "):[cegLbl(d)||d.ceg,d.comQuem?"com "+d.comQuem:""].filter(Boolean).join(" · ");
+  const titulo=k==="itens"?[d.item,d.membro].filter(Boolean).join(" · "):c.title(d);
+  const u=k==="envios"&&d.status==="A pedir"?firstUrl(d.comoPedir):"";
+  return `<div class="n-line ${k==="cobrancas"&&devoC(d)&&vencida(d)?"late":""}" data-k="${k}" id="row-${esc(d.id)}">
+    <span class="n-l-main"><b>${esc(titulo||"sem título")}</b><small>${esc(meta)}</small></span>
+    ${typeof d.valor==="number"?`<b class="n-val">${brl(d.valor)}</b>`:""}${u?`<a class="n-btn" href="${esc(u)}" target="_blank" rel="noopener">pedir ↗</a>`:""}${sel}
+    ${canWrite?`<button type="button" class="n-btn ghost" data-edit="${esc(d.id)}">${ui.editing===d.id?"fechar":"editar"}</button>`:""}
+    ${ui.editing===d.id?`<div class="n-l-form">${formHtml(k,d.id,d)}</div>`:""}</div>`;
+}
+function renderPedidos(){
+  if(!COL)loadCol();
+  const cob=list("cobrancas"), env=list("envios"), it=list("itens"), q=ui.pq.trim().toLowerCase();
+  const names=new Set([...cob,...env,...it].map(d=>d.comunidade||"(sem comunidade)"));
+  const ord=comOrder();
+  let rows=[...names].map(n=>{
+    const nm=x=>(x.comunidade||"(sem comunidade)")===n;
+    const c=cob.filter(nm), e=env.filter(nm), i=it.filter(nm);
+    const dev=c.filter(devoC), aberto=c.filter(x=>["Pendente","A confirmar","Aguardando a GOM","Não liberado","Futura"].includes(x.status));
+    const pagas=c.filter(x=>x.status==="Paga");
+    const envAtivos=e.filter(x=>x.status!=="Recebido");
+    const itAtivos=i.filter(x=>bkOf(x.status)||["Comprado"].includes(x.status));
+    const nLib=i.filter(x=>x.status==="Envio liberado").length;
+    const cnt={}; STG.forEach(s_=>cnt[s_[0]]=0); i.forEach(x=>{const b=bkOf(x.status); if(b)cnt[b]++});
+    const fazer=dev.length||e.some(x=>["A pedir","A confirmar"].includes(x.status));
+    const espera=!fazer&&(aberto.length||envAtivos.length||itAtivos.length);
+    const prox=[...dev,...e.filter(x=>["A pedir","A confirmar"].includes(x.status))].map(x=>x.prazo).filter(Boolean).sort()[0]||"";
+    const acao=dev.length?`pagar ${brl(dev.reduce((a,x)=>a+(x.valor||0),0))||dev.length+" cobrança"+(dev.length>1?"s":"")}`:e.some(x=>x.status==="A pedir")?"pedir envio":e.some(x=>x.status==="A confirmar")?"conferir envio":espera?"esperando":"em dia";
+    const hay=(n+" "+c.map(x=>[x.referente,x.ceg].join(" ")).join(" ")+" "+e.map(x=>[x.gom,x.itens].join(" ")).join(" ")+" "+i.map(x=>[x.item,x.membro,x.ceg,x.comQuem].join(" ")).join(" ")).toLowerCase();
+    return {n,c,e,i,dev,aberto,pagas,envAtivos,nLib,cnt,fazer,espera,prox,acao,hay};
+  });
+  const nF=rows.filter(r=>r.fazer).length, nE=rows.filter(r=>r.espera).length;
+  rows=rows.filter(r=>q?r.hay.includes(q):ui.pf==="fazer"?r.fazer:ui.pf==="espera"?r.espera:true);
+  rows.sort((a,b)=>(b.fazer-a.fazer)||((a.prox||"9999").localeCompare(b.prox||"9999"))||((ord.indexOf(a.n)+1||99)-(ord.indexOf(b.n)+1||99)));
+  const card=r=>{
+    const key="n|"+r.n, open=ui.gclosed[key]===false||!!q&&r.hay.includes(q)&&rows.length<=3, ci=comInfo(r.n);
+    const resumoI=STG.filter(([k])=>r.cnt[k]).map(([k,l])=>`${r.cnt[k]} ${l}`).join(" · ");
+    const head=`<button type="button" class="n-com-h" data-n-com="${esc(key)}" aria-expanded="${open}">${r.prox?stub(r.prox):`<span class="tdate none"><b>–</b><small>sem prazo</small></span>`}<span class="n-tk-body"><span class="n-tk-t">${comChip(r.n)}${esc(r.n)}</span><span class="n-tk-s">${esc(resumoI||"sem itens em andamento")}</span></span><span class="n-com-a ${r.fazer?"fazer":""}">${esc(r.acao)} ${I("chev",open?"up":"")}</span></button>`;
+    let body="";
+    if(open){
+      const cabec=(t,n)=>`<h3>${esc(t)}<span class="n-cnt">${n}</span></h3>`;
+      const porCeg=new Map(); r.i.filter(x=>!["Recebido","Cancelado","Abandonado","Repassei","Claim perdida"].includes(x.status)).forEach(x=>{const g=cegLbl(x)||x.ceg||"sem CEG"; if(!porCeg.has(g))porCeg.set(g,[]); porCeg.get(g).push(x)});
+      body=`<div class="n-com-b">
+        ${comInfo(r.n)&&comInfo(r.n).pix&&canWrite?`<p class="n-pixl">pix da comunidade <button type="button" class="n-btn mini" data-copy="${esc(comInfo(r.n).pix)}">copiar</button></p>`:""}
+        ${r.aberto.length?cabec("Cobranças",r.aberto.length)+`<div class="n-lines">${r.aberto.sort(byPrazo).map(d=>nLinha("cobrancas",d)).join("")}</div>`:""}
+        ${r.envAtivos.length?cabec("Envio",r.envAtivos.length)+`<div class="n-lines">${r.envAtivos.map(d=>nLinha("envios",d)).join("")}</div>`:""}
+        ${porCeg.size?cabec("Itens",[...porCeg.values()].reduce((a,x)=>a+x.length,0))+[...porCeg].map(([g,a])=>`<details class="n-ceg" data-gkey="n|ceg|${esc(r.n)}|${esc(g)}" ${ui.gclosed["n|ceg|"+r.n+"|"+g]===false||porCeg.size===1?"open":""}><summary>${esc(g)}<span class="n-cnt">${a.length}</span></summary><div class="n-lines">${a.map(d=>nLinha("itens",d)).join("")}</div></details>`).join(""):""}
+        ${r.pagas.length?`<details class="n-ceg" data-gkey="n|pg|${esc(r.n)}"><summary>Pagas<span class="n-cnt">${r.pagas.length}</span></summary><div class="n-lines">${r.pagas.sort((a,b)=>(b.pagoEm||"").localeCompare(a.pagoEm||"")).map(d=>nLinha("cobrancas",d)).join("")}</div></details>`:""}
+      </div>`;
+    }
+    return `<li class="n-com ${r.fazer?"fazer":""}" style="--c:${okHex(ci&&ci.cor)}">${head}${body}</li>`;
+  };
+  const novo=ui.newOpen&&["cobrancas","itens","envios"].includes(ui.nnew)?`<div class="n-novo">${formHtml(ui.nnew,null,{})}</div>`:"";
+  $("#view").innerHTML=`<div class="n-page"><section class="n-barra">
+      <input type="search" id="nq" placeholder="Buscar item, GOM, CEG ou comunidade" value="${esc(ui.pq)}" aria-label="Buscar nos pedidos">
+      <div class="n-chips" role="group" aria-label="Mostrar"><button type="button" class="n-chip" data-n-f="fazer" aria-pressed="${ui.pf==="fazer"&&!q}">Pra fazer<span class="n-cnt">${nF}</span></button><button type="button" class="n-chip" data-n-f="espera" aria-pressed="${ui.pf==="espera"&&!q}">Esperando<span class="n-cnt">${nE}</span></button><button type="button" class="n-chip" data-n-f="tudo" aria-pressed="${ui.pf==="tudo"&&!q}">Tudo</button></div>
+      ${canWrite?`<div class="n-add"><span>adicionar</span><button type="button" class="n-btn" data-n-new="cobrancas">cobrança</button><button type="button" class="n-btn" data-n-new="itens">item</button><button type="button" class="n-btn" data-n-new="envios">envio</button></div>`:""}
+      <p class="n-cad">Cadastros: <button type="button" class="n-link" data-goto="cegs">CEGs</button> · <button type="button" class="n-link" data-goto="comunidades">Comunidades</button> · <button type="button" class="n-link" data-goto="repasses">Repasses</button></p>
+    </section>${novo}
+    <ul class="n-coms">${rows.map(card).join("")||`<li class="n-vazio">${q?"nada encontrado":ui.pf==="fazer"?"nada pra fazer agora":"nenhuma comunidade aqui"}</li>`}</ul></div>`;
+  const qi=$("#nq"); if(qi)qi.addEventListener("input",()=>{ui.pq=qi.value;const pos=qi.selectionStart;renderPedidos();const n=$("#nq");n.focus();n.setSelectionRange(pos,pos)});
+}
+$("#view").addEventListener("click",async e=>{
+  const o=e.target.closest("[data-n-open]"); if(o){ui.nopen=ui.nopen===o.dataset.nOpen?null:o.dataset.nOpen;ui.editing=null;render();return}
+  const st=e.target.closest("[data-n-set]"); if(st){const [k,id,v,msg]=st.dataset.nSet.split("|"); const patch={status:v}; if(k==="cobrancas"&&v==="Paga"){const cur=data.cobrancas.get(id); patch.pagoEm=(cur&&cur.pagoEm)||isoToday()} else if(k==="cobrancas"&&v==="Pendente")patch.pagoEm=null; st.disabled=true; await nSet(k,id,patch,msg); return}
+  const cf_=e.target.closest("[data-n-conf]"); if(cf_){cf_.disabled=true; await nSet("cobrancas",cf_.dataset.nConf,{conferidoEm:isoToday()},"Conferida hoje"); return}
+  const cm=e.target.closest("[data-n-com]"); if(cm){const k=cm.dataset.nCom; ui.gclosed[k]=ui.gclosed[k]===false?true:false; ui.editing=null; render(); return}
+  const ft=e.target.closest("[data-n-f]"); if(ft){ui.pf=ft.dataset.nF; ui.pq=""; render(); return}
+  const nw=e.target.closest("[data-n-new]"); if(nw){ui.nnew=nw.dataset.nNew; ui.newOpen=!(ui.newOpen&&ui.nnew===nw.dataset.nNew)||false; ui.newOpen=true; ui.editing=null; render(); const f=$(".n-novo"); f&&f.scrollIntoView({block:"nearest"}); return}
+});
 
 // ---------- lists ----------
 const SORTS={padrao:"Status (padrão)",prazo:"Prazo mais próximo",valorDesc:"Maior valor",valorAsc:"Menor valor",comunidade:"Comunidade",ceg:"CEG",nome:"Nome (A a Z)",membro:"Membro"};
@@ -2352,7 +2540,7 @@ function registroParaDoc(r,c){
   if(r.destino==="envios")return {...base,gom:"",status:"A confirmar",prazo:r.prazo||"",itens:r.referente||""};
   return {...base,item:r.referente||"",valor:typeof r.valor==="number"?r.valor:null,pago:"A confirmar"};
 }
-$("#view").addEventListener("click",async e=>{const b=e.target.closest("[data-cxa]"); if(!b||ui.tab!=="devo"||!db)return;
+$("#view").addEventListener("click",async e=>{const b=e.target.closest("[data-cxa]"); if(!b||ui.tab!=="painel"||!db)return;
   const id=b.dataset.cx, c=caixa.get(id); if(!c)return; const acao=b.dataset.cxa; b.disabled=true;
   try{
     if(acao==="arquivar"){ await db.doc("caixa/"+id).update({estado:"arquivada"}); toast("Arquivada"); return; }
@@ -2367,7 +2555,7 @@ $("#view").addEventListener("click",async e=>{const b=e.target.closest("[data-cx
     await db.doc("caixa/"+id).update({registros:regs});
   }catch(err){ b.disabled=false; toast("Não deu pra salvar; tente de novo"); }
 });
-$("#view").addEventListener("click",async e=>{const b=e.target.closest("[data-cxall]"); if(!b||ui.tab!=="devo"||!db)return;
+$("#view").addEventListener("click",async e=>{const b=e.target.closest("[data-cxall]"); if(!b||ui.tab!=="painel"||!db)return;
   if(!b.classList.contains("armed")){b.classList.add("armed");b.textContent="Confirmar: aceitar todas";setTimeout(()=>{if(b.isConnected){b.classList.remove("armed");b.textContent=b.dataset.t||"aceitar todas de alta confiança"}},4000);return}
   b.disabled=true; let ok=0, fail=0;
   for(const c of caixaPendentes()){
@@ -2377,52 +2565,6 @@ $("#view").addEventListener("click",async e=>{const b=e.target.closest("[data-cx
     if(mudou){ try{ await db.doc("caixa/"+c.id).update({registros:regs}); }catch(err){ fail++; } }
   }
   toast(fail?`${ok} aceitas, ${fail} não salvaram; tente de novo`:`${ok} aceitas`);
-});
-function renderDevo(){
-  const cob=list("cobrancas").filter(c=>DEVO_ST.includes(c.status));
-  const by=new Map(); cob.forEach(c=>{const k=c.comunidade||"Sem comunidade"; if(!by.has(k))by.set(k,[]); by.get(k).push(c)});
-  const sum=a=>a.reduce((s,c)=>s+(typeof c.valor==="number"?c.valor:0),0);
-  const pend=cob.filter(devoC);
-  const semV=cob.filter(c=>typeof c.valor!=="number").length;
-  const ordered=[...cob].sort((x,y)=>(x.prazo||"9").localeCompare(y.prazo||"9")||String(x.referente).localeCompare(String(y.referente)));
-  const row=d=>{
-    const sheet=safeUrl(cegSheet(d.ceg)), grupo=grupoDe(d), editing=ui.devoEdit===d.id;
-    const ceg=cegLbl(d);
-    const head=`<div class="dvmain"><div class="dvt"><b>${esc(d.referente||"sem título")}${d.status==="A confirmar"?'<span class="dvtag">conferir</span>':""}</b>
-      <div class="dvq">${dueChip(d.prazo)}${comChip(d.comunidade||"")}</div>
-      <small>${[ceg&&"CEG: "+esc(ceg), grupo?"grupo: "+esc(grupo):'<span style="color:var(--warn)">sem nome do grupo</span>'].filter(Boolean).join(" · ")}</small></div>
-      <div class="dvv ${typeof d.valor==="number"?"":"sem"}">${typeof d.valor==="number"?brl(d.valor):"sem valor"}</div>
-      ${d.notaMinha?`<div class="dvnota">${esc(d.notaMinha)}</div>`:""}
-      <div class="dvact">${sheet?`<a href="${esc(sheet)}" target="_blank" rel="noopener">${I("ext")}planilha</a>`:'<span class="hint">sem link da planilha</span>'}${canWrite?`<button type="button" class="dvlink" data-devo-edit="${esc(d.id)}">${editing?"fechar":"editar"}</button>`:""}</div></div>`;
-    if(!editing) return `<article class="dv">${stub(d.prazo)}${head}</article>`;
-    return `<article class="dv">${stub(d.prazo)}${head}<form class="edit devoform" data-id="${esc(d.id)}"><div class="grid">
-      <label class="wide">Referente a<input name="referente" value="${esc(d.referente||"")}"></label>
-      <label>Valor (R$)<input name="valor" inputmode="decimal" value="${typeof d.valor==="number"?String(d.valor).replace(".",","):""}"></label>
-      <label>Nome do grupo<input name="grupo" value="${esc(d.grupo||grupo)}"></label>
-      <label class="wide">Link da planilha ${cegInfo(d.ceg)?"":"(cadastre a CEG antes)"}<input name="planilha" type="url" value="${esc(sheet)}" ${cegInfo(d.ceg)?"":"disabled"} placeholder="https://..."></label>
-      <label class="wide">Minha nota (pix, pra quem, onde mandar o comprovante...)<textarea name="notaMinha">${esc(d.notaMinha||"")}</textarea></label></div>
-      <div class="actions"><div><button class="btn" type="submit">Salvar</button><button class="btn ghost" type="button" data-devo-edit="${esc(d.id)}">Cancelar</button></div></div></form>`+"</article>";
-  };
-  const nSug=caixaPendentes().reduce((n,c)=>n+(c.registros||[]).filter(r=>r.estado==="pendente").length,0);
-  const nAlta=caixaPendentes().reduce((n,c)=>n+(c.registros||[]).filter(r=>r.estado==="pendente"&&r.confianca==="alta"&&(!r.acao||r.acao==="nova")).length,0);
-  const sug=caixaPendentes().length?`<details class="cxfold" data-gkey="devo|sug" ${ui.gclosed["devo|sug"]===false?"open":""}><summary>${I("chev")}Sugestões do robô <span class="cxn">${nSug}</span><span class="hint">ele só sugere; você decide</span></summary>${nAlta&&canWrite?`<div class="cxall"><button type="button" class="btn small" data-cxall data-t="aceitar as ${nAlta} novas de alta confiança">aceitar as ${nAlta} novas de alta confiança</button></div>`:""}${caixaHtml()}</details>`:"";
-  $("#view").innerHTML=`<div class="dvhero"><h2>O que devo</h2><span class="dvtot">${brl(sum(pend))}</span></div>
-    <p class="dvhint">${pend.length} ${pend.length===1?"cobrança pra pagar":"cobranças pra pagar"}${pend.some(c=>c.status==="A confirmar")?` (inclui ${pend.filter(c=>c.status==="A confirmar").length} "a confirmar" já vencida${pend.filter(c=>c.status==="A confirmar").length>1?"s":""})`:""}${cob.length>pend.length?` · ${cob.length-pend.length} pra conferir, ainda no prazo, fora do total`:""}${semV?` · ${semV} sem valor`:""}. Confira no grupo antes de pagar.</p>
-    ${ordered.map(row).join("")||'<div class="dvempty">Nada pendente. 🎉</div>'}${sug}`;
-}
-$("#view").addEventListener("click",e=>{const b=e.target.closest("[data-devo-edit]"); if(!b||ui.tab!=="devo")return; const id=b.dataset.devoEdit; ui.devoEdit=ui.devoEdit===id?null:id; render();});
-$("#view").addEventListener("submit",async e=>{const f=e.target.closest("form.devoform"); if(!f||!db)return; e.preventDefault();
-  const id=f.dataset.id, prev=data.cobrancas.get(id); if(!prev)return;
-  const vr=f.elements.valor.value.trim().replace(/^R\$\s*/i,""); const v=vr.includes(",")?vr.replace(/\./g,"").replace(",","."):vr; const valor=v===""?null:Number(v);
-  if(valor!==null&&!isFinite(valor)){toast("Valor inválido");return}
-  const patch={referente:f.elements.referente.value.trim(),valor,grupo:f.elements.grupo.value.trim(),notaMinha:f.elements.notaMinha.value.trim()};
-  const cg=cegInfo(prev.ceg); let cegId=null; if(cg){for(const [k,g] of data.cegs.entries()){if(g===cg){cegId=k;break}}}
-  const plan=f.elements.planilha&&!f.elements.planilha.disabled?f.elements.planilha.value.trim():null;
-  if(plan&&!safeUrl(plan)){toast("O link da planilha precisa começar com https://");return}
-  const prevCeg=cegId?data.cegs.get(cegId):null;
-  data.cobrancas.set(id,{...prev,...patch}); if(cegId&&plan!==null)data.cegs.set(cegId,{...prevCeg,planilha:plan}); ui.devoEdit=null; render();
-  try{ await db.doc("cobrancas/"+id).update(patch); if(cegId&&plan!==null&&plan!==(prevCeg.planilha||""))await db.doc("cegs/"+cegId).update({planilha:plan}); toast("Salvo"); }
-  catch(err){ data.cobrancas.set(id,prev); if(cegId)data.cegs.set(cegId,prevCeg); render(); toast("Não deu pra salvar; voltou como estava"); }
 });
 // ---------- quão atualizado está ----------
 // Cada fonte carimba meta/fontes quando é lida (cron, bot do Telegram). A
@@ -2455,6 +2597,7 @@ function stampHtml(){
 }
 // ---------- render ----------
 function render(){
+  {const L={devo:"painel",cobrancas:"pedidos",envios:"pedidos",itens:"pedidos"}; if(L[ui.tab])ui.tab=L[ui.tab];}
   if(ui.lastIn)ui.lastIn[areaOf(ui.tab)]=ui.tab;
   renderTabs();
   $("#stamp").innerHTML=stampHtml();
@@ -2462,7 +2605,7 @@ function render(){
   if(!db){$("#view").innerHTML=`<div class="notice">Não consegui abrir a base. Confira se você entrou com a sua conta e se o config.js tem os dados do Supabase.</div>`;return}
   const total=Object.values(data).reduce((s,m)=>s+m.size,0);
   if(!total){$("#view").innerHTML=`<div class="empty">A base ainda está vazia. Peça pro Claude fazer a varredura, ou use "+ Adicionar" em qualquer aba.</div>`;return}
-  if(ui.tab==="painel")renderPainel(); else if(ui.tab==="catalogo")renderCatalogo(); else if(ui.tab==="colecao")renderColecao(); else if(ui.tab==="devo")renderDevo(); else renderList(ui.tab);
+  if(ui.tab==="painel")renderPainel(); else if(ui.tab==="catalogo")renderCatalogo(); else if(ui.tab==="colecao")renderColecao(); else if(ui.tab==="pedidos")renderPedidos(); else renderList(ui.tab);
 }
 let pend=null;
 function schedule(){ // não derruba um formulário aberto
@@ -2484,7 +2627,7 @@ function schedule(){ // não derruba um formulário aberto
   db.collection("catalogo").limit(1000).onSnapshot(snap=>{const m=new Map();snap.docs.forEach(d=>m.set(d.id,d.data()));catalogo=m;if(ui.tab==="catalogo")schedule()},()=>{});
   db.doc("meta/info").onSnapshot(s=>{meta=s.exists?s.data():{};schedule()},()=>{});
   db.doc("meta/fontes").onSnapshot(s=>{fontes=s.exists?s.data():{};schedule()},()=>{});
-  db.collection("caixa").limit(500).onSnapshot(snap=>{const m=new Map();snap.docs.forEach(d=>m.set(d.id,d.data()));caixa=m;if(ui.tab==="devo"&&!document.querySelector("#view input:focus,#view textarea:focus"))schedule()},()=>{});
+  db.collection("caixa").limit(500).onSnapshot(snap=>{const m=new Map();snap.docs.forEach(d=>m.set(d.id,d.data()));caixa=m;if(ui.tab==="painel"&&!document.querySelector("#view input:focus,#view textarea:focus"))schedule()},()=>{});
   db.collection("notas").limit(2000).onSnapshot(snap=>{const m={};snap.docs.forEach(d=>{m[d.id]=d.data()});notas=m;if(ui.tab==="colecao"&&!document.querySelector("#view input:focus,#view textarea:focus"))schedule()},()=>{});
   db.collection("fotos").limit(1000).onSnapshot(snap=>{const m={};snap.docs.forEach(d=>{m[d.id]=d.data()});fotos=m;if(!document.querySelector("#view input:focus"))schedule()},()=>{});
   db.collection("cardsnovos").limit(1000).onSnapshot(snap=>{const m=new Map();snap.docs.forEach(d=>m.set(d.id,d.data()));novos=m;mergeNovos();if(!document.querySelector("#view input:focus"))schedule()},()=>{});

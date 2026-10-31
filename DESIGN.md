@@ -81,7 +81,7 @@ Fonte de sistema, sem serifa e sem fonte baixada (a página carrega mais leve). 
 
 ## Layout
 
-Hoje: faixa "Vencidos" no topo (gaveta com contador e soma), depois o total "pra pagar", depois os canhotos por prazo. Devo: dívida por prazo primeiro; as sugestões do robô ficam recolhidas no fim, com "aceitar as novas de alta confiança". Cobranças: quatro resumos e seções por status, com a conta de "o que devo" igual à de Hoje e Devo (Pendente mais "A confirmar" já vencido).
+Três telas: Hoje (agir), Pedidos (uma lista por comunidade, com cobranças, envio e itens) e Coleção. Cadastros (CEGs, Comunidades, Repasses) ficam escondidos dentro de Pedidos. Antes desta estrutura: Hoje: faixa "Vencidos" no topo (gaveta com contador e soma), depois o total "pra pagar", depois os canhotos por prazo. Devo: dívida por prazo primeiro; as sugestões do robô ficam recolhidas no fim, com "aceitar as novas de alta confiança". Cobranças: quatro resumos e seções por status, com a conta de "o que devo" igual à de Hoje e Devo (Pendente mais "A confirmar" já vencido).
 
 O canhoto é uma grade de bloco de data (78px, 62px no celular), picote, título e origem, e valor com ação. Em container estreito a ação desce para baixo do título. Itens e Coleção ficam em linhas simples, sem enfeite. Alvos de toque de 44px no celular.
 

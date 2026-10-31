@@ -89,6 +89,13 @@ Feito e publicado, cada etapa conferida no app (desktop e, no celular, numa jane
 5. Visual do canhoto (paleta lavanda e petróleo, picote, pílula cheia ou tracejada, carimbo só em vencido, claro e escuro) em Hoje, Devo e Cobranças; Itens e Coleção só ganharam a paleta nova.
 6. Cabeçalho com chip-resumo das fontes; Coleção abre em "Tenho + A caminho" (a busca mostra tudo); fontes do Google removidas.
 
+Segunda rodada (31/10/2026, redesenho estrutural, pedido dela): o app passou de 4 áreas e 11 telas para 3 telas.
+- **Hoje** é onde se age: total, "Vencidos", "Pagar", "Pedir envio", "Conferir", sugestões do robô (recolhidas) e pagas recentes. Cada canhoto tem as ações na própria linha (copiar pix, pagar, "paguei", "pedi", "ainda devo"), todas com desfazer.
+- **Pedidos** é uma lista só, por comunidade: cobranças, envio e itens (por CEG) juntos, com status editável na linha. Filtro "Pra fazer, Esperando, Tudo" e busca. Adicionar cobrança, item ou envio fica no topo.
+- **Coleção** continua igual. CEGs, Comunidades e Repasses viraram "Cadastros", links dentro de Pedidos.
+- As telas Devo, Cobranças, Envios e Itens antigas saíram (continuam no histórico do Git). Abas antigas salvas no navegador caem em Hoje ou Pedidos.
+- Código novo com prefixo `n-` (canhoto, linha, comunidade). Restos antigos no arquivo, sem uso: `cobBoard`, `envBoard`, `renderList` de cobranças, envios e itens, e CSS antigo.
+
 Falta ou ficou parcial:
 - Peso na Coleção: ainda carrega ~11 MB de folhas de sprites (as capas das eras no topo usam ~18 folhas). Hoje, Devo e Cobranças carregam quase nada. Ideia: capas de era menores ou sob demanda.
 - O desfazer grava dados dela, então só foi conferido pela sintaxe, não clicado ao vivo.
