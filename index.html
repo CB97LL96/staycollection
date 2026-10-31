@@ -1573,7 +1573,7 @@ function renderPedidos(){
     const fazer=dev.length||e.some(x=>["A pedir","A confirmar"].includes(x.status));
     const espera=!fazer&&(aberto.length||envAtivos.length||itAtivos.length);
     const prox=[...dev,...e.filter(x=>["A pedir","A confirmar"].includes(x.status))].map(x=>x.prazo).filter(Boolean).sort()[0]||"";
-    const acao=dev.length?`pagar ${brl(dev.reduce((a,x)=>a+(x.valor||0),0))||dev.length+" cobrança"+(dev.length>1?"s":"")}`:e.some(x=>x.status==="A pedir")?"pedir envio":e.some(x=>x.status==="A confirmar")?"conferir envio":espera?"esperando":"em dia";
+    const somaDev=dev.reduce((a,x)=>a+(x.valor||0),0); const acao=dev.length?`pagar ${somaDev?brl(somaDev):dev.length+" cobrança"+(dev.length>1?"s":"")}`:e.some(x=>x.status==="A pedir")?"pedir envio":e.some(x=>x.status==="A confirmar")?"conferir envio":espera?"esperando":"em dia";
     const hay=(n+" "+c.map(x=>[x.referente,x.ceg].join(" ")).join(" ")+" "+e.map(x=>[x.gom,x.itens].join(" ")).join(" ")+" "+i.map(x=>[x.item,x.membro,x.ceg,x.comQuem].join(" ")).join(" ")).toLowerCase();
     return {n,c,e,i,dev,aberto,pagas,envAtivos,nLib,cnt,fazer,espera,prox,acao,hay};
   });
@@ -2152,10 +2152,14 @@ async function saveFoto(key,file){ const blob=await shrink(file); const ty=["ima
 const nnorm=x=>String(x||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]/g,"");
 window.stayIcons={
   targets(){return {com:list("comunidades").map(c=>c.nome).filter(Boolean),grupo:[...new Set(list("cegs").map(c=>c.grupo).filter(Boolean))]}},
+  async reset(t){ // apaga os ícones de um tipo ("grp" ou "com") para refazer
+    const chaves=Object.keys(fotos).filter(k=>k.startsWith("icon-"+t+"-")); let n=0;
+    for(const k of chaves){ const prev=fotos[k]; try{ await db.doc("fotos/"+k).delete(); if(prev&&prev.asset&&assetsNs){try{await assetsNs.delete(prev.asset)}catch(e){}} n++ }catch(e){} }
+    return n; },
   async import(map){
     if(!db||!assetsNs||!canUpload)return {erro:"sem permissão ou sem armazenamento"};
     const tg=this.targets(), alvo=[...tg.com.map(n=>["com",n]),...tg.grupo.map(n=>["grp",n])];
-    const casa=(a,b)=>{const x=nnorm(a),y=nnorm(b); return x&&y&&(x===y||(Math.min(x.length,y.length)>=8&&(x.includes(y)||y.includes(x))))};
+    const limpa=n=>String(n||"").replace(/^[^\p{L}\p{N}]+/u,"").replace(/\s*\([^)]*\)\s*$/,"").trim(); const casa=(a,b)=>{const x=nnorm(a),y=nnorm(limpa(b)); return !!x&&x===y};
     const feitos={com:0,grp:0}, sem=[]; const entradas=Object.entries(map);
     for(const [t,n] of alvo){
       const hit=entradas.find(([titulo])=>casa(titulo,n)); if(!hit){sem.push(t+":"+n);continue}
