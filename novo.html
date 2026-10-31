@@ -1252,6 +1252,10 @@ nav.tabs.areas button[aria-current="page"] .badge{background:var(--accent-ink);c
 .n-ceg .n-lines{border:0;border-top:1px solid var(--line);border-radius:0 0 10px 10px}
 @media (max-width:720px){
   .n-tk{grid-template-columns:minmax(0,1fr)}
+  .n-tk-main{grid-template-columns:var(--stub) minmax(0,1fr)}
+  .n-tk-main .tdate{grid-row:span 2}
+  .n-tk-r{grid-column:2;grid-template-columns:auto 1fr;justify-items:start;align-items:center;gap:8px 12px;padding:0 12px 12px}
+  .n-tk-st{justify-content:flex-start}
   .n-tk-act{padding:0 12px 12px calc(var(--stub) + 12px);justify-content:flex-start}
   .n-total{font-size:34px}
   .n-facts div{grid-template-columns:1fr;gap:0}
@@ -1540,7 +1544,7 @@ function renderPedidos(){
   const card=r=>{
     const key="n|"+r.n, open=ui.gclosed[key]===false||!!q&&r.hay.includes(q)&&rows.length<=3, ci=comInfo(r.n);
     const resumoI=STG.filter(([k])=>r.cnt[k]).map(([k,l])=>`${r.cnt[k]} ${l}`).join(" · ");
-    const head=`<button type="button" class="n-com-h" data-n-com="${esc(key)}" aria-expanded="${open}">${r.prox?stub(r.prox):`<span class="tdate none"><b>–</b><small>sem prazo</small></span>`}<span class="n-tk-body"><span class="n-tk-t">${comChip(r.n)}${esc(r.n)}</span><span class="n-tk-s">${esc(resumoI||"sem itens em andamento")}</span></span><span class="n-com-a ${r.fazer?"fazer":""}">${esc(r.acao)}</span></button>`;
+    const head=`<button type="button" class="n-com-h" data-n-com="${esc(key)}" aria-expanded="${open}">${r.prox?stub(r.prox):`<span class="tdate none"><b>–</b><small>sem prazo</small></span>`}<span class="n-tk-body"><span class="n-tk-t">${comChip(r.n)}${esc(r.n)}</span><span class="n-tk-s">${esc(resumoI||"sem itens em andamento")}</span></span><span class="n-com-a ${r.fazer?"fazer":""}">${esc(r.acao)} ${I("chev",open?"up":"")}</span></button>`;
     let body="";
     if(open){
       const cabec=(t,n)=>`<h3>${esc(t)}<span class="n-cnt">${n}</span></h3>`;
