@@ -1307,6 +1307,7 @@ nav.tabs.areas button[aria-current="page"] .badge{background:var(--accent-ink);c
 .dv::before,.dv::after{display:none}
 .dv .dvmain{padding:12px 14px}
 .n-rep{display:inline-flex;align-items:center;gap:6px;margin:2px 10px 2px 0;font-size:13px;color:var(--ink2)}
+.n-h3{font-size:16px;margin:22px 0 8px;display:flex;gap:8px;align-items:baseline}
 </style>
 
 <div class="wrap">
@@ -2398,6 +2399,12 @@ function repList(){
   const out=[]; m.forEach((ds,id)=>{ if(ds.length<2)return; const c=COL.items.find(x=>x.i===id); if(c)out.push({c,ds}); });
   return out.sort((a,b)=>b.ds.length-a.ds.length||String(a.c.m).localeCompare(String(b.c.m),"pt-BR")||String(a.c.e).localeCompare(String(b.c.e),"pt-BR"));
 }
+function repPorNome(){
+  const nk=x=>String(x||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\b(r\d|round \d|v\d)\b/g,"").replace(/[^a-z0-9]/g,"");
+  const m=new Map();
+  list("itens").forEach(d=>{ if(REP_OFF.includes(d.status)||tipoDe(d)!=="Photocard / set")return; const k=nk(d.item)+"|"+nk(d.membro); if(nk(d.item).length<4)return; if(!m.has(k))m.set(k,[]); m.get(k).push(d); });
+  return [...m.values()].filter(a=>a.length>=2).sort((a,b)=>b.length-a.length||String(a[0].membro).localeCompare(String(b[0].membro),"pt-BR"));
+}
 function renderRepetidos(){
   if(!COL){ $("#view").innerHTML=`<div class="empty">${colErr?"Não deu pra carregar o catálogo; recarregue a página.":"Carregando catálogo…"}</div>`; loadCol(); return; }
   const r=repList(), extra=r.reduce((a,x)=>a+x.ds.length-1,0), recebida=d=>d.status==="Recebido";
@@ -2406,10 +2413,12 @@ function renderRepetidos(){
       <td><b>${esc(c.v||"")}</b><br><small>${esc([c.e,c.m].filter(Boolean).join(" · "))}</small></td>
       <td class="n-num"><b>${ds.length}</b>${rec?`<br><small>${rec} ${rec===1?"recebida":"recebidas"}</small>`:""}</td>
       <td>${ds.map(d=>`<span class="n-rep">${comChip(d.comunidade)}${esc([cegLbl(d)||d.ceg,d.status].filter(Boolean).join(" · "))}</span>`).join("")}</td></tr>`; }).join("");
+  const pn=repPorNome();
+  const tabNome=pn.length?`<h3 class="n-h3">Mesmo item e membro em mais de um pedido <span class="n-cnt">${pn.length}</span></h3><div class="n-tabw"><table class="n-tab"><thead><tr><th>Item</th><th>Membro</th><th class="n-num">Pedidos</th><th>De onde vêm</th></tr></thead><tbody>${pn.map(ds=>`<tr><td><b>${esc(ds[0].item||"")}</b></td><td>${esc(ds[0].membro||"")}</td><td class="n-num"><b>${ds.length}</b></td><td>${ds.map(d=>`<span class="n-rep">${comChip(d.comunidade)}${esc([cegLbl(d)||d.ceg,d.status].filter(Boolean).join(" · "))}</span>`).join("")}</td></tr>`).join("")}</tbody></table></div><p class="n-dica2">Aqui a conta é pelo nome do item e do membro, sem olhar o card do catálogo. Pode ser versão diferente com nome parecido; confira antes de decidir repassar.</p>`:"";
   $("#view").innerHTML=`<section class="block">${pageHead("colecao")}${colSwitch()}
     <p class="n-sub">${r.length?`<b>${r.length}</b> ${r.length===1?"card tem":"cards têm"} mais de uma cópia (${extra} ${extra===1?"cópia":"cópias"} a mais).`:"Nenhum card aparece em mais de um pedido."}</p>
     ${r.length?`<div class="n-tabw"><table class="n-tab"><thead><tr><th><span class="sr">Foto</span></th><th>Card</th><th class="n-num">Cópias</th><th>De onde vêm</th></tr></thead><tbody>${linhas}</tbody></table></div>`:""}
-    <p class="n-dica2">Conto cada pedido seu ligado ao card no catálogo como uma cópia (pedidos cancelados, repassados, abandonados e claims só tentados ficam de fora). Pedidos ainda sem card ligado não entram; confirme eles em "Confirmar cards" pra a conta ficar completa.</p></section>`;
+    <p class="n-dica2">Conto cada pedido seu ligado ao card no catálogo como uma cópia (pedidos cancelados, repassados, abandonados e claims só tentados ficam de fora). Pedidos ainda sem card ligado não entram; confirme eles em "Confirmar cards" pra a conta ficar completa.</p>${tabNome}</section>`;
 }
 function renderColecao(){
   if(cf.view==="conf"){renderConfirm();return}
