@@ -1151,6 +1151,7 @@ nav.tabs.areas button[aria-current="page"] .badge{background:var(--accent-ink);c
 .due.late{color:var(--bad);border:2px solid var(--bad);border-radius:6px;padding:1px 7px;text-transform:uppercase;letter-spacing:.05em;font-size:11px;font-weight:800;transform:rotate(-2deg);background:none}
 :root[data-theme="dark"] .due.late{color:var(--bad)}
 .task.is-late,.crow.is-late{background:var(--surface)}
+.due.later,.due.none{background:none;color:var(--ink2)}
 .cta{border-radius:8px;background:var(--accent);color:var(--accent-ink);font-weight:700}
 .cobk{background:var(--surface);border:1px solid var(--line);box-shadow:none;border-radius:10px}
 .cobk.bad b{color:var(--bad)}
@@ -1687,119 +1688,9 @@ function trustOf(d){
   const n=-daysTo(d.conferidoEm); const when=n<=0?"hoje":n===1?"ontem":`há ${n} dias`;
   return {cls:n<=2?"ok":n<=7?"warn":"bad",ic:n<=2?"check":"clock",txt:`conferido ${when}${src?" na "+src:""}`,src,n};
 }
-function cobRow(d){
-  const open=ui.cexp===d.id, late=["Pendente","A confirmar"].includes(d.status)&&d.prazo&&daysTo(d.prazo)<0, tr=trustOf(d);
-  const u=safeUrl(d.pagarLink)||(/^(forms\.gle|docs\.google)/.test(d.pagarLink||"")?"https://"+d.pagarLink:"");
-  const pay=d.status==="Pendente"?(d.pix?`<button class="cta" type="button" data-copy="${esc(d.pix)}">copiar pix${I("copy")}</button>`:u?`<a class="cta" href="${esc(u)}" target="_blank" rel="noopener">pagar${I("ext")}</a>`:""):"";
-  const ask=d.status==="A confirmar"&&canWrite?`<span class="cask">você pagou?</span><button class="cta" type="button" data-cpay="${esc(d.id)}">${I("check")}já paguei</button><button class="btn ghost small" type="button" data-cnot="${esc(d.id)}">ainda não</button><button class="btn ghost small" type="button" data-cexp="${esc(d.id)}">não tenho certeza</button>`:"";
-  const pl=safeUrl(d.provaLink);
-  const selPin=ui.cobSel.size?(data.cobrancas.get([...ui.cobSel][0])||{}).comunidade||"":null;
-  const selBlocked=d.status==="Pendente"&&selPin!=null&&(d.comunidade||"")!==selPin;
-  const chk=d.status==="Pendente"&&canWrite?`<label class="cobchk" title="${selBlocked?"a seleção pra liquidar em lote é limitada a uma comunidade por vez":"selecionar pra liquidar em lote"}"><input type="checkbox" data-cobchk="${esc(d.id)}" ${ui.cobSel.has(d.id)?"checked":""} ${selBlocked?"disabled":""} aria-label="Selecionar pra liquidar em lote: ${esc(d.referente||"sem título")}, ${typeof d.valor==="number"?brl(d.valor):"valor não informado"}"></label>`:"";
-  return `<div class="crow ${late?"is-late":""} ${open?"open":""} ${ui.cobSel.has(d.id)?"is-sel":""}" data-k="cobrancas" id="row-${esc(d.id)}" style="--c:${okHex((comInfo(d.comunidade)||{}).cor)}">
-    <div class="crmain ${chk?"haschk":""}" data-cexp="${esc(d.id)}">
-      ${stub(d.prazo)}${chk}
-      <div class="crt" role="button" tabindex="0" aria-expanded="${open}">${comChip(d.comunidade)}<b>${esc(d.referente||"")}</b><span class="crs">${esc([cegLbl(d)||d.ceg,d.tipo].filter(Boolean).join(" · "))}</span></div>
-      <div class="crv">${typeof d.valor==="number"?`<b>${brl(d.valor)}</b>`:`<small class="nota">valor não informado</small>`}</div>
-      <div class="crd">${pill(d)}${["Pendente","A confirmar"].includes(d.status)?dueChip(d.prazo):d.status==="Paga"&&d.pagoEm?`<span class="due none">${I("check")}paga ${fd(d.pagoEm)}</span>`:""}</div>
-      <div class="crtrust ${tr.cls}" title="${esc((tr.cls==="ok"?"Conferida com a fonte há pouco tempo. ":tr.cls==="warn"?"Já faz um tempo que não é conferida com a fonte; vale confirmar de novo. ":"Ainda não foi comparada com a fonte original. ")+(d.prova||"sem fonte anotada"))}">${I(tr.ic)}${esc(tr.txt)}</div>
-      <span class="tmore" aria-hidden="true">${I("chev")}</span>
-    </div>
-    ${pay||ask?`<div class="cract">${ask}${pay}</div>`:""}
-    ${open?`<div class="crsrc ${tr.cls}"><div><span class="lbl">de onde vem essa informação</span><p>${linkify(d.prova||"nenhuma fonte anotada")}</p>${pl?`<a class="btn ghost small" href="${esc(pl)}" target="_blank" rel="noopener">abrir a fonte${I("ext")}</a>`:""}</div>
-      ${canWrite?`<div class="crsrcb"><span class="hint">abriu a fonte e está igual?</span><button class="btn small" type="button" data-cconf="${esc(d.id)}">${I("check")}está igual, conferi hoje</button><button class="btn ghost small" type="button" data-edit="${esc(d.id)}">está diferente: corrigir</button></div>`:""}</div>
-      <div class="crfull">${rowHtml("cobrancas",d,{nochip:true})}</div>`:""}
-  </div>`;
-}
-function cobSelBar(){
-  if(!ui.cobSel.size) return "";
-  const rows=[...ui.cobSel].map(id=>data.cobrancas.get(id)).filter(d=>d&&d.status==="Pendente");
-  if(!rows.length){ui.cobSel.clear(); return "";}
-  const comName=rows[0].comunidade||"";
-  const ci=comInfo(comName);
-  const total=rows.reduce((s,d)=>s+(typeof d.valor==="number"?d.valor:0),0);
-  const semVal=rows.filter(d=>typeof d.valor!=="number").length;
-  const pixes=[...new Set(rows.map(d=>d.pix||(ci&&ci.pix)||"").filter(Boolean))];
-  const pixLine=pixes.length===1?`<span class="selpix">pix pra pagar: <b>${esc(pixes[0])}</b> <button type="button" class="btn ghost small" data-copy="${esc(pixes[0])}">copiar${I("copy")}</button></span>`
-    :pixes.length>1?`<span class="selpix warn">${I("alert")}essas cobranças têm chaves pix diferentes — pague cada uma separadamente, não dá pra usar um pix só pra todas</span>`
-    :comName?`<span class="selpix">sem pix cadastrado nessas cobranças nem em ${esc(comName)} — confira em Comunidades</span>`:"";
-  return `<div class="cobselbar" role="region" aria-label="Seleção para liquidar em lote">
-    <div class="cobselmain" aria-live="polite"><b>${rows.length}</b> ${rows.length===1?"cobrança selecionada":"cobranças selecionadas"} · <b>${brl(total)}</b>${semVal?` <small>(${semVal} sem valor)</small>`:""}${comName?` · ${esc(comName)}`:""}</div>
-    ${pixLine}
-    <div class="cobselact"><button type="button" class="btn ghost small" data-cobcancel>cancelar seleção</button><button type="button" class="btn danger" data-cobsettle>liquidar</button></div>
-  </div>`;
-}
-async function settleCobBatch(ids){
-  const prevs=new Map();
-  for(const id of ids){ const prev=data.cobrancas.get(id); if(!prev)continue; prevs.set(id,prev);
-    data.cobrancas.set(id,{...prev,status:"Paga",pagoEm:prev.pagoEm||isoToday()}); }
-  ui.cobSel.clear(); render();
-  const fails=[];
-  for(const id of ids){ const prev=prevs.get(id); if(!prev)continue;
-    try{ await db.doc("cobrancas/"+id).update({status:"Paga",pagoEm:prev.pagoEm||isoToday()}); }
-    catch(err){ data.cobrancas.set(id,prev); fails.push(id); } }
-  if(fails.length) render();
-  const ok=ids.length-fails.length;
-  if(fails.length) toast(`${ok} de ${ids.length} marcadas como pagas; ${fails.length} não salvou`,()=>settleCobBatch(fails));
-  else toast(`${ok} ${ok===1?"cobrança marcada":"cobranças marcadas"} como pagas`,{label:"desfazer",fn:()=>undoCobBatch(ids,prevs)});
-}
-async function undoCobBatch(ids,prevs){
-  for(const id of ids){ const prev=prevs.get(id); if(prev)data.cobrancas.set(id,prev); }
-  render();
-  const fails=[];
-  for(const id of ids){ const prev=prevs.get(id); if(!prev)continue;
-    try{ await db.doc("cobrancas/"+id).update({status:prev.status,pagoEm:prev.pagoEm||null}); }
-    catch(err){ data.cobrancas.set(id,{...prev,status:"Paga",pagoEm:prev.pagoEm||isoToday()}); fails.push(id); } }
-  if(fails.length){ render(); toast(`Desfeito, mas ${fails.length} não salvou — continua como paga no banco`,()=>undoCobBatch(fails,prevs)); }
-  else toast("Desfeito");
-}
-function cobBoard(rows){
-  const by=(a,b)=>(a.prazo||"9999").localeCompare(b.prazo||"9999");
-  const sec=(sts)=>rows.filter(d=>sts.includes(d.status)).sort(by);
-  const pend=rows.filter(devoC).sort(by), conf=sec(["A confirmar"]).filter(d=>!devoC(d)), fut=sec(["Aguardando a GOM","Futura","Não liberado"]), pagas=sec(["Paga"]).sort((a,b)=>(b.pagoEm||"").localeCompare(a.pagoEm||"")), sem=sec(["Set não fechou","Cancelada"]);
-  const sum=a=>a.reduce((x,d)=>x+(typeof d.valor==="number"?d.valor:0),0);
-  const semValor=a=>a.filter(d=>typeof d.valor!=="number").length;
-  const abertas=[...pend,...conf]; const frescas=abertas.filter(d=>{const t=trustOf(d);return t.cls==="ok"}).length;
-  const byDay=arr=>{const m=new Map(); arr.forEach(d=>{const k=d.pagoEm||""; if(!m.has(k))m.set(k,[]); m.get(k).push(d)});
-    return [...m.entries()].map(([day,ds])=>`<div class="cobday">${day?`<b>${esc(fd(day))}</b>`:"<b>sem data</b>"}<span>${ds.length>1?`lote de ${ds.length} cobranças`:"1 cobrança"}</span>${sum(ds)?`<span class="cobdaysum">${brl(sum(ds))}</span>`:""}</div>${ds.map(cobRow).join("")}`).join("")};
-  const block=(key,title,sub,arr,ic,cls,closedDef,grouped)=>{ if(!arr.length)return ""; const isOpen=ui.gclosed["cob|"+key]!=null?ui.gclosed["cob|"+key]===false:!closedDef;
-    return `<details class="cobsec ${cls}" data-gkey="cob|${key}" ${isOpen?"open":""}><summary><span class="esic">${I(ic)}</span><span class="esl">${title}</span><span class="esn">${arr.length}</span>${sum(arr)?`<span class="cobsum">${brl(sum(arr))}</span>`:""}<span class="esd">${sub}</span></summary><div class="crlist">${grouped?byDay(arr):arr.map(cobRow).join("")}</div></details>`;};
-  return `<div class="cobtop">
-      <div class="cobk bad"><span>pra pagar</span><b>${brl(sum(pend))}</b><small>${pend.length} ${pend.length===1?"cobrança":"cobranças"}${pend.some(d=>d.status==="A confirmar")?` · ${pend.filter(d=>d.status==="A confirmar").length} a confirmar já vencida${pend.filter(d=>d.status==="A confirmar").length>1?"s":""}`:""}${semValor(pend)?` · ${semValor(pend)} sem valor informado`:""}</small></div>
-      <div class="cobk warn"><span>você pagou?</span><b>${conf.length}</b><small>${conf.length?brl(sum(conf))+" em dúvida"+(semValor(conf)?` · ${semValor(conf)} sem valor`:""):"nada em dúvida"}</small></div>
-      <div class="cobk info"><span>ainda vão cobrar</span><b>${fut.length}</b><small>${sum(fut)?"uns "+brl(sum(fut)):"valores ainda não definidos"}</small></div>
-      <div class="cobk ${!abertas.length?"muted":frescas===abertas.length?"ok":"warn"}" title="Quantas cobranças em aberto (pra pagar + você pagou?) foram conferidas com a fonte (planilha, grupo etc.) nos últimos 2 dias. Depois de 2 dias sem conferir o badge da cobrança fica amarelo; depois de 7 dias, ou se nunca foi conferida, fica vermelho."><span>confiança</span><b>${abertas.length?`${frescas}/${abertas.length}`:"–"}</b><small>${abertas.length?"em aberto conferidas nos últimos 2 dias":"nada em aberto pra conferir"}</small></div>
-    </div>
-    <p class="hint cobhint">cada cobrança diz de onde veio a informação e quando foi conferida com a planilha ou o grupo. Abra a cobrança, confira a fonte e marque "está igual" pra ter certeza. Pra uma conferência completa, me peça "confere as cobranças".</p>
-    ${block("pend","Pra pagar","a GOM já cobrou e você ainda não pagou",pend,"coin","pagar",false)}
-    ${block("conf","Você pagou?","não ficou claro na fonte se você já pagou; confira e marque",conf,"help","conf2",false)}
-    ${block("fut","Ainda vão cobrar","a GOM ainda não liberou o pagamento",fut,"clock","esperar",true)}
-    ${block("pagas","Pagas","histórico, da mais recente pra mais antiga, agrupado por dia",pagas,"check","pagas",true,true)}
-    ${block("sem","Sem cobrança","set não fechou ou cancelada",sem,"x","longe",true)}
-    ${rows.length?"":EMPTY}${cobSelBar()}`;
-}
-$("#view").addEventListener("click",async e=>{ if(ui.tab!=="cobrancas")return;
-  if(e.target.closest("[data-cobcancel]")){ui.cobSel.clear();render();return;}
-  const settleBtn=e.target.closest("[data-cobsettle]");
-  if(settleBtn){
-    if(!settleBtn.classList.contains("armed")){settleBtn.classList.add("armed");settleBtn.textContent="Confirmar liquidação";setTimeout(()=>{if(settleBtn.isConnected){settleBtn.classList.remove("armed");settleBtn.textContent="liquidar"}},4000);return;}
-    const ids=[...ui.cobSel]; await settleCobBatch(ids); return;
-  }
-  if(e.target.closest("a,select,input,textarea,form,[data-copy],[data-edit],[data-del],[data-cpay],[data-cnot],[data-cconf],[data-cancel]")&&!e.target.closest("[data-cpay],[data-cnot],[data-cconf]"))return;
-  const pay=e.target.closest("[data-cpay]"), not=e.target.closest("[data-cnot]"), cf_=e.target.closest("[data-cconf]");
-  const b=pay||not||cf_; if(b&&db){ const id=b.dataset.cpay||b.dataset.cnot||b.dataset.cconf; const prev=data.cobrancas.get(id); if(!prev)return;
-    const patch=pay?{status:"Paga",pagoEm:prev.pagoEm||isoToday()}:not?{status:"Pendente"}:{conferidoEm:isoToday()};
-    const save=async()=>{ data.cobrancas.set(id,{...prev,...patch}); render();
-      try{ await db.doc("cobrancas/"+id).update(patch); toast(pay?"Marcada como paga":not?"Voltou pra pagar":"Conferida hoje") }
-      catch(err){ data.cobrancas.set(id,prev); render(); toast("Não deu pra salvar; a cobrança voltou como estava",save) } };
-    await save(); return; }
-  const h=e.target.closest("[data-cexp]"); if(!h)return; ui.cexp=ui.cexp===h.dataset.cexp?null:h.dataset.cexp; ui.editing=null; render(); });
-$("#view").addEventListener("keydown",e=>{if(ui.tab!=="cobrancas"||(e.key!=="Enter"&&e.key!==" "))return; const h=e.target.closest(".crt[role=button]"); if(!h||e.target!==h)return; e.preventDefault(); h.click();});
 function bodyFor(k,rows){
   const grouped=(ui.sort[k]||"padrao")==="padrao";
   if(k==="comunidades") return grouped?comGrid(rows):`<div class="list">${rows.map(d=>rowHtml(k,d)).join("")||EMPTY}</div>`;
-  if(k==="envios"&&grouped) return envBoard(rows);
-  if(k==="cobrancas"&&grouped&&!ui.st.cobrancas) return cobBoard(rows);
   if(k==="cegs"&&grouped) return cegGroups(rows);
   return `<div class="list">${rows.map(d=>rowHtml(k,d)).join("")||EMPTY}</div>`;
 }
@@ -1816,65 +1707,7 @@ function cegGroups(rows){
 const BK=[["lib","liberados pra pedir",["Envio liberado"],"ok"],["br","no Brasil, sem liberar",["Com a GOM no Brasil"],"info"],["cam","a caminho",["Comprado","Na seller","A caminho da proxy","Na WH / proxy","A caminho do Brasil"],""],["esp","esperando a CEG",["Tentativa de claim","Garantido","Aguardando","A confirmar"],""],["ped","envio já pedido",["Envio pedido","Enviado"],"info"]];
 const bkOf=st=>{const b=BK.find(x=>x[2].includes(st));return b?b[0]:null};
 const ESEC=[["pedir","Pedir agora","truck","dá pra pedir o envio hoje"],["conf","Conferir","help","não sei se já pedi ou se está liberado"],["esperar","Esperando liberar","clock","já chegou ou está quase; a GOM ainda não liberou o envio"],["caminho","Já pedido","check","envio pedido ou enviado; falta chegar"],["longe","Ainda longe","box","itens esperando a CEG ou a caminho do Brasil; nada pra fazer agora"],["recebidos","Recebidos","heart","envios que já chegaram"]];
-function itemTile(i,big){
-  const cid=Array.isArray(i.cards)&&i.cards[0]; const ci=cid&&COL?COL.items.find(x=>x.i===cid):null; const sp=(ci&&colSpr(ci))||fotoSpr("item-"+i.id);
-  const t=tipoDe(i); const ic=t==="Álbum"?"disc":t==="SG / fankit"?"gift":t==="Merch"?"star":"pc";
-  return `<div class="itile ${big?"lib":"dim"}" title="${esc([t,i.item,i.membro,i.status,i.ceg].filter(Boolean).join(" · "))}">
-    <div class="itimg">${okSpr(sp)?`<span style="${spr(sp)}"></span>`:`<span class="iticon">${OICON[t]||OICON.Merch}</span>`}</div>
-    <div class="itcap">${kindTag(pcKind(i))}<b>${esc(i.item||"")}</b>${i.membro?`<span>${esc(i.membro)}</span>`:""}${!big?`<em>${esc(i.status.toLowerCase())}</em>`:""}</div></div>`;
-}
 const STG=[["lib","liberados","var(--mint)"],["br","no Brasil","var(--lav)"],["cam","a caminho","var(--honey)"],["esp","esperando a CEG","color-mix(in srgb,var(--ink2) 45%,var(--surface))"],["ped","já pedidos","#7CC4E8"]];
-function envBoard(envRows){
-  if(!COL) loadCol();
-  const q=ui.q.trim().toLowerCase(); const all=ui.envAll===true;
-  const allEnv=list("envios").filter(e=>!ui.com||e.comunidade===ui.com);
-  const its=list("itens").filter(i=>bkOf(i.status)&&(!ui.com||i.comunidade===ui.com));
-  const names=new Set([...allEnv.map(e=>e.comunidade||"(sem comunidade)"),...its.map(i=>i.comunidade||"(sem comunidade)")]);
-  const RANK={pedir:0,conf:1,esperar:2,caminho:3,longe:4,recebidos:5};
-  const LBL={pedir:"pedir agora",conf:"conferir",esperar:"esperando liberar",caminho:"já pedido",longe:"ainda longe",recebidos:"recebido"};
-  const ord=comOrder();
-  let rows=[...names].map(n=>{
-    const e=allEnv.filter(x=>(x.comunidade||"(sem comunidade)")===n), it=its.filter(x=>(x.comunidade||"(sem comunidade)")===n);
-    const cnt={}; STG.forEach(s_=>cnt[s_[0]]=0); it.forEach(i=>cnt[bkOf(i.status)]++);
-    const has=st=>e.some(x=>x.status===st);
-    const sec=has("A pedir")?"pedir":has("A confirmar")?"conf":(has("Aguardando liberação")||cnt.lib||cnt.br)?"esperar":(has("Pedido")||has("Enviado")||cnt.ped)?"caminho":(cnt.esp||cnt.cam)?"longe":"recebidos";
-    const main=e.find(x=>x.status==="A pedir")||e.find(x=>x.status==="A confirmar")||e.find(x=>x.status==="Aguardando liberação")||e.find(x=>["Pedido","Enviado"].includes(x.status))||e[0];
-    const who=[...new Set(it.map(i=>i.comQuem).filter(Boolean))];
-    const hay=(n+" "+e.map(x=>[x.gom,x.itens,x.comoPedir].join(" ")).join(" ")+" "+it.map(x=>[x.item,x.membro,x.ceg,x.comQuem].join(" ")).join(" ")).toLowerCase();
-    return {n,e,it,cnt,sec,main,who,hay,total:it.length};
-  }).filter(r=>(!q||r.hay.includes(q)));
-  const acting=rows.filter(r=>["pedir","conf","esperar"].includes(r.sec));
-  if(!all) rows=acting;
-  rows.sort((a,b)=>RANK[a.sec]-RANK[b.sec]||((a.main&&a.main.prazo)||"9999").localeCompare((b.main&&b.main.prazo)||"9999")||b.cnt.lib-a.cnt.lib||((ord.indexOf(a.n)+1||99)-(ord.indexOf(b.n)+1||99)));
-  const totLib=acting.reduce((a,r)=>a+r.cnt.lib,0), nPedir=acting.filter(r=>r.sec==="pedir").length;
-  const bar=r=>{const t=r.total||1; return `<div class="sbar" role="img" aria-label="${esc(STG.filter(s_=>r.cnt[s_[0]]).map(s_=>r.cnt[s_[0]]+" "+s_[1]).join(", ")||"nenhum item")}">${STG.map(([k,,c])=>r.cnt[k]?`<span style="flex:${r.cnt[k]};background:${c}"></span>`:"").join("")||'<span class="none"></span>'}</div>`;};
-  const row=r=>{
-    const ci=comInfo(r.n), key="envrow|"+r.n, open=ui.gclosed[key]===false; const m=r.main;
-    const u=m&&firstUrl(m.comoPedir), pu=m&&!u&&safeUrl(m.provaLink);
-    const VERB={"A pedir":"pedir pra","A confirmar":"conferir com","Aguardando liberação":"esperando","Pedido":"pedido com","Enviado":"enviado por","Recebido":"recebido de"};
-    const head=`<div class="erow ${r.sec}" data-gtoggle="${esc(key)}" style="--c:${okHex(ci&&ci.cor)}">
-      <div class="ername" role="button" tabindex="0" aria-expanded="${open}">${comChip(r.n)}<div><b>${esc(r.n)}</b><small>${m?`${esc(VERB[m.status]||"")} ${esc(m.gom||"")}`:"sem envio anotado"}${r.who.length?` · itens com ${esc(r.who.slice(0,3).join(", "))}${r.who.length>3?"…":""}`:""}</small></div></div>
-      <div class="erbar">${bar(r)}<small>${r.cnt.lib?`<b>${r.cnt.lib}</b> de ${r.total} liberados`:`${r.total} ${r.total===1?"item":"itens"}, nenhum liberado`}</small></div>
-      <div class="eract"><span class="stg ${r.sec}">${esc(LBL[r.sec])}</span>${m&&["A pedir","A confirmar","Aguardando liberação"].includes(m.status)?dueChip(m.prazo):""}${r.sec==="pedir"&&u?`<a class="cta" href="${esc(u)}" target="_blank" rel="noopener">pedir${I("ext")}</a>`:r.sec==="pedir"&&pu?`<a class="cta sec" href="${esc(pu)}" target="_blank" rel="noopener">onde pedir${I("ext")}</a>`:""}<span class="tmore">${I("chev",open?"up":"")}</span></div>
-    </div>`;
-    if(!open) return `<li>${head}</li>`;
-    const envs=r.e.filter(x=>x.status!=="Recebido");
-    const detail=`<div class="erdet">
-      ${envs.map(e=>{const editing=ui.editing===e.id; return `<div class="erenv" data-k="envios"><div class="erenvh"><span>${esc(VERB[e.status]||e.status)} <b>${esc(e.gom||"")}</b>${e.tipo?` · ${esc(e.tipo.toLowerCase())}`:""}</span>${canWrite?`<button class="icon-btn" data-edit="${esc(e.id)}">${editing?"fechar":"editar"}</button>`:""}</div>
-        ${e.comoPedir?`<p><i>como pedir</i> ${linkify(e.comoPedir)}</p>`:""}${e.obs?`<p class="soft"><i>nota</i> ${linkify(e.obs)}</p>`:""}
-        ${e.status==="A pedir"&&!r.cnt.lib&&e.itens?`<p class="warnp">${I("alert")}nenhum item daqui está como "Envio liberado"; o aviso fala de: ${esc(e.itens)}</p>`:""}
-        ${editing?formHtml("envios",e.id,e):""}</div>`;}).join("")}
-      ${STG.filter(([k])=>r.cnt[k]).map(([k,l,c])=>`<div class="erstage"><div class="erst"><span class="dot" style="background:${c}"></span>${r.cnt[k]} ${esc(l)}</div><div class="itiles">${r.it.filter(i=>bkOf(i.status)===k).map(i=>itemTile(i,k==="lib")).join("")}</div></div>`).join("")}
-    </div>`;
-    return `<li class="open">${head}${detail}</li>`;
-  };
-  return `<div class="esum">
-      <div><b>${nPedir}</b> ${nPedir===1?"envio":"envios"} pra pedir · <b>${totLib}</b> ${totLib===1?"item liberado":"itens liberados"}</div>
-      <div class="legends"><div class="legend2">${STG.map(([,l,c])=>`<span><span class="dot" style="background:${c}"></span>${esc(l)}</span>`).join("")}</div><div class="legend2 ticons">${[["Photocard / set","photocard ou set"],["Álbum","álbum"],["SG / fankit","SG ou fankit"],["Merch","merch"]].map(([t,l])=>`<span>${OICON[t]}${esc(l)}</span>`).join("")}</div></div>
-    </div>
-    <div class="chips" role="group" aria-label="Mostrar"><button class="chip" data-envall="0" aria-pressed="${!all}">Com algo pra fazer<span class="c">${acting.length}</span></button><button class="chip" data-envall="1" aria-pressed="${all}">Todas as comunidades</button></div>
-    ${rows.length?`<ul class="elist">${rows.map(row).join("")}</ul>`:EMPTY}`;
-}
 function pixList(t){
   return `<div class="pixl">${String(t).split(/;\s*/).filter(Boolean).map(part=>{const m=part.match(PIXRE); if(!m)return `<div><span>${linkify(part)}</span></div>`; const before=part.slice(0,m.index).replace(/[:\s]+$/,""), after=part.slice(m.index+m[0].length).trim();
     return `<div>${before?`<small>${esc(before)}</small>`:""}<code>${esc(m[0])}</code><button class="icon-btn copy" type="button" data-copy="${esc(m[0])}">copiar</button>${after?`<small>${esc(after)}</small>`:""}</div>`;}).join("")}</div>`;
