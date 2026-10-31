@@ -1306,6 +1306,7 @@ nav.tabs.areas button[aria-current="page"] .badge{background:var(--accent-ink);c
 .dv{display:block}
 .dv::before,.dv::after{display:none}
 .dv .dvmain{padding:12px 14px}
+.n-rep{display:inline-flex;align-items:center;gap:6px;margin:2px 10px 2px 0;font-size:13px;color:var(--ink2)}
 </style>
 
 <div class="wrap">
@@ -1416,7 +1417,7 @@ function renderTabs(){
   let subs="";
   if(["comunidades","repasses"].includes(ui.tab)) subs=[["pedidos","← Pedidos"],["comunidades","Comunidades"],["repasses","Repasses"]].map(([t,l])=>`<button type="button" data-tab="${t}" aria-current="${ui.tab===t?"page":"false"}">${esc(l)}</button>`).join("");
   else if(cur==="colecao"){ const nC=COL?cfQueue().q.filter(([d])=>!(Array.isArray(d.cards)&&d.cards.length)).length:0;
-    subs=[["pc","Photocards",""],["outras","Outras coisas",""],["eventos","Eventos",""],["loja","Loja",""],["conf","Confirmar cards",nC]].map(([v,l,n])=>`<button type="button" data-cv="${v}" aria-current="${cf.view===v?"page":"false"}">${esc(l)}${n?`<span class="c">${n}</span>`:""}</button>`).join(""); }
+    subs=[["pc","Photocards",""],["outras","Outras coisas",""],["eventos","Eventos",""],["loja","Loja",""],["rep","Repetidos",COL?(repList()||[]).length:0],["conf","Confirmar cards",nC]].map(([v,l,n])=>`<button type="button" data-cv="${v}" aria-current="${cf.view===v?"page":"false"}">${esc(l)}${n?`<span class="c">${n}</span>`:""}</button>`).join(""); }
   const st=$("#subtabs"); st.innerHTML=subs; st.hidden=!subs;
 }
 ui.lastIn=ui.lastIn||{};
@@ -2200,7 +2201,7 @@ function wishPanel(){
 }
 function colSwitch(){
   const n=outrasList().length;
-  return `<div class="viewsw" role="tablist" aria-label="Parte da coleção"><button role="tab" data-cv="pc" aria-selected="${cf.view==="pc"}">Photocards</button><button role="tab" data-cv="outras" aria-selected="${cf.view==="outras"}">Outras coisas<span class="c">${n}</span></button><button role="tab" data-cv="eventos" aria-selected="${cf.view==="eventos"}">Eventos</button><button role="tab" data-cv="loja" aria-selected="${cf.view==="loja"}">Loja</button><button role="tab" data-cv="conf" aria-selected="${cf.view==="conf"}">Confirmar cards${COL?`<span class="c">${cfQueue().q.filter(([d])=>!(Array.isArray(d.cards)&&d.cards.length)).length}</span>`:""}</button></div>`;
+  return `<div class="viewsw" role="tablist" aria-label="Parte da coleção"><button role="tab" data-cv="pc" aria-selected="${cf.view==="pc"}">Photocards</button><button role="tab" data-cv="outras" aria-selected="${cf.view==="outras"}">Outras coisas<span class="c">${n}</span></button><button role="tab" data-cv="eventos" aria-selected="${cf.view==="eventos"}">Eventos</button><button role="tab" data-cv="loja" aria-selected="${cf.view==="loja"}">Loja</button><button role="tab" data-cv="rep" aria-selected="${cf.view==="rep"}">Repetidos</button><button role="tab" data-cv="conf" aria-selected="${cf.view==="conf"}">Confirmar cards${COL?`<span class="c">${cfQueue().q.filter(([d])=>!(Array.isArray(d.cards)&&d.cards.length)).length}</span>`:""}</button></div>`;
 }
 function outrasList(){
   const fromItens=list("itens").filter(d=>!(Array.isArray(d.cards)&&d.cards.length)&&(d.status==="Recebido"||CAMINHO_ST.includes(d.status))).map(d=>({src:"item",id:d.id,nome:[d.item,d.membro].filter(Boolean).join(" · "),tipo:tipoDe(d),era:cegLbl(d)||d.ceg||"",com:d.comunidade||"",membros:membrosDe(d),st:d.status==="Recebido"?"tenho":"caminho",status:d.status,obs:d.obs||""}));
@@ -2388,8 +2389,31 @@ function eraStrip(eras){
   const cur=cf.era&&canUpload?`<button type="button" class="btn ghost small ecov" data-foto="${esc(slug(cf.era))}">${fotoSpr(slug(cf.era))?"trocar capa desta era":"usar uma foto minha como capa desta era"}</button>`:"";
   return `<div class="erawrap"><div class="erastrip" role="group" aria-label="Era"><button type="button" class="etile" data-cera="" aria-pressed="${!cf.era}"><span class="eimg eall">${I("cards")}</span><span class="elbl">Todas</span></button>${eras.filter(k=>k.startsWith("KR|")).map(tile).join("")}${eras.filter(k=>k.startsWith("JP|")).map(tile).join("")}</div>${cur}</div>`;
 }
+// ---------- Repetidos: cards ligados a 2 ou mais pedidos ----------
+const REP_OFF=["Cancelado","Abandonado","Repassei","Claim perdida","Set não fechou","Tentativa de claim"];
+function repList(){
+  if(!COL)return null;
+  const m=new Map();
+  list("itens").forEach(d=>{ if(REP_OFF.includes(d.status))return; (Array.isArray(d.cards)?d.cards:[]).forEach(id=>{ if(!m.has(id))m.set(id,[]); m.get(id).push(d); }); });
+  const out=[]; m.forEach((ds,id)=>{ if(ds.length<2)return; const c=COL.items.find(x=>x.i===id); if(c)out.push({c,ds}); });
+  return out.sort((a,b)=>b.ds.length-a.ds.length||String(a.c.m).localeCompare(String(b.c.m),"pt-BR")||String(a.c.e).localeCompare(String(b.c.e),"pt-BR"));
+}
+function renderRepetidos(){
+  if(!COL){ $("#view").innerHTML=`<div class="empty">${colErr?"Não deu pra carregar o catálogo; recarregue a página.":"Carregando catálogo…"}</div>`; loadCol(); return; }
+  const r=repList(), extra=r.reduce((a,x)=>a+x.ds.length-1,0), recebida=d=>d.status==="Recebido";
+  const linhas=r.map(({c,ds})=>{ const sp=colSpr(c); const rec=ds.filter(recebida).length;
+    return `<tr><td class="n-ph">${okSpr(sp)?`<span class="thumb has"><span class="thimg" style="${spr(sp)}"></span></span>`:`<span class="thumb none"></span>`}</td>
+      <td><b>${esc(c.v||"")}</b><br><small>${esc([c.e,c.m].filter(Boolean).join(" · "))}</small></td>
+      <td class="n-num"><b>${ds.length}</b>${rec?`<br><small>${rec} ${rec===1?"recebida":"recebidas"}</small>`:""}</td>
+      <td>${ds.map(d=>`<span class="n-rep">${comChip(d.comunidade)}${esc([cegLbl(d)||d.ceg,d.status].filter(Boolean).join(" · "))}</span>`).join("")}</td></tr>`; }).join("");
+  $("#view").innerHTML=`<section class="block">${pageHead("colecao")}${colSwitch()}
+    <p class="n-sub">${r.length?`<b>${r.length}</b> ${r.length===1?"card tem":"cards têm"} mais de uma cópia (${extra} ${extra===1?"cópia":"cópias"} a mais).`:"Nenhum card aparece em mais de um pedido."}</p>
+    ${r.length?`<div class="n-tabw"><table class="n-tab"><thead><tr><th><span class="sr">Foto</span></th><th>Card</th><th class="n-num">Cópias</th><th>De onde vêm</th></tr></thead><tbody>${linhas}</tbody></table></div>`:""}
+    <p class="n-dica2">Conto cada pedido seu ligado ao card no catálogo como uma cópia (pedidos cancelados, repassados, abandonados e claims só tentados ficam de fora). Pedidos ainda sem card ligado não entram; confirme eles em "Confirmar cards" pra a conta ficar completa.</p></section>`;
+}
 function renderColecao(){
   if(cf.view==="conf"){renderConfirm();return}
+  if(cf.view==="rep"){renderRepetidos();return}
   if(cf.view==="outras"){renderOutras();return}
   if(cf.view==="eventos"){renderEventos();return}
   if(cf.view==="loja"){renderLoja();return}
