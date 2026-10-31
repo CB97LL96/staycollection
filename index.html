@@ -1292,6 +1292,10 @@ nav.tabs.areas button[aria-current="page"] .badge{background:var(--accent-ink);c
 .n-line .n-chk{width:22px;height:22px;accent-color:var(--accent)}
 @media (max-width:720px){.n-hide{display:none}.n-tab th,.n-tab td{padding:8px}.n-cgrp .n-dica{margin-left:0;flex-basis:100%}}
 .n-detact{align-items:flex-start}
+.n-ph{width:64px;padding:6px 8px!important}
+.n-ph .thumb{width:48px;height:64px;border-radius:6px}
+.n-acts{white-space:nowrap;text-align:right}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 </style>
 
 <div class="wrap">
@@ -1638,7 +1642,7 @@ function renderCegs(){
   const coms=[...by.keys()].sort((a,b)=>((ord.indexOf(a)+1||99)-(ord.indexOf(b)+1||99))||a.localeCompare(b,"pt-BR"));
   const nomesCom=[...new Set(list("comunidades").sort((a,b)=>(a.ordem??99)-(b.ordem??99)).map(x=>x.nome))];
   const itemRow=d=>{const c=COLS.itens, sv=d.status||""; const opts=[...new Set([...c.opts,sv])].filter(o=>o!=="");
-    return `<tr class="n-ir" data-k="itens" id="row-${esc(d.id)}"><td>${esc(d.membro||"")}</td><td>${esc(d.item||"")}${d.comQuem?`<small> · com ${esc(d.comQuem)}</small>`:""}</td><td>${canWrite?`<select class="n-sel" data-status="${esc(d.id)}" aria-label="Status de ${esc(d.item||"item")}">${opts.map(o=>`<option ${o===sv?"selected":""}>${esc(o)}</option>`).join("")}</select>`:esc(sv)}</td><td class="n-num">${typeof d.valor==="number"?brl(d.valor):""}</td><td>${canWrite?`<button type="button" class="n-btn ghost" data-edit="${esc(d.id)}">${ui.editing===d.id?"fechar":"editar"}</button>`:""}</td></tr>${ui.editing===d.id?`<tr><td colspan="5">${formHtml("itens",d.id,d)}</td></tr>`:""}`;};
+    return `<tr class="n-ir" data-k="itens" id="row-${esc(d.id)}"><td class="n-ph">${itemThumb(d)}</td><td>${esc(d.membro||"")}</td><td>${esc(d.item||"")}${d.comQuem?`<small> · com ${esc(d.comQuem)}</small>`:""}</td><td>${canWrite?`<select class="n-sel" data-status="${esc(d.id)}" aria-label="Status de ${esc(d.item||"item")}">${opts.map(o=>`<option ${o===sv?"selected":""}>${esc(o)}</option>`).join("")}</select>`:esc(sv)}</td><td class="n-num">${typeof d.valor==="number"?brl(d.valor):""}</td><td class="n-acts">${canWrite&&tipoDe(d)==="Photocard / set"?`<button type="button" class="n-btn ghost" data-link="${esc(d.id)}" aria-expanded="${ui.linking===d.id}" title="ligar este item aos photocards do catálogo">cards${Array.isArray(d.cards)&&d.cards.length?` (${d.cards.length})`:""}</button>`:""}${canWrite?`<button type="button" class="n-btn ghost" data-edit="${esc(d.id)}">${ui.editing===d.id?"fechar":"editar"}</button>`:""}</td></tr>${ui.linking===d.id?`<tr><td colspan="6">${pickerHtml(d)}</td></tr>`:""}${ui.editing===d.id?`<tr><td colspan="6">${formHtml("itens",d.id,d)}</td></tr>`:""}`;};
   const cegRow=r=>{
     const key="ng|"+r.k, open=ui.gclosed[key]===false||(!!q&&rows.length<=3), doc=r.doc;
     const head=`<tr class="n-cr ${open?"open":""}"><th scope="row"><button type="button" class="n-cb" data-n-ceg="${esc(key)}" aria-expanded="${open}">${I("chev",open?"up":"")}<span>${esc(r.nome)}</span></button></th><td class="n-hide">${esc(doc&&doc.gom||"")}</td><td>${doc?esc(doc.status||""):""}</td><td class="n-num">${r.ativos||"–"}</td><td class="n-num n-hide ${r.cnt.lib?"n-okc":""}">${r.cnt.lib||"–"}</td><td class="n-num n-hide">${r.cnt.br||"–"}</td><td class="n-num n-hide">${r.cnt.cam||"–"}</td><td class="n-num n-hide">${r.cnt.esp||"–"}</td><td class="n-num n-hide">${r.rec||"–"}</td><td class="n-num ${r.devo?"n-devo":""}">${r.devo?brl(r.devo):"–"}</td></tr>`;
@@ -1646,7 +1650,7 @@ function renderCegs(){
     const sheet=doc&&safeUrl(doc.planilha);
     const itens=r.it.filter(i=>!["Cancelado","Abandonado","Repassei","Claim perdida"].includes(i.status)).sort((a,b)=>String(a.membro||"").localeCompare(String(b.membro||""),"pt-BR")||String(a.item||"").localeCompare(String(b.item||""),"pt-BR"));
     const det=`<tr class="n-cd"><td colspan="10">${doc&&ui.editing===doc.id?formHtml("cegs",doc.id,doc):`<div class="n-detact">${doc?nFacts([["GOM",esc(doc.gom||"")],["grupo",esc(doc.grupo||"")],["origem",esc(doc.origem||"")],["planilha",sheet?`<a href="${esc(sheet)}" target="_blank" rel="noopener">abrir ↗</a>`:""],["nota",doc.obs?linkify(doc.obs):""]]):`<p class="n-dica2">essa CEG não está cadastrada; os itens vêm do nome que aparece neles</p>`}${doc&&canWrite?`<button type="button" class="n-btn" data-edit="${esc(doc.id)}">editar CEG</button>`:""}</div>`}
-      ${itens.length?`<div class="n-tabw"><table class="n-tab n-itab"><thead><tr><th>Membro</th><th>Item</th><th>Status</th><th class="n-num">Valor</th><th></th></tr></thead><tbody>${itens.map(itemRow).join("")}</tbody></table></div>`:`<p class="n-dica2">nenhum item nessa CEG</p>`}</td></tr>`;
+      ${itens.length?`<div class="n-tabw"><table class="n-tab n-itab"><thead><tr><th><span class="sr">Foto</span></th><th>Membro</th><th>Item</th><th>Status</th><th class="n-num">Valor</th><th></th></tr></thead><tbody>${itens.map(itemRow).join("")}</tbody></table></div>`:`<p class="n-dica2">nenhum item nessa CEG</p>`}</td></tr>`;
     return head+det;
   };
   const tabela=n=>{const g=by.get(n), ci=comInfo(n), tot=g.reduce((a,r)=>a+r.devo,0), nIt=g.reduce((a,r)=>a+r.ativos,0);
@@ -2136,7 +2140,7 @@ document.addEventListener("click",async e=>{
   const fd=e.target.closest("[data-fotodel]"); if(fd&&db){e.preventDefault();e.stopPropagation(); if(!fd.classList.contains("armed")){fd.classList.add("armed");fd.textContent="confirmar: apagar minha foto";return}
     const key=fd.dataset.fotodel, prev=fotos[key]; const nf={...fotos}; delete nf[key]; fotos=nf; render(); try{await db.doc("fotos/"+key).delete(); if(prev&&prev.asset&&assetsNs){try{await assetsNs.delete(prev.asset)}catch(err){}} toast("Foto removida")}catch(err){toast("Não deu pra remover")} }
 },true);
-async function loadCol(){ if(COL||colErr)return; try{const r=await fetch("colecao.json"); if(!r.ok)throw 0; COL=await r.json(); COL.base=COL.items.slice(); mergeNovos();}catch(e){colErr=true;} if(ui.tab==="colecao"||ui.tab==="envios"||ui.tab==="itens"||ui.linking)render(); }
+async function loadCol(){ if(COL||colErr)return; try{const r=await fetch("colecao.json"); if(!r.ok)throw 0; COL=await r.json(); COL.base=COL.items.slice(); mergeNovos();}catch(e){colErr=true;} if(ui.tab==="colecao"||ui.tab==="envios"||ui.tab==="itens"||ui.tab==="cegs"||ui.linking)render(); }
 const stMan=it=>(posse[MSLUG(it.m)]||{})[it.i]||"";
 const CAMINHO_ST=["Garantido","Aguardando","Comprado","Na seller","A caminho da proxy","Na WH / proxy","A caminho do Brasil","Com a GOM no Brasil","Envio liberado","Envio pedido","Enviado"];
 let linkCache={sig:"",map:{}};
