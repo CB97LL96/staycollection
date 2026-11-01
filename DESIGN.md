@@ -1,226 +1,222 @@
 ---
 name: Coleção SKZ
-description: Um fichário de quarto, papel morno e um verde de folha; as fotos dos cards são o único elemento barulhento da tela.
+description: Impresso como o encarte de um álbum; papel couché, tinta preta, réguas grossas e cada era com a sua cor.
 colors:
-  papel: "#F5F2EC"
-  folha-branca: "#FFFFFF"
-  papel-fundo: "#EEE9E1"
-  grafite: "#24211D"
-  grafite-suave: "#5A544C"
-  lapis: "#6F675C"
-  linha: "#E2DBD0"
-  verde-folha: "#3D5A4E"
-  verde-folha-claro: "#E1EAE4"
-  tijolo: "#A3442C"
-  tijolo-claro: "#F6E3DC"
-  mostarda: "#7E5A12"
-  mostarda-clara: "#F4EAD3"
-  musgo: "#3C6B4D"
-  musgo-claro: "#E0EDE3"
-  anil: "#3C5C7A"
-  anil-claro: "#E1E9F1"
-  papel-noite: "#161513"
-  folha-noite: "#201E1B"
-  grafite-noite: "#EEE9E1"
-  verde-folha-noite: "#9FC2AF"
+  papel: "#F7F6F2"
+  folha: "#FFFFFF"
+  papel-fundo: "#ECEAE3"
+  tinta: "#111114"
+  tinta-suave: "#4B4A52"
+  lapis: "#66656D"
+  linha: "#DCD9D0"
+  vermelho-atraso: "#C2311E"
+  vermelho-atraso-claro: "#FBE3DE"
+  ocre: "#835600"
+  ocre-claro: "#FBEFD2"
+  verde: "#1F6E43"
+  verde-claro: "#DCEFE3"
+  azul: "#1F51BF"
+  azul-claro: "#E2EAFB"
+  plastico: "#1B1B20"
+  era-do-it: "#D9362B"
+  era-hop: "#2E6FE0"
+  era-ate: "#D99A12"
+  era-this-that: "#1F8A70"
+  era-karma: "#6A4BC4"
+  papel-noite: "#111114"
+  folha-noite: "#1A1A1F"
+  tinta-noite: "#F7F6F2"
 typography:
+  valor:
+    fontFamily: "Archivo, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "clamp(56px, 9vw, 84px)"
+    fontWeight: 900
+    lineHeight: 0.92
+    letterSpacing: "-0.045em"
+  era:
+    fontFamily: "Archivo, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "clamp(34px, 5vw, 52px)"
+    fontWeight: 900
+    lineHeight: 0.9
+    letterSpacing: "-0.04em"
   titulo:
-    fontFamily: "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
-    fontSize: "26px"
-    fontWeight: 700
-    lineHeight: 1.2
-    letterSpacing: "-0.01em"
-  numero:
-    fontFamily: "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
-    fontSize: "26px"
-    fontWeight: 750
-    letterSpacing: "-0.01em"
+    fontFamily: "Archivo, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "40px"
+    fontWeight: 900
+    lineHeight: 1
+    letterSpacing: "-0.035em"
   secao:
-    fontFamily: "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
-    fontSize: "16px"
-    fontWeight: 700
+    fontFamily: "Archivo, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "12px"
+    fontWeight: 800
+    letterSpacing: "0.14em"
   corpo:
-    fontFamily: "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+    fontFamily: "Archivo, ui-sans-serif, system-ui, sans-serif"
     fontSize: "15px"
     fontWeight: 400
     lineHeight: 1.45
-  apoio:
-    fontFamily: "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
-    fontSize: "13.5px"
-    fontWeight: 400
-  etiqueta:
-    fontFamily: "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+  item:
+    fontFamily: "Archivo, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "15.5px"
+    fontWeight: 650
+  adesivo:
+    fontFamily: "Archivo, ui-sans-serif, system-ui, sans-serif"
     fontSize: "12px"
     fontWeight: 700
 rounded:
-  foto: "10px"
-  controle: "12px"
-  cartao: "16px"
-  folha: "20px"
-  pilula: "99px"
+  foto: "7px"
+  controle: "10px"
+  faixa: "16px"
+  adesivo: "99px"
 spacing:
   gutter-celular: "16px"
   gutter-desktop: "32px"
-  grade-fotos: "14px"
-  linha: "13px 16px"
+  linha: "12px 2px"
 components:
   botao-principal:
-    backgroundColor: "{colors.verde-folha}"
-    textColor: "{colors.folha-branca}"
+    backgroundColor: "{colors.tinta}"
+    textColor: "{colors.papel}"
     rounded: "{rounded.controle}"
     padding: "9px 14px"
     height: "40px"
   botao:
-    backgroundColor: "{colors.folha-branca}"
-    textColor: "{colors.grafite}"
+    backgroundColor: "transparent"
+    textColor: "{colors.tinta}"
     rounded: "{rounded.controle}"
     padding: "9px 14px"
     height: "40px"
-  chip:
-    backgroundColor: "{colors.folha-branca}"
-    textColor: "{colors.grafite}"
-    rounded: "{rounded.pilula}"
-    padding: "6px 13px"
-    height: "34px"
   chip-ativo:
-    backgroundColor: "{colors.grafite}"
+    backgroundColor: "{colors.tinta}"
     textColor: "{colors.papel}"
-    rounded: "{rounded.pilula}"
-  cartao:
-    backgroundColor: "{colors.folha-branca}"
-    rounded: "{rounded.cartao}"
-    padding: "14px 16px"
-  pilula-atrasada:
-    backgroundColor: "{colors.tijolo-claro}"
-    textColor: "{colors.tijolo}"
-    rounded: "{rounded.pilula}"
-    padding: "2px 9px"
+    rounded: "{rounded.adesivo}"
+  adesivo-certo:
+    backgroundColor: "{colors.tinta}"
+    textColor: "{colors.papel}"
+    rounded: "{rounded.adesivo}"
+    padding: "4px 10px"
+  faixa-vindo:
+    backgroundColor: "{colors.plastico}"
+    textColor: "{colors.papel}"
+    rounded: "{rounded.faixa}"
+    padding: "14px"
 ---
 
 # Design System: Coleção SKZ
 
 ## Overview
 
-**Creative North Star: "O fichário de quarto"**
+**Creative North Star: "O encarte do álbum"**
 
-O app é o fichário que fica na escrivaninha dela: papel morno, folhas brancas soltas, um verde de capa de caderno. Quem faz barulho são as fotos dos photocards e as fotos dos grupos e comunidades. Todo o resto (texto, linhas, botões) fica em grafite e areia para não competir com elas. O pedido dela é "cozy e sem superestimular", então a interface é quieta e as cores de alerta aparecem só quando algo pede ação.
+O app é impresso como o encarte de um álbum de K-pop: papel couché claro, tinta preta, títulos grandes e apertados, réguas grossas separando as partes. Cada era (o álbum por trás de uma CEG) tem uma cor, e essa cor só aparece em títulos de era, pontos e faixas. As fotos dos cards continuam sendo o que mais chama atenção.
 
-A densidade é de ferramenta diária. Ela abre o app quase todo dia para ver o que deve e o que está vindo, então cada tela começa pelo que precisa dela. O detalhe abre numa folha lateral (no celular, de baixo para cima) sem tirá-la do lugar.
+O vocabulário da interface **não** é de álbum. Nada de "tracklist", "faixas" ou "bandeja" nos textos. O mundo do encarte vive na forma (tipo, régua, adesivo, plástico). O único lugar onde a linguagem de álbum aparece é a Coleção, com o nome da era como título.
 
 **Key Characteristics:**
-- Fundo de papel morno (#F5F2EC), folhas brancas com sombra baixa e nenhuma borda pesada.
-- Um único acento, o verde de folha, para a ação principal e para o progresso.
-- Fotos com cantos de 10px, no formato de photocard (55:85).
-- Cor de estado só em pílulas pequenas: tijolo para atrasada, mostarda para "vence logo", anil para "a caminho", musgo para "comigo".
-- Fonte do sistema, sem fonte web.
+- Papel #F7F6F2 e tinta #111114. No escuro, inverte para o encarte preto.
+- Archivo do 400 ao 900. O valor devido e o nome da era são enormes.
+- Réguas de 2px em tinta sob os títulos de seção. Linhas de lista em hairline.
+- Adesivos redondos: cheios para o certo, tracejados para o suposto.
+- Uma faixa escura, como plástico de photocard, para os cards que estão vindo.
+- Sem sombras e sem cartões flutuando. A estrutura vem das réguas.
 
 ## Colors
 
-Uma paleta de papelaria: neutros mornos, um verde de capa e quatro tons de estado que só aparecem em pílulas.
+Tinta e papel fazem quase todo o trabalho. As cores de estado e de era são pontuais.
 
 ### Primary
-- **Verde de folha** (#3D5A4E): botão principal ("Nova compra", "Paguei"), barra de etapas da CEG e borda de foco. No escuro, vira o verde claro (#9FC2AF) com texto escuro por cima.
+- **Tinta** (#111114): texto, réguas, botão principal, chip ativo e adesivo certo. É o "acento" do sistema.
 
 ### Neutral
-- **Papel** (#F5F2EC): fundo da página e da folha lateral.
-- **Folha branca** (#FFFFFF): cartões, linhas de lista, campos e chips.
-- **Papel de fundo** (#EEE9E1): fundo de foto que ainda não carregou, controle segmentado e avatar sem foto.
-- **Grafite** (#24211D): texto principal e chip selecionado.
-- **Grafite suave** (#5A544C): texto de apoio, como comunidade, tipo e contagens.
-- **Lápis** (#6F675C): o terceiro nível, usado em mês da data, "sem valor" e placeholders.
-- **Linha** (#E2DBD0): divisórias entre linhas e borda de chip e campo.
+- **Papel** (#F7F6F2): fundo.
+- **Folha** (#FFFFFF): campos e superfícies raras.
+- **Papel de fundo** (#ECEAE3): hover de linha, notas e fundo de foto que ainda não carregou.
+- **Tinta suave** (#4B4A52) e **Lápis** (#66656D): textos de apoio, os dois com contraste AA.
+- **Linha** (#DCD9D0): divisória entre linhas.
+- **Plástico** (#1B1B20): a faixa "Vindo pra mim".
 
-### Estado (só em pílulas e números de alerta)
-- **Tijolo** (#A3442C sobre #F6E3DC): vencida, atrasada, "devo".
-- **Mostarda** (#7E5A12 sobre #F4EAD3): vence em até 7 dias, liberado, no Brasil.
-- **Anil** (#3C5C7A sobre #E1E9F1): a caminho, vindo pra mim.
-- **Musgo** (#3C6B4D sobre #E0EDE3): comigo.
+### Estado
+- **Vermelho de atraso** (#C2311E): vencida, devo e adesivo de atraso.
+- **Ocre** (#835600): vence em até 7 dias, liberado.
+- **Azul** (#1F51BF): a caminho.
+- **Verde** (#1F6E43): comigo, paga.
+
+### Era
+Cores fixas para as eras conhecidas: DO IT vermelho, HOP azul, ATE amarelo, THIS & THAT verde, KARMA roxo, além de outras no código (`ERA_COR`). Para as demais, uma paleta de 8 cores escolhida pelo nome.
 
 ### Named Rules
-**A Regra das Fotos Falam.** Nenhum fundo, faixa ou ilustração colorida compete com as fotos dos cards e dos grupos. Cor saturada fora de foto só aparece em pílula de estado ou no botão principal.
+**A Regra da Cor da Era.** A cor da era só aparece no nome da era (Coleção), na faixa de 4px no topo do cartão da CEG e no ponto ao lado de uma conta. Nunca vira fundo de área.
 
-**A Regra do Suposto Tracejado.** O que é "a confirmar" usa pílula sem fundo, com borda tracejada em lápis. Nunca tem a mesma cor do que é certo.
+**A Regra do Adesivo Tracejado.** "A confirmar" e "sem valor" usam adesivo tracejado. Nunca são somados ao que é certo.
 
 ## Typography
 
-**Body Font:** fonte do sistema (ui-sans-serif, system-ui, Segoe UI, Roboto)
+**Fonte:** Archivo (Google Fonts), com fallback na fonte do sistema.
 
-**Character:** uma voz só, neutra e legível no celular. A hierarquia vem do peso e do tamanho, não de uma segunda família.
+**Character:** uma grotesca de encarte. Fica pesada e apertada nos números e nos nomes de era, neutra no texto corrido.
 
 ### Hierarchy
-- **Título** (700, 26px; 23px no celular; 1.2): o nome da aba no topo.
-- **Número** (750, 26px): os totais do Início ("Devo agora", "Vindo pra mim") e o valor na folha da conta (28px).
-- **Seção** (700, 16px): cabeçalhos como "Precisa de você" e "Vencidas", com a contagem em lápis ao lado.
-- **Corpo** (400, 15px, 1.45): títulos de linha (em 600) e textos.
-- **Apoio** (400, 13.5px): a segunda linha das listas (comunidade, tipo, CEG).
-- **Etiqueta** (700, 12px): pílulas de estado e o mês na data.
+- **Valor** (900, 56 a 84px, 0.92, -0.045em): "Devo hoje" no topo do Início.
+- **Era** (900, 34 a 52px, maiúsculas): título de cada era na Coleção, na cor da era.
+- **Título** (900, 40px; 32px no celular): nome da aba.
+- **Seção** (800, 12px, maiúsculas, +0.14em): "Pra fazer hoje", "Vencidas", com régua de 2px embaixo e contagem à direita.
+- **Item** (650, 15.5px): título de cada linha.
+- **Corpo** (400, 15px): textos de apoio a 13px.
+- **Adesivo** (700, 12px): estados.
 
 ### Named Rules
-**A Regra da Data Grande.** Em listas de contas, o dia aparece grande (19px, 700) numa coluna própria de 46px, com o mês pequeno embaixo. Prazo é a primeira coisa que o olho encontra.
+**A Regra da Lista Numerada.** A lista do dia no Início é numerada (01, 02…) porque a ordem é a prioridade. O prazo ou a ação fica à direita, em negrito.
 
 ## Layout
 
-No desktop, um trilho fixo de 232px à esquerda (marca, 4 abas, "Nova compra", tema, app antigo) e o conteúdo com até 1080px e 32px de respiro. Abaixo de 820px, o trilho some e entra uma barra de abas fixa embaixo, com "Nova compra" como botão flutuante logo acima dela, à direita. A margem lateral no celular é de 16px.
+No desktop, um trilho de 232px com uma régua de 2px. Ele tem a marca em maiúsculas, as abas em texto (a ativa sublinhada com 3px), "Nova compra" e, no pé, o tema e o app antigo. O conteúdo vai até 1080px. No celular, a barra de abas embaixo usa texto em maiúsculas, com régua de 2px no topo. "Nova compra" vira uma pílula preta flutuante.
 
-A grade de fotos usa colunas automáticas de no mínimo 118px no desktop e 3 colunas fixas no celular, com 14px de espaço (10px no celular). A grade de CEGs usa colunas de no mínimo 300px e vira 1 coluna no celular. As linhas de lista têm 13px por 16px de respiro e divisória de 1px.
+Início, de cima para baixo: linha com marca e data, o valor devido com adesivos, "Pra fazer hoje" numerado, a faixa "Vindo pra mim" com até 6 fotos (5 no celular) e "Pagas por último".
+
+A Coleção é agrupada por era, da mais nova para a mais antiga, com grade automática de no mínimo 118px (3 colunas no celular).
 
 ## Elevation & Depth
 
-A profundidade vem de folhas brancas sobre papel com uma sombra ambiente bem baixa. A folha lateral é a única camada que flutua de verdade, com um véu escuro de 38% atrás.
-
-### Shadow Vocabulary
-- **Folha** (`box-shadow: 0 1px 2px rgba(36,33,29,.06), 0 6px 18px rgba(36,33,29,.06)`): cartões, painéis de lista, número do Início e segmento ativo.
-- **Folha lateral** (`box-shadow: -10px 0 30px rgba(0,0,0,.12)`): o painel de detalhes.
-- **Botão flutuante** (`box-shadow: 0 6px 18px rgba(0,0,0,.18)`): só o "Nova compra" do celular.
+Plano. Não há sombras, nem em cartões nem em painéis. A profundidade aparece só em duas camadas: a folha lateral, com uma régua de 2px na borda e um véu escuro atrás, e a faixa de plástico, com o brilho das divisórias das fotos.
 
 ### Named Rules
-**A Regra da Folha Solta.** Cartões não têm borda. Uma folha se separa do papel pela cor e pela sombra baixa. Borda de 1px só em controles (chip, campo, botão secundário).
+**A Regra da Régua.** Separação vem de régua (2px de tinta) ou de hairline (1px de linha), nunca de sombra.
 
 ## Shapes
 
-Cantos suaves, sem nada reto nem redondo demais. Foto com 10px, controle com 12px, cartão com 16px, a folha lateral do celular com 20px no topo, e pílulas e chips totalmente arredondados. Avatares de comunidade e de grupo são sempre círculos, com um anel de 1px na cor da linha.
+Foto com cantos de 7px, controles com 10px, a faixa de plástico com 16px, adesivos e chips em pílula, avatares em círculo com anel de 1.5px em tinta. O cartão de CEG não tem cantos: é uma faixa de cor de 4px no topo e uma hairline embaixo.
 
 ## Components
 
 ### Buttons
-- **Shape:** 12px, altura mínima de 40px (32px no tamanho pequeno).
-- **Principal:** verde de folha com texto branco. É um por tela ou por folha, e marca a ação que encerra a tarefa ("Paguei", "Salvar compra", "Recebi").
-- **Secundário:** folha branca com borda de linha. No hover, a borda escurece para lápis.
-- **Confirmação em dois toques:** ações em lote ou que apagam ("Paguei tudo", "Apagar", "Aceitar todas") trocam o texto por "Toque de novo…" por 4 a 5 segundos.
+- **Principal:** tinta com texto papel, 10px de canto, mínimo de 40px.
+- **Secundário:** transparente, borda de 1.5px em tinta.
+- **Dois toques:** ações em lote ou que apagam pedem confirmação por alguns segundos.
 
-### Chips
-- **Style:** folha branca, borda de linha, 34px de altura, contagem em lápis.
-- **State:** selecionado vira grafite com texto papel. As fileiras de filtro rolam na horizontal sem barra visível.
+### Chips e seletor
+Borda de 1.5px em tinta. O ativo fica preenchido em tinta. O seletor segmentado tem moldura de 1.5px e o item ativo preenchido.
 
-### Cards / Containers
-- **Cartão de CEG ou de comunidade:** avatar (40 a 52px), título que pode quebrar em 2 linhas, faixa de até 5 fotos de 38px e uma barra de 7 etapas em verde.
-- **Painel de lista:** folha com cantos de 16px e linhas sem cantos próprios.
-- **Tarefa do Início:** ícone num quadrado de 40px pintado no tom do estado, com texto e um botão pequeno.
+### Linha da lista do dia
+Número em lápis, título em 650, linha de apoio com ponto da era ou avatar da comunidade, e o prazo ou a ação à direita: em vermelho quando venceu, em ocre quando vence logo, em adesivo tracejado quando é "confirmar".
 
-### Inputs / Fields
-- **Style:** folha branca, borda de linha, cantos de 12px, 11px de respiro. A busca tem a lupa à esquerda.
-- **Focus:** contorno de 2px em verde de folha, afastado 2px.
+### Faixa "Vindo pra mim"
+Plástico escuro com até 6 fotos, cada uma numa divisória com brilho suave. É um botão que abre a Coleção filtrada em "Vindo".
 
-### Navigation
-- **Desktop:** itens do trilho com ícone de 20px e texto 600. O item ativo vira folha branca com sombra. Um selo em tijolo mostra quantas contas venceram.
-- **Celular:** 4 abas com ícone de 22px e rótulo de 11.5px. A ativa fica em grafite, as outras em lápis.
+### Título de era
+Nome em maiúsculas, enorme, na cor da era, com régua de 2px da mesma cor e a contagem à direita em tinta.
 
 ### Folha de detalhes
-Painel de 520px à direita no desktop. No celular, ocupa 92% da altura e sobe de baixo com cantos de 20px. Fecha no X, no Esc ou tocando fora. Dentro dela podem aparecer: um cabeçalho com avatar e o número grande, uma lista de pares rótulo/valor, a linha de ações e as listas relacionadas.
-
-### Foto de card
-Formato de photocard (55:85), cantos de 10px e anel de 1px. A pílula de estado fica no canto de baixo à esquerda e a contagem "×2" no canto de cima à direita, em grafite. Pedido sem card vira um retângulo de papel de fundo com borda tracejada e o nome no meio.
+Fundo papel, título em caixa alta de 12px com régua de 2px. Na conta, a origem vem antes do valor.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** começar cada tela pelo que precisa dela: vencidas primeiro, depois "vence em 7 dias".
-- **Do** mostrar a origem antes do valor nas linhas de conta: avatar e comunidade na segunda linha.
-- **Do** oferecer "desfazer" em toda gravação, no aviso de baixo, por 7 segundos.
-- **Do** carregar as fotos só quando entram na tela.
+- **Do** manter os textos sem termos de álbum, exceto o nome da era na Coleção.
+- **Do** mostrar o valor devido certo em destaque e os palpites em adesivo tracejado.
+- **Do** usar a cor da era só em título, ponto e faixa.
+- **Do** oferecer "desfazer" em toda gravação.
 
 ### Don't:
-- **Don't** somar "a confirmar" com "devo". O suposto aparece separado e tracejado.
-- **Don't** usar tijolo fora de atraso ou dívida. Ele perde força se virar decoração.
-- **Don't** colocar fundo colorido ou gradiente atrás das fotos.
-- **Don't** usar travessão em texto da interface. Ela pediu explicitamente.
+- **Don't** usar sombra para separar coisas. Use régua.
+- **Don't** pintar áreas inteiras com a cor da era.
+- **Don't** somar "a confirmar" ou "sem valor" ao que é certo.
+- **Don't** usar travessão em texto da interface.
