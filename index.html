@@ -7,15 +7,15 @@
 <script>(function(){var t="light";try{var v=localStorage.getItem("novo-theme");if(v==="dark"||v==="light")t=v;else if(matchMedia("(prefers-color-scheme: dark)").matches)t="dark";}catch(e){}document.documentElement.setAttribute("data-theme",t);})();</script>
 <style>
 :root{
-  --bg:#F5F2EC;--surface:#FFFFFF;--surface2:#EEE9E1;--ink:#24211D;--ink2:#6A645B;--ink3:#948C80;--line:#E2DBD0;
+  --bg:#F5F2EC;--surface:#FFFFFF;--surface2:#EEE9E1;--ink:#24211D;--ink2:#5A544C;--ink3:#6F675C;--line:#E2DBD0;
   --accent:#3D5A4E;--accent-ink:#FFFFFF;--accent-soft:#E1EAE4;
-  --late:#A3442C;--late-soft:#F6E3DC;--soon:#8A6418;--soon-soft:#F4EAD3;--ok:#3C6B4D;--ok-soft:#E0EDE3;--info:#3C5C7A;--info-soft:#E1E9F1;
+  --late:#A3442C;--late-soft:#F6E3DC;--soon:#7E5A12;--soon-soft:#F4EAD3;--ok:#3C6B4D;--ok-soft:#E0EDE3;--info:#3C5C7A;--info-soft:#E1E9F1;
   --r:16px;--r-sm:10px;--shadow:0 1px 2px rgba(36,33,29,.06),0 6px 18px rgba(36,33,29,.06);
   --font:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   color-scheme:light;
 }
 :root[data-theme="dark"]{
-  --bg:#161513;--surface:#201E1B;--surface2:#2A2723;--ink:#EEE9E1;--ink2:#A79F94;--ink3:#7E776D;--line:#36322D;
+  --bg:#161513;--surface:#201E1B;--surface2:#2A2723;--ink:#EEE9E1;--ink2:#BDB5A9;--ink3:#9A9287;--line:#36322D;
   --accent:#9FC2AF;--accent-ink:#13201A;--accent-soft:#25332C;
   --late:#E89A84;--late-soft:#3A2420;--soon:#E3BE72;--soon-soft:#352C1A;--ok:#94C9A4;--ok-soft:#1F3125;--info:#9DBEDD;--info-soft:#1E2B38;
   --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
@@ -45,7 +45,7 @@ a{color:var(--accent)}
 .proto{font-size:12.5px;color:var(--ink2);background:var(--surface2);border-radius:99px;padding:5px 12px;display:inline-flex;gap:6px;align-items:center;margin-bottom:18px}
 .proto b{color:var(--ink)}
 .tabbar{display:none}
-.fab{display:none}
+.btn.fab{display:none}
 
 /* tipografia */
 h1{font-size:26px;line-height:1.2;margin:0 0 4px;letter-spacing:-.01em}
@@ -100,7 +100,7 @@ h2 .r{margin-left:auto;font-size:14px;font-weight:700}
 .row:hover{background:var(--surface2)}
 .row .tx{min-width:0;flex:1}
 .row .t{font-weight:600;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3}
-.row .s{color:var(--ink2);font-size:13.5px;display:flex;gap:6px;align-items:center;margin-top:2px;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.row .s{color:var(--ink2);font-size:13.5px;display:flex;gap:4px 6px;align-items:center;flex-wrap:wrap;margin-top:2px;min-width:0}
 .row .v{text-align:right;font-weight:700;white-space:nowrap;display:grid;gap:4px;justify-items:end}
 .date{flex:none;width:46px;text-align:center;line-height:1.05}
 .date b{display:block;font-size:19px}
@@ -224,6 +224,17 @@ h2 .r{margin-left:auto;font-size:14px;font-weight:700}
 .quote{font-size:13px;color:var(--ink2);background:var(--surface2);border-radius:10px;padding:8px 10px}
 .quote.warn{background:var(--soon-soft);color:var(--soon)}
 .hacts{display:flex;gap:8px;flex-wrap:wrap;margin:-8px 0 18px}
+.pill.guess.late{border-color:var(--late);color:var(--late)}
+.semvalor{font-size:12.5px;font-weight:600;color:var(--ink3)}
+.origem{display:flex;gap:12px;align-items:center;margin-bottom:14px}
+.origem b{display:block}
+.origem small{color:var(--ink2);font-size:13.5px}
+.ref{font-size:17px;font-weight:650;margin:0 0 6px}
+.sh-b .actions.stick{position:sticky;bottom:0;background:var(--bg);margin:12px -18px 0;padding:12px 18px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}
+.picked{display:flex;gap:10px;align-items:center;background:var(--surface);border-radius:12px;padding:8px 10px;margin:0 0 12px;box-shadow:var(--shadow)}
+.picked .tx{flex:1;min-width:0;font-weight:650}
+.picked .tx small{display:block;font-weight:400;color:var(--ink2);font-size:13px}
+.semcard-line{display:flex;gap:12px;align-items:center;justify-content:space-between;background:var(--surface);border-radius:var(--r);padding:12px 16px;margin:18px 0 0;box-shadow:var(--shadow);color:var(--ink2);font-size:14px}
 /* celular */
 @media (max-width:820px){
   .app{grid-template-columns:1fr}
@@ -234,8 +245,8 @@ h2 .r{margin-left:auto;font-size:14px;font-weight:700}
   .tabbar button{border:0;background:none;display:grid;justify-items:center;gap:2px;font-size:11.5px;font-weight:650;color:var(--ink3);padding:6px 0;cursor:pointer;position:relative}
   .tabbar svg{width:22px;height:22px}
   .tabbar button[aria-current="page"]{color:var(--ink)}
-  .tabbar .ct{position:absolute;top:2px;left:calc(50% + 6px);font-size:10px;font-weight:800;background:var(--late);color:#fff;border-radius:99px;padding:0 5px;line-height:16px}
-  .fab{display:inline-flex;position:fixed;right:16px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:31;border-radius:99px;box-shadow:0 6px 18px rgba(0,0,0,.18);padding:12px 18px}
+  .tabbar .ct{position:absolute;top:2px;left:calc(50% + 6px);font-size:10px;font-weight:800;background:var(--late);color:var(--surface);border-radius:99px;padding:0 5px;line-height:16px}
+  .btn.fab{display:inline-flex;position:fixed;right:16px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:31;border-radius:99px;box-shadow:0 6px 18px rgba(0,0,0,.18);padding:12px 18px}
   .stats{grid-template-columns:1fr 1fr}
   .stats .stat:first-child{grid-column:1/-1}
   .grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -245,6 +256,10 @@ h2 .r{margin-left:auto;font-size:14px;font-weight:700}
   .cardhero{grid-template-columns:110px 1fr}
   .cardhero .ph{width:110px}
   .row{padding:12px 14px;gap:12px}
+  .chip{min-height:40px}
+  .btn.sm{min-height:38px}
+  .x{width:40px;height:40px}
+  .actions .btn.pri{flex:1 1 100%}
   .form,.form details .inner{grid-template-columns:1fr}
 }
 @media (prefers-reduced-motion:reduce){.sheet,.scrim,.toast{transition:none}}
@@ -266,7 +281,7 @@ h2 .r{margin-left:auto;font-size:14px;font-weight:700}
 <nav class="tabbar" id="tabbar" aria-label="Seções"></nav>
 <button class="btn pri fab" data-act="nova" type="button"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Nova compra</button>
 <div class="scrim" id="scrim"></div>
-<aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shT" aria-hidden="true">
+<aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shT" aria-hidden="true" inert>
   <div class="sh-h"><span class="t" id="shT"></span><button class="x" data-act="fechar" type="button" aria-label="Fechar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="sh-b" id="shB"></div>
 </aside>
@@ -389,14 +404,17 @@ const bgOf=e=>e.card?cardBg(e.card):e.acervo?(fotoUrl("acervo-"+e.acervo.id)?`ba
 // ---------- modelo: contas ----------
 const ABERTA=["Pendente","A confirmar","Aguardando a GOM","Não liberado"];
 const vencida=c=>{const n=daysTo(c.prazo);return n!=null&&n<0};
-const devo=c=>c.status==="Pendente"||(c.status==="A confirmar"&&vencida(c));
+const devo=c=>c.status==="Pendente";
 function contas(){
   const all=list("cobrancas");
-  const devoL=all.filter(devo), conf=all.filter(c=>c.status==="A confirmar"&&!vencida(c)), fut=all.filter(c=>c.status==="Aguardando a GOM"||c.status==="Não liberado");
+  const devoL=all.filter(devo), conf=all.filter(c=>c.status==="A confirmar"), fut=all.filter(c=>c.status==="Aguardando a GOM"||c.status==="Não liberado");
   const pagas=all.filter(c=>c.status==="Paga").sort((a,b)=>String(b.pagoEm||"").localeCompare(String(a.pagoEm||"")));
   const soma=a=>a.reduce((s,c)=>s+(typeof c.valor==="number"?c.valor:0),0);
-  return {devoL,conf,fut,pagas,soma,venc:devoL.filter(vencida)};
+  return {devoL,conf,fut,pagas,soma,venc:devoL.filter(vencida),confVenc:conf.filter(vencida)};
 }
+const semValor=a=>a.filter(c=>typeof c.valor!=="number").length;
+// total honesto: o que tem valor, mais quantas contas ainda estão sem valor
+const total=a=>{const v=a.reduce((s,c)=>s+(typeof c.valor==="number"?c.valor:0),0), n=semValor(a); return n&&!v?plural(n,"sem valor","sem valor"):brl(v)+(n?" + "+n+" sem valor":"")};
 const byPrazo=(a,b)=>{const x=pd(a.prazo),y=pd(b.prazo);if(x&&y)return x-y;if(x)return -1;if(y)return 1;return 0};
 
 // ---------- modelo: CEGs ----------
@@ -415,10 +433,10 @@ function cegs(){
     const st=r.doc&&r.doc.status in CEG_ST?CEG_ST[r.doc.status]:null;
     const fs=r.itens.map(d=>F2S[faseDe(d.status)]).filter(x=>x!=null);
     const step=st!=null?st:(fs.length?Math.min(...fs):0);
-    const deve=r.contas.filter(devo).reduce((s,c)=>s+(c.valor||0),0);
+    const dv=r.contas.filter(devo), deve=dv.reduce((s,c)=>s+(c.valor||0),0), devN=dv.length;
     const ativos=r.itens.filter(d=>faseDe(d.status)!=="rec").length;
     const aberta=ativos>0||r.contas.some(c=>ABERTA.includes(c.status))||(st!=null&&st<6);
-    return {...r,step,deve,ativos,aberta,lbl:cegLbl({ceg:r.nome,comunidade:r.com})};
+    return {...r,step,deve,devN,ativos,aberta,lbl:cegLbl({ceg:r.nome,comunidade:r.com})};
   });
   cegCache={v:ver,out}; return out;
 }
@@ -455,16 +473,16 @@ async function addMany(adds,msg){
 
 // ---------- navegação ----------
 function nav(){
-  const {devoL,venc}=contas(); const badge={inicio:venc.length||"",contas:""};
+  const {devoL,venc}=contas(); const badge={inicio:"",contas:venc.length||""};
   $("#navlinks").innerHTML=TABS.map(([k,l,i])=>`<button class="nv" data-tab="${k}" type="button" ${ui.tab===k?'aria-current="page"':""}>${ico(i)}${l}${badge[k]?`<span class="ct">${badge[k]}</span>`:""}</button>`).join("");
   $("#tabbar").innerHTML=TABS.map(([k,l,i])=>`<button data-tab="${k}" type="button" ${ui.tab===k?'aria-current="page"':""}>${ico(i)}${l}${badge[k]?`<span class="ct">${badge[k]}</span>`:""}</button>`).join("");
 }
 const head=(t,lede)=>`<h1>${t}</h1>${lede?`<p class="lede">${lede}</p>`:""}`;
 
 // ---------- linha de conta ----------
-function dateBlk(s){const n=daysTo(s); if(n==null)return `<span class="date none"><b>–</b><small>sem prazo</small></span>`; const d=pd(s); return `<span class="date ${n<0?"late":""}"><b>${d.getDate()}</b><small>${MES[d.getMonth()]}</small></span>`}
-function prazoPill(c){const n=daysTo(c.prazo); if(c.status==="A confirmar"&&!vencida(c))return `<span class="pill guess">a confirmar</span>`; if(n==null)return ""; if(n<0)return `<span class="pill late">${plural(-n,"dia","dias")} atrasada</span>`; if(n===0)return `<span class="pill soon">vence hoje</span>`; if(n<=7)return `<span class="pill soon">em ${plural(n,"dia","dias")}</span>`; return ""}
-const contaRow=c=>`<li><button class="row" data-conta="${esc(c.id)}" type="button">${dateBlk(c.prazo)}<span class="tx"><span class="t">${esc(c.referente||c.tipo||"Cobrança")}</span><span class="s">${av("com",c.comunidade,"xs")}${esc([c.comunidade,c.tipo].filter(Boolean).join(" · "))}</span></span><span class="v">${typeof c.valor==="number"?brl(c.valor):`<small style="color:var(--ink3)">sem valor</small>`}${prazoPill(c)}</span></button></li>`;
+function dateBlk(s,calmo){let n=daysTo(s); if(calmo&&n!=null&&n<0)n=0; if(n==null)return `<span class="date none"><b>–</b><small>sem prazo</small></span>`; const d=pd(s); return `<span class="date ${n<0?"late":""}"><b>${d.getDate()}</b><small>${MES[d.getMonth()]}</small></span>`}
+function prazoPill(c){const n=daysTo(c.prazo); if(c.status==="Paga")return `<span class="pill ok">paga${c.pagoEm?" "+fdd(c.pagoEm):""}</span>`; if(c.status==="Cancelada")return `<span class="pill">cancelada</span>`; if(c.status==="A confirmar")return `<span class="pill guess ${vencida(c)?"late":""}">a confirmar${vencida(c)?" · venceu":""}</span>`; if(n==null)return ""; if(n<0)return `<span class="pill late">${plural(-n,"dia","dias")} atrasada</span>`; if(n===0)return `<span class="pill soon">vence hoje</span>`; if(n<=7)return `<span class="pill soon">em ${plural(n,"dia","dias")}</span>`; return ""}
+const contaRow=c=>`<li><button class="row" data-conta="${esc(c.id)}" type="button">${dateBlk(c.prazo,c.status==="Paga"||c.status==="A confirmar")}<span class="tx"><span class="t">${esc(c.referente||c.tipo||"Cobrança")}</span><span class="s">${av("com",c.comunidade,"xs")}${esc([c.comunidade,c.tipo].filter(Boolean).join(" · "))}</span></span><span class="v">${typeof c.valor==="number"?brl(c.valor):`<span class="semvalor">sem valor</span>`}${prazoPill(c)}</span></button></li>`;
 
 // ---------- Início ----------
 function renderInicio(){
@@ -478,8 +496,9 @@ function renderInicio(){
   const dt=new Date().toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"});
   const task=(tone,ic,t,s,act,btn)=>`<div class="task ${tone}"><span class="ic">${ico(ic)}</span><span class="tx"><span class="t">${t}</span><br><span class="s">${s}</span></span>${btn?`<button class="btn sm" type="button" ${act}>${btn}</button>`:""}</div>`;
   const tasks=[];
-  if(k.venc.length)tasks.push(task("late","alert",`${plural(k.venc.length,"conta vencida","contas vencidas")}, ${brl(k.soma(k.venc))}`,`A mais antiga venceu há ${plural(Math.max(...k.venc.map(c=>-daysTo(c.prazo))),"dia","dias")}.`,'data-go="contas"',"ver contas"));
-  if(semana.length)tasks.push(task("soon","clock",`${plural(semana.length,"conta vence","contas vencem")} em até 7 dias`,`${brl(k.soma(semana))} no total.`,'data-go="contas"',"ver"));
+  if(k.venc.length)tasks.push(task("late","alert",`${plural(k.venc.length,"conta vencida","contas vencidas")}: ${total(k.venc)}`,`A mais antiga venceu há ${plural(Math.max(...k.venc.map(c=>-daysTo(c.prazo))),"dia","dias")}.`,'data-go="contas"',"ver contas"));
+  if(semana.length)tasks.push(task("soon","clock",`${plural(semana.length,"conta vence","contas vencem")} em até 7 dias`,`${total(semana)} no total.`,'data-go="contas"',"ver"));
+  if(k.confVenc.length)tasks.push(task("","alert",`${plural(k.confVenc.length,"conta a confirmar já venceu","contas a confirmar já venceram")}`,"Ainda são palpites. Confirme o valor com a GOM.",'data-go="contas"',"ver"));
   if(aPedir.length)tasks.push(task("info","truck",`Pedir envio em ${plural(aPedir.length,"lugar","lugares")}`,`<span style="display:inline-flex;gap:4px;vertical-align:middle">${aPedir.slice(0,8).map(e=>av("com",e.comunidade,"xs")).join("")}</span> ${esc(aPedir.map(e=>e.gom||e.comunidade).slice(0,4).join(", "))}${aPedir.length>4?"…":""}`,'data-act="envios"',"ver"));
   chegando.forEach(e=>tasks.push(task("","box",`Chegou? ${esc(e.gom||e.comunidade||"envio")}`,"Enviado. Confirme quando receber.",`data-envio="${esc(e.id)}"`,"ver")));
   if(semCard)tasks.push(task("","link",`${plural(semCard,"pedido sem card ligado","pedidos sem card ligado")}`,"Ligar ao catálogo dá foto e conta repetidos.",'data-go="colecao" data-cf="semcard"',"ver"));
@@ -487,7 +506,7 @@ function renderInicio(){
   const recent=k.pagas.slice(0,4);
   $("#main").innerHTML=`${head("Oi, Lari",dt.charAt(0).toUpperCase()+dt.slice(1))}
   <div class="stats">
-    <button class="stat ${k.venc.length?"alert":""}" data-go="contas" type="button"><span class="k">Devo agora</span><span class="n">${brl(k.soma(k.devoL))}</span><span class="h">${plural(k.devoL.length,"conta","contas")}${k.conf.length?` · +${brl(k.soma(k.conf))} a confirmar`:""}</span></button>
+    <button class="stat ${k.venc.length?"alert":""}" data-go="contas" type="button"><span class="k">Devo agora</span><span class="n">${brl(k.soma(k.devoL))}</span><span class="h">${plural(k.devoL.length,"conta","contas")}${semValor(k.devoL)?` · ${semValor(k.devoL)} sem valor`:""}${k.conf.length?` · ${plural(k.conf.length,"a confirmar","a confirmar")} fora da soma`:""}</span></button>
     <button class="stat" data-go="colecao" data-cf="vindo" type="button"><span class="k">Vindo pra mim</span><span class="n">${n("vindo")}</span><span class="h">+ ${n("esperando")} esperando a CEG</span></button>
     <button class="stat" data-go="colecao" data-cf="comigo" type="button"><span class="k">Comigo</span><span class="n">${n("comigo")}</span><span class="h">${n("quero")} na lista de quero</span></button>
   </div>
@@ -500,13 +519,14 @@ function renderInicio(){
 function renderColecao(){
   const all=colecao();
   const q=norm(ui.cq);
-  const cnt=f=>all.filter(e=>f==="todos"||(f==="repetidos"?e.copias>1:f==="semcard"?e.semCard:GRUPO_F[f].includes(e.fase))).length;
+  const cnt=f=>all.filter(e=>(f==="semcard"||!e.semCard)&&(f==="todos"||(f==="repetidos"?e.copias>1:f==="semcard"?e.semCard:GRUPO_F[f].includes(e.fase)))).length;
   let v=all.filter(e=>ui.cf==="todos"||(ui.cf==="repetidos"?e.copias>1:ui.cf==="semcard"?e.semCard:GRUPO_F[ui.cf].includes(e.fase)));
   if(ui.cm)v=v.filter(e=>e.membro===ui.cm);
   if(ui.ct)v=v.filter(e=>e.tipo===ui.ct);
   if(q)v=v.filter(e=>norm([e.nome,e.era,e.membro,e.itens.map(d=>d.ceg+" "+d.comunidade).join(" ")].join(" ")).includes(q));
-  const mo=m=>{const i=MEMBROS.indexOf(m);return i<0?99:i};
-  const temF=e=>bgOf(e)?0:1; v.sort((a,b)=>mo(a.membro)-mo(b.membro)||temF(a)-temF(b)||String(a.era).localeCompare(String(b.era),"pt-BR")||String(a.nome).localeCompare(String(b.nome),"pt-BR"));
+  const semN=ui.cf==="semcard"?0:v.filter(e=>e.semCard).length; if(ui.cf!=="semcard")v=v.filter(e=>!e.semCard);
+  const gk=e=>e.membro||"Grupo / outros", mo=m=>{const i=MEMBROS.indexOf(m);return i<0?99:i};
+  const temF=e=>bgOf(e)?0:1; v.sort((a,b)=>mo(gk(a))-mo(gk(b))||gk(a).localeCompare(gk(b),"pt-BR")||temF(a)-temF(b)||String(a.era).localeCompare(String(b.era),"pt-BR")||String(a.nome).localeCompare(String(b.nome),"pt-BR"));
   const F=[["todos","Tudo"],["comigo","Comigo"],["vindo","Vindo"],["esperando","Esperando CEG"],["quero","Quero"],["repetidos","Repetidos"],["semcard","Sem card"]];
   const shown=v.slice(0,ui.cn);
   const groups=[]; shown.forEach(e=>{const g=e.membro||"Grupo / outros"; if(!groups.length||groups[groups.length-1][0]!==g)groups.push([g,[]]); groups[groups.length-1][1].push(e)});
@@ -519,13 +539,14 @@ function renderColecao(){
   <div class="chips scroll" role="group" aria-label="Tipo"><button class="chip" data-ct="" aria-pressed="${!ui.ct}" type="button">Todo tipo</button>${TIPOS.map(t=>`<button class="chip" data-ct="${esc(t)}" aria-pressed="${ui.ct===t}" type="button">${esc(t==="Photocard / set"?"Photocards":t)}</button>`).join("")}</div>
   ${ui.cf==="semcard"?`<p class="note">Estes pedidos ainda não estão ligados a um card do catálogo. No app novo, toda compra já nasce com o card escolhido, então esta lista só vai encolher.</p>`:""}
   ${!COL?`<p class="empty">Carregando catálogo…</p>`:v.length?groups.map(([g,es])=>`<h2>${esc(g)} <span class="n">${es.length}</span></h2><div class="grid">${es.map(tile).join("")}</div>`).join(""):`<p class="empty">Nada aqui com esses filtros.</p>`}
-  ${v.length>shown.length?`<div class="more"><button class="btn" data-act="maiscol" type="button">Mostrar mais ${Math.min(240,v.length-shown.length)}</button></div>`:""}`;
+  ${v.length>shown.length?`<div class="more"><button class="btn" data-act="maiscol" type="button">Mostrar mais ${Math.min(240,v.length-shown.length)}</button></div>`:""}
+  ${semN?`<div class="semcard-line"><span>${plural(semN,"pedido ainda sem card ligado","pedidos ainda sem card ligado")} com esses filtros.</span><button class="btn sm" data-cf="semcard" type="button">ver e ligar</button></div>`:""}`;
 }
 
 // ---------- Contas ----------
 function renderContas(){
   const k=contas();
-  const sec=(t,arr,extra)=>arr.length?`<h2>${t} <span class="n">${arr.length}</span><span class="r">${brl(k.soma(arr))}</span></h2>${extra||""}<div class="panel"><ul class="rows">${arr.map(contaRow).join("")}</ul></div>`:"";
+  const sec=(t,arr,extra)=>arr.length?`<h2>${t} <span class="n">${arr.length}</span><span class="r">${total(arr)}</span></h2>${extra||""}<div class="panel"><ul class="rows">${arr.map(contaRow).join("")}</ul></div>`:"";
   let body="";
   if(ui.kv==="prazo"){
     const d=[...k.devoL].sort(byPrazo);
@@ -534,13 +555,13 @@ function renderContas(){
   }else{
     const m=new Map(); k.devoL.forEach(c=>{const n=c.comunidade||"Sem comunidade"; if(!m.has(n))m.set(n,[]); m.get(n).push(c)});
     body=[...m.entries()].sort((a,b)=>k.soma(b[1])-k.soma(a[1])).map(([n,arr])=>{arr.sort(byPrazo); const ci=comInfo(n);
-      return `<div class="cgroup"><div class="chead">${av("com",n,"lg")}<span class="tx"><b>${esc(n)}</b><small>${esc([ci&&ci.goms,plural(arr.length,"conta","contas")].filter(Boolean).join(" · "))}</small></span><span class="r">${brl(k.soma(arr))}${ci&&ci.pix?`<br><button class="btn sm" data-pix="${esc(n)}" type="button">${ico("copy",14)}copiar pix</button>`:""}</span></div><div class="panel"><ul class="rows">${arr.map(contaRow).join("")}</ul></div></div>`}).join("");
+      return `<div class="cgroup"><div class="chead">${av("com",n,"lg")}<span class="tx"><b>${esc(n)}</b><small>${esc([ci&&ci.goms,plural(arr.length,"conta","contas")].filter(Boolean).join(" · "))}</small></span><span class="r">${total(arr)}${ci&&ci.pix?`<br><button class="btn sm" data-pix="${esc(n)}" type="button">${ico("copy",14)}copiar pix</button>`:""}</span></div><div class="panel"><ul class="rows">${arr.map(contaRow).join("")}</ul></div></div>`}).join("");
   }
-  $("#main").innerHTML=`${head("Contas",`Devo <b>${brl(k.soma(k.devoL))}</b> em ${plural(k.devoL.length,"conta","contas")}.${k.conf.length?` Mais ${brl(k.soma(k.conf))} ainda a confirmar, fora dessa soma.`:""}`)}
+  $("#main").innerHTML=`${head("Contas",`Devo <b>${total(k.devoL)}</b> em ${plural(k.devoL.length,"conta","contas")}.${k.conf.length?` ${plural(k.conf.length,"conta a confirmar fica","contas a confirmar ficam")} fora dessa soma.`:""}`)}
   <div class="hacts"><button class="btn sm" data-new="cobrancas" data-pre='{"status":"Pendente"}' type="button">+ conta</button><button class="btn sm" data-act="cad" data-k="repasses" type="button">Repasses</button></div>
   <div class="seg" role="group" aria-label="Agrupar"><button data-kv="prazo" aria-pressed="${ui.kv==="prazo"}" type="button">Por prazo</button><button data-kv="pessoa" aria-pressed="${ui.kv==="pessoa"}" type="button">Por comunidade</button></div>
   ${k.devoL.length?body:`<div class="calm">Você não deve nada agora.</div>`}
-  ${sec("A confirmar",[...k.conf].sort(byPrazo),`<p class="note" style="margin-top:0">Valores que o robô ou a GOM sugeriram e ainda não estão certos. Não entram no total.</p>`)}
+  ${sec("A confirmar",[...k.conf].sort(byPrazo),`<p class="note" style="margin-top:0">Valores que o robô ou a GOM sugeriram e ainda não estão certos. Não entram no total. As que já venceram estão marcadas: confirme com a GOM.</p>`)}
   ${sec("Ainda vão cobrar",k.fut)}
   ${k.pagas.length?`<details style="margin-top:26px"><summary style="cursor:pointer;font-weight:650">Pagas (${k.pagas.length})</summary><div class="panel" style="margin-top:10px"><ul class="rows">${k.pagas.slice(0,40).map(contaRow).join("")}</ul></div></details>`:""}`;
 }
@@ -552,9 +573,9 @@ function itemThumbs(r,max){
   const com=ts.filter(Boolean); return {html:com.slice(0,max).map(bg=>ph(bg,"","")).join(""),n:com.length,sem:ts.length-com.length};
 }
 // visão geral: um cartão por comunidade; tocar abre as CEGs dela
-function comCard(c,rs){const ci=comInfo(c), deve=rs.reduce((s,r)=>s+r.deve,0), por=rs.reduce((s,r)=>s+r.ativos,0);
+function comCard(c,rs){const ci=comInfo(c), deve=rs.reduce((s,r)=>s+r.deve,0), devN=rs.reduce((s,r)=>s+r.devN,0), por=rs.reduce((s,r)=>s+r.ativos,0);
   const ts=[]; rs.forEach(r=>{const t=itemThumbs(r,5); if(t.html)ts.push(t.html)}); const fotos=ts.join("").split("</span>").filter(Boolean).slice(0,6).map(x=>x+"</span>").join("");
-  return `<button class="ceg" data-gc="${esc(c)}" type="button"><span class="top">${av("com",c,"lg")}<span class="tx"><span class="t" style="font-size:17px;white-space:normal">${esc(c)}</span><span class="s">${esc([ci&&ci.goms,plural(rs.length,"CEG","CEGs")].filter(Boolean).join(" · "))}</span></span>${deve?`<span class="pill late">devo ${brl(deve)}</span>`:""}</span>
+  return `<button class="ceg" data-gc="${esc(c)}" type="button"><span class="top">${av("com",c,"lg")}<span class="tx"><span class="t" style="font-size:17px;white-space:normal">${esc(c)}</span><span class="s">${esc([ci&&ci.goms,plural(rs.length,"CEG","CEGs")].filter(Boolean).join(" · "))}</span></span>${devN?`<span class="pill late">devo ${deve?brl(deve):"sem valor"}</span>`:""}</span>
     ${fotos?`<span class="strip">${fotos}</span>`:""}<span class="s" style="color:var(--ink2);font-size:13px">${por?plural(por,"item por chegar","itens por chegar"):"tudo comigo"}</span></button>`}
 function renderCegs(){
   let all=cegs();
@@ -565,7 +586,7 @@ function renderCegs(){
   const m=new Map(); v.forEach(r=>{const k=r.com||"Sem comunidade"; if(!m.has(k))m.set(k,[]); m.get(k).push(r)});
   const grupos=[...m.entries()].sort((a,b)=>b[1].reduce((s,r)=>s+r.ativos,0)-a[1].reduce((s,r)=>s+r.ativos,0));
   const card=r=>{const t=itemThumbs(r,5); return `<button class="ceg" data-ceg="${esc(r.key)}" type="button">
-    <span class="top">${grpAv(r.doc,r.com,"")}<span class="tx"><span class="t">${esc(r.lbl||r.nome)}</span><span class="s">${esc([r.doc&&r.doc.gom,plural(r.itens.length,"item","itens")].filter(Boolean).join(" · "))}</span></span>${r.deve?`<span class="pill late">devo ${brl(r.deve)}</span>`:""}</span>
+    <span class="top">${grpAv(r.doc,r.com,"")}<span class="tx"><span class="t">${esc(r.lbl||r.nome)}</span><span class="s">${esc([r.doc&&r.doc.gom,plural(r.itens.length,"item","itens")].filter(Boolean).join(" · "))}</span></span>${r.devN?`<span class="pill late">devo ${r.deve?brl(r.deve):"sem valor"}</span>`:""}</span>
     ${t.n||t.sem?`<span class="strip">${t.html}${t.n+t.sem>5&&t.n?`<span class="more-n">+${t.n+t.sem-Math.min(5,t.n)}</span>`:""}${!t.n?`<span class="more-n">${plural(t.sem,"item sem foto","itens sem foto")}</span>`:""}</span>`:""}
     <span>${steps(r.step)}<span class="stepl"><span><b>${CSTEPS[r.step]}</b></span><span>${r.ativos?r.ativos+" por chegar":r.itens.length?"tudo comigo":""}</span></span></span>
   </button>`};
@@ -580,16 +601,17 @@ function renderCegs(){
 
 // ---------- folha de detalhes ----------
 let sheetFn=null, lastFocus=null;
-function openSheet(title,fn){sheetFn=fn;lastFocus=document.activeElement;$("#shT").textContent=title;$("#shB").innerHTML=fn();$("#sheet").classList.add("on");$("#sheet").setAttribute("aria-hidden","false");$("#scrim").classList.add("on");lazy();setTimeout(()=>$("#sheet .x").focus(),30)}
-function closeSheet(){sheetFn=null;$("#sheet").classList.remove("on");$("#sheet").setAttribute("aria-hidden","true");$("#scrim").classList.remove("on");if(lastFocus&&lastFocus.focus)lastFocus.focus()}
+function openSheet(title,fn){sheetFn=fn;lastFocus=document.activeElement;$("#shT").textContent=title;$("#shB").innerHTML=fn();$("#shB").scrollTop=0;$("#sheet").inert=false;document.querySelectorAll(".app,.tabbar,.btn.fab").forEach(x=>x.inert=true);$("#sheet").classList.add("on");$("#sheet").setAttribute("aria-hidden","false");$("#scrim").classList.add("on");lazy();setTimeout(()=>$("#sheet .x").focus(),30)}
+function closeSheet(){sheetFn=null;$("#sheet").inert=true;document.querySelectorAll(".app,.tabbar,.btn.fab").forEach(x=>x.inert=false);$("#sheet").classList.remove("on");$("#sheet").setAttribute("aria-hidden","true");$("#scrim").classList.remove("on");if(lastFocus&&lastFocus.focus)lastFocus.focus()}
 
 function contaSheet(id){const c=D.cobrancas.get(id); if(!c)return "<p class='empty'>Conta não encontrada.</p>"; const ci=comInfo(c.comunidade); const g=cegDoc(c.ceg,c.comunidade);
-  const kv=[["Status",c.status],["Tipo",c.tipo],["Comunidade",c.comunidade],["GOM",g&&g.gom||ci&&ci.goms],["CEG",cegLbl(c)||c.ceg],["Prazo",c.prazo?fdd(c.prazo)+(daysTo(c.prazo)<0?" (venceu)":""):c.prazoNota||"sem prazo"],["Avisado em",c.aviso&&fdd(c.aviso)],["Pago em",c.pagoEm&&fdd(c.pagoEm)],["Como pagar",c.pagarComo],["Comprovante",ci&&ci.comprovante],["De onde veio",c.prova||c.grupo]].filter(x=>x[1]);
-  return `<div class="hero">${av("com",c.comunidade,"lg")}<div><div class="big">${typeof c.valor==="number"?brl(c.valor):"sem valor"}</div><div>${esc(c.referente||"")}</div></div></div>
-  <div class="actions">${prazoPill(c)}</div>
+  const kv=[["De onde veio",c.prova||c.grupo],["Status",c.status],["Tipo",c.tipo],["Prazo",c.prazo?fdd(c.prazo)+(daysTo(c.prazo)<0?" (venceu)":""):c.prazoNota||"sem prazo"],["Avisado em",c.aviso&&fdd(c.aviso)],["Pago em",c.pagoEm&&fdd(c.pagoEm)],["Como pagar",c.pagarComo],["Comprovante",ci&&ci.comprovante]].filter(x=>x[1]);
+  return `<div class="origem">${av("com",c.comunidade,"lg")}<span><b>${esc(c.comunidade||"Sem comunidade")}</b><small>${esc([g&&g.gom||ci&&ci.goms,cegLbl(c)||c.ceg].filter(Boolean).join(" · "))}</small></span></div>
+  <p class="ref">${esc(c.referente||c.tipo||"Cobrança")}</p>
+  <div class="hero">${typeof c.valor==="number"?`<div class="big">${brl(c.valor)}</div>`:`<span class="pill guess">sem valor ainda</span>`}${prazoPill(c)}</div>
+  <div class="actions">${c.status!=="Paga"?`<button class="btn pri" data-cst="${esc(c.id)}|Paga" type="button">Paguei</button>`:`<button class="btn" data-cst="${esc(c.id)}|Pendente" type="button">Voltar pra pagar</button>`}${c.pix||ci&&ci.pix?`<button class="btn" data-pixc="${esc(c.id)}" type="button">${ico("copy",16)}copiar pix</button>`:""}${c.status==="A confirmar"&&typeof c.valor==="number"?`<button class="btn" data-cst="${esc(c.id)}|Pendente" type="button">Valor certo, devo</button>`:""}</div>
   <dl class="kv">${kv.map(([a,b])=>`<dt>${a}</dt><dd>${esc(b)}</dd>`).join("")}</dl>
   ${c.provaLink&&okUrl(c.provaLink)?`<p><a href="${esc(c.provaLink)}" target="_blank" rel="noopener">abrir a prova</a></p>`:""}
-  <div class="actions">${c.pix||ci&&ci.pix?`<button class="btn" data-pixc="${esc(c.id)}" type="button">${ico("copy",16)}copiar pix</button>`:""}${c.status==="A confirmar"?`<button class="btn" data-cst="${esc(c.id)}|Pendente" type="button">Valor certo, devo</button>`:""}${c.status!=="Paga"?`<button class="btn pri" data-cst="${esc(c.id)}|Paga" type="button">Paguei</button>`:`<button class="btn" data-cst="${esc(c.id)}|Pendente" type="button">Voltar pra pagar</button>`}</div>
   <div class="actions">${c.ceg?`<button class="btn sm" data-cegk="${esc((c.comunidade||"")+"\u0001"+c.ceg)}" type="button">ver a CEG</button>`:""}${editBtn("cobrancas",c.id,"editar conta")}</div>`;
 }
 function cardSheet(key){const e=colecao().find(x=>x.key===key); if(!e)return "<p class='empty'>Card não encontrado.</p>";
@@ -601,15 +623,15 @@ const cegIdOf=doc=>{for(const [id,g] of D.cegs)if(g===doc)return id;return ""};
 function cegSheet(key){const r=cegs().find(x=>x.key===key); if(!r)return "<p class='empty'>CEG não encontrada.</p>"; const d=r.doc||{};
   const deve=r.contas.filter(devo), pagas=r.contas.filter(c=>c.status==="Paga"), sum=a=>a.reduce((s,c)=>s+(c.valor||0),0);
   const its=r.itens.map(dd=>{const cs=Array.isArray(dd.cards)?dd.cards:[]; const c=cs.length&&COL?CIDX.get(cs[0]):null; const bg=c?cardBg(c):itemBg(dd);
-    return `<button class="tile" data-edit="itens|${esc(dd.id)}" type="button">${ph(bg,"",bg?`<span class="pill ${FTONE[faseDe(dd.status)]} bdg">${FLBL[faseDe(dd.status)]}</span>`:esc(dd.item||""))}<span class="cap">${esc(dd.item||"")}<small>${esc(dd.membro||"")}</small></span></button>`}).join("");
+    return `<button class="tile" data-card="${esc(cs.length&&COL&&CIDX.get(cs[0])?cs[0]:"i-"+dd.id)}" type="button">${ph(bg,"",bg?`<span class="pill ${FTONE[faseDe(dd.status)]} bdg">${FLBL[faseDe(dd.status)]}</span>`:esc(dd.item||""))}<span class="cap">${esc(dd.item||"")}<small>${esc(dd.membro||"")}</small></span></button>`}).join("");
   return `<div class="hero">${grpAv(r.doc,r.com,"xl")}<div><div style="font-size:20px;font-weight:700">${esc(r.lbl||r.nome)}</div><div style="color:var(--ink2);display:flex;gap:6px;align-items:center">${av("com",r.com,"xs")}${esc(r.com)}</div></div></div>
   <ul class="bigsteps">${CSTEPS.map((s,i)=>`<li class="${i<r.step?"on":i===r.step?"on now":""}"><span class="d"></span>${s}</li>`).join("")}</ul>
-  <dl class="kv">${[["GOM",d.gom],["Situação",d.status],["Grupo",d.grupo],["Devo",deve.length?brl(sum(deve)):""],["Já paguei",pagas.length?brl(sum(pagas)):""]].filter(x=>x[1]).map(([a,b])=>`<dt>${a}</dt><dd>${esc(b)}</dd>`).join("")}</dl>
+  <dl class="kv">${[["GOM",d.gom],["Situação",d.status],["Grupo",d.grupo],["Devo",deve.length?total(deve):""],["Já paguei",pagas.length?brl(sum(pagas)):""]].filter(x=>x[1]).map(([a,b])=>`<dt>${a}</dt><dd>${esc(b)}</dd>`).join("")}</dl>
   ${d.planilha&&okUrl(d.planilha)?`<p><a href="${esc(d.planilha)}" target="_blank" rel="noopener">abrir planilha</a></p>`:""}
   ${its?`<h2>Meus itens <span class="n">${r.itens.length}</span></h2><div class="mini">${its}</div>`:""}
   ${r.contas.length?`<h2>Contas desta CEG <span class="n">${r.contas.length}</span></h2><div class="panel"><ul class="rows">${[...r.contas].sort(byPrazo).map(contaRow).join("")}</ul></div>`:""}
   <div class="actions">${r.doc?editBtn("cegs",cegIdOf(r.doc),"editar CEG"):`<button class="btn sm" data-new="cegs" data-pre="${esc(JSON.stringify({nome:r.nome,comunidade:r.com}))}" type="button">cadastrar esta CEG</button>`}<button class="btn sm" data-new="cobrancas" data-pre="${esc(JSON.stringify({comunidade:r.com,ceg:r.nome,status:"Pendente"}))}" type="button">+ conta nesta CEG</button></div>
-  ${deve.length?`<div class="actions"><button class="btn pri" data-liq="${esc(r.key)}" type="button">Paguei tudo: ${brl(sum(deve))}</button></div>`:""}`;
+  ${deve.length&&!semValor(deve)?`<div class="actions"><button class="btn pri" data-liq="${esc(r.key)}" type="button">Paguei tudo: ${brl(sum(deve))}</button></div>`:deve.length?`<p class="note">${plural(semValor(deve),"conta ainda está","contas ainda estão")} sem valor. Marque uma por uma quando a GOM cobrar.</p>`:""}`;
 }
 function enviosSheet(){const es=list("envios").filter(e=>e.status==="A pedir").sort(byPrazo);
   if(!es.length)return cadSheet("envios");
@@ -693,7 +715,7 @@ function roboSheet(){const cs=caixaPendentes(); if(!cs.length)return `<div class
   const reg=(c,r,i)=>r.estado!=="pendente"?"":`<div class="reg"><div class="l1"><b>${esc(r.referente||"(sem título)")}</b><span style="font-weight:700;white-space:nowrap">${typeof r.valor==="number"?brl(r.valor):"sem valor"}</span></div>
     <div class="meta"><span class="pill info">${esc(ACAO[r.acao]||DESTINO[r.destino]||r.destino||"")}</span> ${r.confianca!=="alta"?`<span class="pill guess">confiança ${esc(r.confianca||"?")}</span> `:""}${esc([r.comunidade,r.ceg&&"CEG: "+r.ceg,r.prazo&&"prazo "+fdd(r.prazo)].filter(Boolean).join(" · "))}</div>
     ${r.trecho?`<div class="quote">“${esc(r.trecho)}”</div>`:""}${r.duvidas?`<div class="quote warn">Conferir: ${esc(r.duvidas)}</div>`:""}
-    <div class="actions" style="margin:4px 0"><button class="btn sm pri" data-cx="${esc(c.id)}" data-cxi="${i}" data-cxa="aceitar" type="button">aceitar</button><button class="btn sm" data-cx="${esc(c.id)}" data-cxi="${i}" data-cxa="descartar" type="button">descartar</button></div></div>`;
+    <div class="actions" style="margin:4px 0"><button class="btn sm" data-cx="${esc(c.id)}" data-cxi="${i}" data-cxa="aceitar" type="button">aceitar</button><button class="btn sm" data-cx="${esc(c.id)}" data-cxi="${i}" data-cxa="descartar" type="button">descartar</button></div></div>`;
   return `<p class="lede" style="margin:0 0 12px">O robô só sugere. Nada muda até você aceitar.</p>${alta?`<div class="actions" style="margin-top:0"><button class="btn" data-act="cxall" type="button">Aceitar as ${alta} de alta confiança</button></div>`:""}
   ${cs.map(c=>`<article class="sug"><div class="hd"><span><b>${esc(({paboracha:"Paboracha",whatsapp:"WhatsApp"}[c.origem]||"Telegram"))}</b> <small>${esc(quando(c.recebidoEm))}</small></span>${c.estado!=="lida"?`<button class="btn sm" data-cx="${esc(c.id)}" data-cxa="arquivar" type="button">arquivar</button>`:""}</div>
     ${c.estado==="erro"?`<div class="quote warn">Não consegui ler: ${esc(c.erro||"")}</div>`:c.estado==="lendo"?`<div class="meta">lendo…</div>`:c.resumo&&c.origem!=="paboracha"?`<div class="meta">${esc(c.resumo)}</div>`:""}
@@ -726,13 +748,14 @@ const nc={step:0,ceg:"",sel:new Set(),q:"",m:"",valor:"",era:""};
 function eraDaCeg(r){ if(!COL||!r)return ""; const n=" "+norm(r.nome).replace(/[^a-z0-9]+/g," ")+" "; let best="";
   new Set(COL.items.map(c=>c.e)).forEach(e=>{const k=norm(e).replace(/[^a-z0-9]+/g," ").trim(); if(k.length>=3&&n.includes(" "+k+" ")&&k.length>norm(best).length)best=e}); return best }
 function novaSheet(){
-  const bar=`<div class="stepper">${[0,1,2].map(i=>`<span class="${i<=nc.step?"on":""}"></span>`).join("")}</div>`;
+  const bar=`<div class="stepper" role="img" aria-label="Passo ${nc.step+1} de 3">${[0,1,2].map(i=>`<span class="${i<=nc.step?"on":""}"></span>`).join("")}</div>`;
+  const rc=cegs().find(x=>x.key===nc.ceg), picked=rc?`<div class="picked">${grpAv(rc.doc,rc.com,"sm")}<span class="tx">${esc(rc.lbl||rc.nome)}<small>${esc(rc.com)}</small></span><button class="btn sm" data-ncback type="button">trocar</button></div>`:"";
   if(nc.step===0){const q=norm(nc.q); const rs=cegs().filter(r=>r.aberta&&(!q||norm(r.nome+" "+r.com).includes(q))).slice(0,40);
     return `${bar}<h2 style="margin-top:0">Em qual CEG?</h2><div class="search">${ico("search")}<input id="ncq" type="search" placeholder="Buscar CEG ou comunidade" value="${esc(nc.q)}" aria-label="Buscar CEG"></div>
     <div class="panel"><ul class="rows">${rs.map(r=>`<li><button class="row" data-ncceg="${esc(r.key)}" type="button">${grpAv(r.doc,r.com,"sm")}<span class="tx"><span class="t">${esc(r.lbl||r.nome)}</span><span class="s">${esc(r.com)}</span></span></button></li>`).join("")}</ul></div>`}
   if(nc.step===1){const q=norm(nc.q); const it=nc.mode==="link"?D.itens.get(nc.item):null;
     let cs=COL?COL.items.filter(c=>(!nc.era||c.e===nc.era)&&(!nc.m||membro(c.m)===nc.m)&&(!q||norm([c.v,c.e,c.m,c.s].join(" ")).includes(q))):[]; const tot=cs.length; cs=cs.slice(-90).reverse();
-    return `${nc.mode==="link"?(it?`<p class="note" style="margin-top:0">Pedido: <b>${esc([it.item,it.membro].filter(Boolean).join(" · "))}</b>${it.ceg?" · "+esc(cegLbl(it)||it.ceg):""}</p>`:""):bar}<h2 style="margin-top:0">Quais cards? <span class="n">${nc.sel.size} escolhidos</span></h2>
+    return `${nc.mode==="link"?(it?`<p class="note" style="margin-top:0">Pedido: <b>${esc([it.item,it.membro].filter(Boolean).join(" · "))}</b>${it.ceg?" · "+esc(cegLbl(it)||it.ceg):""}</p>`:""):bar+picked}<h2 style="margin-top:0">Quais cards? <span class="n">${nc.sel.size} escolhidos</span></h2>
     <div class="search">${ico("search")}<input id="ncq" type="search" placeholder="Era, versão ou loja" value="${esc(nc.q)}" aria-label="Buscar card"></div>
     ${nc.era?`<div class="chips"><button class="chip" data-ncera aria-pressed="true" type="button">Só ${esc(nc.era)} ✕</button></div>`:""}<div class="chips scroll">${["",...MEMBROS].map(m=>`<button class="chip" data-ncm="${esc(m)}" aria-pressed="${nc.m===m}" type="button">${esc(m||"Todos")}</button>`).join("")}</div>
     <div class="mini picker">${cs.map(c=>`<button class="tile ${nc.sel.has(c.i)?"sel":""}" data-ncc="${esc(c.i)}" type="button">${ph(cardBg(c),"",cardBg(c)?"":esc(c.v))}<span class="cap">${esc(c.v)}<small>${esc(c.m)} · ${esc(c.e)}</small></span></button>`).join("")}</div>
@@ -742,15 +765,15 @@ function novaSheet(){
       <div class="field"><label for="nke">Era</label><input id="nke" value="${esc(nc.era)}" placeholder="ex.: DO IT"></div>
       <div class="field"><label for="nkv">Versão / loja</label><input id="nkv" placeholder="ex.: Soundwave fansign 2"></div>
       <button class="btn" data-act="criarcard" type="button">Criar e escolher</button></details>
-    <div class="actions"><button class="btn pri" data-ncnext type="button" ${nc.sel.size?"":"disabled"}>${nc.mode==="link"?"Ligar":"Continuar"}</button></div>`}
+    <div class="actions stick"><button class="btn pri" data-ncnext type="button" ${nc.sel.size?"":"disabled"}>${nc.mode==="link"?"Ligar":"Continuar"} ${nc.sel.size?"("+nc.sel.size+")":""}</button></div>`}
   const r=cegs().find(x=>x.key===nc.ceg);
-  return `${bar}<h2 style="margin-top:0">Quanto custou?</h2>
+  return `${bar}${picked}<h2 style="margin-top:0">Quanto custou?</h2>
   <div class="field"><label for="ncv">Valor de cada card (R$)</label><input id="ncv" inputmode="decimal" placeholder="ex.: 28,50 (vazio se ainda não sabe)" value="${esc(nc.valor)}"></div>
   <div class="field"><label for="ncp">Prazo pra pagar</label><input id="ncp" type="date" value="${esc(nc.prazo||"")}"></div>
   <label style="display:flex;gap:10px;align-items:center;margin:8px 0"><input id="ncpg" type="checkbox" ${nc.pago?"checked":""} style="width:20px;height:20px;accent-color:var(--accent)">Já paguei</label>
   <p class="note">Vai criar ${plural(nc.sel.size,"pedido","pedidos")} em <b>${esc(r?r.lbl||r.nome:"")}</b>, já ligados ao card. Com valor, cria também uma conta "Item" pra ${esc(r?r.com:"")}. Os fretes entram depois, quando a GOM cobrar.</p>
   <div class="mini">${[...nc.sel].map(id=>{const c=CIDX.get(id);return c?`<div class="tile">${ph(cardBg(c),"","")}<span class="cap">${esc(c.v)}</span></div>`:""}).join("")}</div>
-  <div class="actions"><button class="btn" data-ncback type="button">Voltar</button><button class="btn pri" data-act="salvar" type="button">Salvar compra</button></div>`;
+  <div class="actions stick"><button class="btn" data-ncback type="button">Voltar</button><button class="btn pri" data-act="salvar" type="button">Salvar compra</button></div>`;
 }
 
 // ---------- render ----------
@@ -795,7 +818,7 @@ document.addEventListener("click",async e=>{
   if(ds.ncc){nc.sel.has(ds.ncc)?nc.sel.delete(ds.ncc):nc.sel.add(ds.ncc);b.classList.toggle("sel");const n=$("#shB h2 .n");if(n)n.textContent=nc.sel.size+" escolhidos";const nx=$("[data-ncnext]");if(nx)nx.disabled=!nc.sel.size;return}
   if(ds.ncnext!=null&&nc.mode==="link"){const ids=[...nc.sel]; b.disabled=true; if(await setMany([["itens",nc.item,{cards:ids}]],`${plural(ids.length,"card ligado","cards ligados")}`))closeSheet(); return}
   if(ds.ncnext!=null){nc.step=2;$("#shB").innerHTML=novaSheet();lazy();return}
-  if(ds.ncback!=null){nc.step=1;$("#shB").innerHTML=novaSheet();lazy();return}
+  if(ds.ncback!=null){nc.step=Math.max(0,nc.step-1);$("#shB").innerHTML=novaSheet();lazy();return}
   if(ds.cst){const [id,st]=ds.cst.split("|"); const c=D.cobrancas.get(id); if(!c)return; const patch={status:st}; if(st==="Paga")patch.pagoEm=c.pagoEm||isoToday(); if(st==="Pendente"&&c.status==="Paga")patch.pagoEm=null; b.disabled=true;
     await setMany([["cobrancas",id,patch]],st==="Paga"?"Marcada como paga":c.status==="Paga"?"Voltou pra pagar":"Valor confirmado"); return}
   if(ds.liq){const r=cegs().find(x=>x.key===ds.liq); if(!r)return; const dv=r.contas.filter(devo);

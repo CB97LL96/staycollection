@@ -6,14 +6,14 @@ colors:
   folha-branca: "#FFFFFF"
   papel-fundo: "#EEE9E1"
   grafite: "#24211D"
-  grafite-suave: "#6A645B"
-  lapis: "#948C80"
+  grafite-suave: "#5A544C"
+  lapis: "#6F675C"
   linha: "#E2DBD0"
   verde-folha: "#3D5A4E"
   verde-folha-claro: "#E1EAE4"
   tijolo: "#A3442C"
   tijolo-claro: "#F6E3DC"
-  mostarda: "#8A6418"
+  mostarda: "#7E5A12"
   mostarda-clara: "#F4EAD3"
   musgo: "#3C6B4D"
   musgo-claro: "#E0EDE3"
@@ -126,13 +126,13 @@ Uma paleta de papelaria: neutros mornos, um verde de capa e quatro tons de estad
 - **Folha branca** (#FFFFFF): cartões, linhas de lista, campos e chips.
 - **Papel de fundo** (#EEE9E1): fundo de foto que ainda não carregou, controle segmentado e avatar sem foto.
 - **Grafite** (#24211D): texto principal e chip selecionado.
-- **Grafite suave** (#6A645B): texto de apoio, como comunidade, tipo e contagens.
-- **Lápis** (#948C80): o terceiro nível, usado em mês da data, "sem valor" e placeholders.
+- **Grafite suave** (#5A544C): texto de apoio, como comunidade, tipo e contagens.
+- **Lápis** (#6F675C): o terceiro nível, usado em mês da data, "sem valor" e placeholders.
 - **Linha** (#E2DBD0): divisórias entre linhas e borda de chip e campo.
 
 ### Estado (só em pílulas e números de alerta)
 - **Tijolo** (#A3442C sobre #F6E3DC): vencida, atrasada, "devo".
-- **Mostarda** (#8A6418 sobre #F4EAD3): vence em até 7 dias, liberado, no Brasil.
+- **Mostarda** (#7E5A12 sobre #F4EAD3): vence em até 7 dias, liberado, no Brasil.
 - **Anil** (#3C5C7A sobre #E1E9F1): a caminho, vindo pra mim.
 - **Musgo** (#3C6B4D sobre #E0EDE3): comigo.
 
