@@ -204,7 +204,8 @@ h2 .r{margin-left:auto;font-size:14px;font-weight:700}
 .field input,.field select{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:11px 12px;font:inherit;color:var(--ink)}
 
 .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;opacity:0;pointer-events:none;transition:all .2s;z-index:60}
-.toast.on{opacity:1;transform:translateX(-50%)}
+.toast.on{opacity:1;transform:translateX(-50%);pointer-events:auto}
+.toast .undo{border:0;background:none;color:inherit;font-weight:800;text-decoration:underline;cursor:pointer;margin-left:10px;padding:4px}
 .empty{color:var(--ink2);padding:24px 0}
 
 /* celular */
@@ -260,7 +261,7 @@ h2 .r{margin-left:auto;font-size:14px;font-weight:700}
 <script>
 (function(){
 "use strict";
-// Protótipo só leitura: lê o mesmo banco do app atual e não grava nada.
+// App novo: lê e grava no mesmo banco do app atual. Toda gravação oferece "desfazer".
 
 // ---------- utilidades ----------
 const $=s=>document.querySelector(s);
@@ -412,8 +413,28 @@ try{Object.assign(ui,JSON.parse(localStorage.getItem("novo-ui")||"{}"))}catch(e)
 const h=location.hash.slice(1); if(TABS.some(t=>t[0]===h))ui.tab=h;
 const save=()=>{try{localStorage.setItem("novo-ui",JSON.stringify({kv:ui.kv,gf:ui.gf,cf:ui.cf}))}catch(e){}};
 
-function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("on"),2200)}
-const proto=()=>toast("Protótipo: isso ainda não grava nada.");
+function toast(msg,undo){const t=$("#toast");t.innerHTML=esc(msg)+(undo?` <button type="button" class="undo">desfazer</button>`:"");t.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("on"),undo?7000:2600);
+  if(undo)t.querySelector(".undo").onclick=async()=>{t.classList.remove("on");try{await undo();toast("Desfeito")}catch(e){toast("Não deu pra desfazer")}}}
+const isoToday=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+let canWrite=true;
+// muda vários documentos; o desfazer devolve os campos ao que eram (null quando não existiam)
+async function setMany(changes,msg){
+  if(!db||!canWrite){toast("Sem permissão pra gravar");return false}
+  const backs=changes.map(([k,id,patch])=>{const prev=D[k].get(id)||{};const b={};Object.keys(patch).forEach(f=>b[f]=prev[f]===undefined?null:prev[f]);return [k,id,b]});
+  try{for(const [k,id,patch] of changes)await db.doc(k+"/"+id).update(patch)}
+  catch(e){toast("Não deu pra salvar; tente de novo");return false}
+  toast(msg,async()=>{for(const [k,id,b] of backs)await db.doc(k+"/"+id).update(b)});
+  return true;
+}
+// cria documentos; o desfazer apaga o que foi criado
+async function addMany(adds,msg){
+  if(!db||!canWrite){toast("Sem permissão pra gravar");return null}
+  const ids=[];
+  try{for(const [k,doc] of adds){const r=await db.collection(k).add(doc);ids.push([k,r.id])}}
+  catch(e){for(const [k,id] of ids){try{await db.doc(k+"/"+id).delete()}catch(err){}} toast("Não deu pra salvar; nada foi criado");return null}
+  toast(msg,async()=>{for(const [k,id] of ids)await db.doc(k+"/"+id).delete()});
+  return ids;
+}
 
 // ---------- navegação ----------
 function nav(){
@@ -421,7 +442,7 @@ function nav(){
   $("#navlinks").innerHTML=TABS.map(([k,l,i])=>`<button class="nv" data-tab="${k}" type="button" ${ui.tab===k?'aria-current="page"':""}>${ico(i)}${l}${badge[k]?`<span class="ct">${badge[k]}</span>`:""}</button>`).join("");
   $("#tabbar").innerHTML=TABS.map(([k,l,i])=>`<button data-tab="${k}" type="button" ${ui.tab===k?'aria-current="page"':""}>${ico(i)}${l}${badge[k]?`<span class="ct">${badge[k]}</span>`:""}</button>`).join("");
 }
-const head=(t,lede)=>`<span class="proto">${ico("spark",14)}<span><b>Protótipo</b> só leitura, com seus dados reais</span></span><h1>${t}</h1>${lede?`<p class="lede">${lede}</p>`:""}`;
+const head=(t,lede)=>`<h1>${t}</h1>${lede?`<p class="lede">${lede}</p>`:""}`;
 
 // ---------- linha de conta ----------
 function dateBlk(s){const n=daysTo(s); if(n==null)return `<span class="date none"><b>–</b><small>sem prazo</small></span>`; const d=pd(s); return `<span class="date ${n<0?"late":""}"><b>${d.getDate()}</b><small>${MES[d.getMonth()]}</small></span>`}
@@ -544,12 +565,12 @@ function contaSheet(id){const c=D.cobrancas.get(id); if(!c)return "<p class='emp
   <div class="actions">${prazoPill(c)}</div>
   <dl class="kv">${kv.map(([a,b])=>`<dt>${a}</dt><dd>${esc(b)}</dd>`).join("")}</dl>
   ${c.provaLink&&okUrl(c.provaLink)?`<p><a href="${esc(c.provaLink)}" target="_blank" rel="noopener">abrir a prova</a></p>`:""}
-  <div class="actions">${ci&&ci.pix?`<button class="btn" data-pix="${esc(c.comunidade)}" type="button">${ico("copy",16)}copiar pix</button>`:""}${c.status!=="Paga"?`<button class="btn pri" data-act="proto" type="button">Paguei</button>`:""}</div>
+  <div class="actions">${ci&&ci.pix?`<button class="btn" data-pix="${esc(c.comunidade)}" type="button">${ico("copy",16)}copiar pix</button>`:""}${c.status==="A confirmar"?`<button class="btn" data-cst="${esc(c.id)}|Pendente" type="button">Valor certo, devo</button>`:""}${c.status!=="Paga"?`<button class="btn pri" data-cst="${esc(c.id)}|Paga" type="button">Paguei</button>`:`<button class="btn" data-cst="${esc(c.id)}|Pendente" type="button">Voltar pra pagar</button>`}</div>
   ${c.ceg?`<button class="btn sm" data-cegk="${esc((c.comunidade||"")+"\u0001"+c.ceg)}" type="button">ver a CEG</button>`:""}`;
 }
 function cardSheet(key){const e=colecao().find(x=>x.key===key); if(!e)return "<p class='empty'>Card não encontrado.</p>";
   const its=e.itens.map(d=>`<li><button class="row" data-cegk="${esc((d.comunidade||"")+"\u0001"+(d.ceg||""))}" type="button">${av("com",d.comunidade,"sm")}<span class="tx"><span class="t">${esc(cegLbl(d)||d.ceg||"sem CEG")}</span><span class="s">${esc([d.comunidade,d.item!==e.nome?d.item:"",d.pago&&d.pago!=="Sim"?d.pago:""].filter(Boolean).join(" · "))}</span></span><span class="v">${typeof d.valor==="number"?brl(d.valor):""}<span class="pill ${FTONE[faseDe(d.status)]}">${esc(d.status||"")}</span></span></button></li>`).join("");
-  return `<div class="cardhero">${ph(bgOf(e),e.tipo==="Photocard / set"?"":"wide",e.card||bgOf(e)?"":esc(e.nome))}<div><div style="font-size:20px;font-weight:700">${esc(e.nome)}</div><div style="color:var(--ink2)">${esc([e.membro,e.era].filter(Boolean).join(" · "))}</div><div class="actions"><span class="pill ${FTONE[e.fase]}">${FLBL[e.fase]}</span>${e.copias>1?`<span class="pill">${e.copias} cópias</span>`:""}</div>${e.semCard?`<p class="note">Este pedido ainda não está ligado a um card do catálogo.</p><button class="btn sm" data-act="proto" type="button">ligar ao catálogo</button>`:""}</div></div>
+  return `<div class="cardhero">${ph(bgOf(e),e.tipo==="Photocard / set"?"":"wide",e.card||bgOf(e)?"":esc(e.nome))}<div><div style="font-size:20px;font-weight:700">${esc(e.nome)}</div><div style="color:var(--ink2)">${esc([e.membro,e.era].filter(Boolean).join(" · "))}</div><div class="actions"><span class="pill ${FTONE[e.fase]}">${FLBL[e.fase]}</span>${e.copias>1?`<span class="pill">${e.copias} cópias</span>`:""}</div>${e.semCard?`<p class="note">Este pedido ainda não está ligado a um card do catálogo.</p><button class="btn sm pri" data-link="${esc(e.item.id)}" type="button">ligar ao catálogo</button>`:""}</div></div>
   ${its?`<h2>De onde vem</h2><div class="panel"><ul class="rows">${its}</ul></div>`:e.acervo?`<p class="note">Item que já estava com você, sem pedido.</p>`:`<p class="note">Marcado na coleção, sem pedido ligado.</p>`}`;
 }
 function cegSheet(key){const r=cegs().find(x=>x.key===key); if(!r)return "<p class='empty'>CEG não encontrada.</p>"; const d=r.doc||{};
@@ -562,13 +583,23 @@ function cegSheet(key){const r=cegs().find(x=>x.key===key); if(!r)return "<p cla
   ${d.planilha&&okUrl(d.planilha)?`<p><a href="${esc(d.planilha)}" target="_blank" rel="noopener">abrir planilha</a></p>`:""}
   ${its?`<h2>Meus itens <span class="n">${r.itens.length}</span></h2><div class="mini">${its}</div>`:""}
   ${r.contas.length?`<h2>Contas desta CEG <span class="n">${r.contas.length}</span></h2><div class="panel"><ul class="rows">${[...r.contas].sort(byPrazo).map(contaRow).join("")}</ul></div>`:""}
-  ${deve.length?`<div class="actions"><button class="btn pri" data-act="proto" type="button">Liquidar ${brl(sum(deve))}</button></div>`:""}`;
+  ${deve.length?`<div class="actions"><button class="btn pri" data-liq="${esc(r.key)}" type="button">Paguei tudo: ${brl(sum(deve))}</button></div>`:""}`;
 }
 function enviosSheet(){const es=list("envios").filter(e=>e.status==="A pedir").sort(byPrazo);
   return `<p class="lede" style="margin:0 0 12px">Já liberados. Peça o envio com cada GOM.</p><div class="panel"><ul class="rows">${es.map(e=>`<li><button class="row" data-envio="${esc(e.id)}" type="button">${dateBlk(e.prazo)}<span class="tx"><span class="t">${esc(e.gom||e.comunidade||"Envio")}</span><span class="s">${av("com",e.comunidade,"xs")}${esc([e.comunidade,e.tipo].filter(Boolean).join(" · "))}</span></span></button></li>`).join("")}</ul></div>`}
 function envioSheet(id){const e=D.envios.get(id); if(!e)return ""; return `<div class="hero">${av("com",e.comunidade,"lg")}<div><div style="font-size:20px;font-weight:700">${esc(e.gom||e.comunidade||"Envio")}</div><div style="color:var(--ink2)">${esc([e.tipo,e.status].filter(Boolean).join(" · "))}</div></div></div>
   <dl class="kv">${[["Prazo",e.prazo&&fdd(e.prazo)],["Como pedir",e.comoPedir],["Rastreio",e.rastreio],["Itens",e.itens]].filter(x=>x[1]).map(([a,b])=>`<dt>${a}</dt><dd>${esc(b)}</dd>`).join("")}</dl>
-  <div class="actions"><button class="btn pri" data-act="proto" type="button">${e.status==="Enviado"?"Recebi":"Pedi"}</button></div>`}
+  ${envioItens(e)}`}
+// ao pedir ou receber, oferece mudar junto os itens daquela comunidade que estão na fase certa
+function envioItens(e){
+  const rec=e.status==="Enviado"||e.status==="Pedido", alvo=rec?["ped","lib"]:["lib","br"];
+  if(e.status==="Recebido")return `<p class="note">Já recebido.</p>`;
+  const its=list("itens").filter(d=>d.comunidade===e.comunidade&&alvo.includes(faseDe(d.status)));
+  return `${its.length?`<h2>${rec?"O que chegou":"O que vai neste envio"} <span class="n">${its.length}</span></h2><p class="lede" style="margin:0 0 10px">Desmarque o que não ${rec?"veio":"vai"}.</p>
+  <div class="panel"><ul class="rows">${its.map(d=>{const cs=Array.isArray(d.cards)?d.cards:[]; const c=cs.length&&COL?CIDX.get(cs[0]):null;
+    return `<li><label class="row"><input type="checkbox" class="evi" value="${esc(d.id)}" checked style="width:20px;height:20px;accent-color:var(--accent)"><span style="width:34px;flex:none">${ph(c?cardBg(c):itemBg(d),"","")}</span><span class="tx"><span class="t">${esc([d.item,d.membro].filter(Boolean).join(" · "))}</span><span class="s">${esc([cegLbl(d)||d.ceg,d.status].filter(Boolean).join(" · "))}</span></span></label></li>`}).join("")}</ul></div>`:""}
+  <div class="actions"><button class="btn pri" data-evst="${esc(e.id)}|${rec?"Recebido":"Pedido"}" type="button">${rec?"Recebi":"Pedi o envio"}</button></div>`;
+}
 
 // ---------- nova compra (3 passos) ----------
 const nc={step:0,ceg:"",sel:new Set(),q:"",m:"",valor:"",era:""};
@@ -580,20 +611,27 @@ function novaSheet(){
   if(nc.step===0){const q=norm(nc.q); const rs=cegs().filter(r=>r.aberta&&(!q||norm(r.nome+" "+r.com).includes(q))).slice(0,40);
     return `${bar}<h2 style="margin-top:0">Em qual CEG?</h2><div class="search">${ico("search")}<input id="ncq" type="search" placeholder="Buscar CEG ou comunidade" value="${esc(nc.q)}" aria-label="Buscar CEG"></div>
     <div class="panel"><ul class="rows">${rs.map(r=>`<li><button class="row" data-ncceg="${esc(r.key)}" type="button">${grpAv(r.doc,r.com,"sm")}<span class="tx"><span class="t">${esc(r.lbl||r.nome)}</span><span class="s">${esc(r.com)}</span></span></button></li>`).join("")}</ul></div>`}
-  if(nc.step===1){const q=norm(nc.q);
+  if(nc.step===1){const q=norm(nc.q); const it=nc.mode==="link"?D.itens.get(nc.item):null;
     let cs=COL?COL.items.filter(c=>(!nc.era||c.e===nc.era)&&(!nc.m||membro(c.m)===nc.m)&&(!q||norm([c.v,c.e,c.m,c.s].join(" ")).includes(q))):[]; const tot=cs.length; cs=cs.slice(-90).reverse();
-    return `${bar}<h2 style="margin-top:0">Quais cards? <span class="n">${nc.sel.size} escolhidos</span></h2>
+    return `${nc.mode==="link"?(it?`<p class="note" style="margin-top:0">Pedido: <b>${esc([it.item,it.membro].filter(Boolean).join(" · "))}</b>${it.ceg?" · "+esc(cegLbl(it)||it.ceg):""}</p>`:""):bar}<h2 style="margin-top:0">Quais cards? <span class="n">${nc.sel.size} escolhidos</span></h2>
     <div class="search">${ico("search")}<input id="ncq" type="search" placeholder="Era, versão ou loja" value="${esc(nc.q)}" aria-label="Buscar card"></div>
     ${nc.era?`<div class="chips"><button class="chip" data-ncera aria-pressed="true" type="button">Só ${esc(nc.era)} ✕</button></div>`:""}<div class="chips scroll">${["",...MEMBROS].map(m=>`<button class="chip" data-ncm="${esc(m)}" aria-pressed="${nc.m===m}" type="button">${esc(m||"Todos")}</button>`).join("")}</div>
     <div class="mini picker">${cs.map(c=>`<button class="tile ${nc.sel.has(c.i)?"sel":""}" data-ncc="${esc(c.i)}" type="button">${ph(cardBg(c),"",cardBg(c)?"":esc(c.v))}<span class="cap">${esc(c.v)}<small>${esc(c.m)} · ${esc(c.e)}</small></span></button>`).join("")}</div>
     ${tot>90?`<p class="note">Mostrando os 90 mais recentes de ${tot}. Busque para achar outros.</p>`:""}
-    <div class="actions"><button class="btn" data-act="proto" type="button">não está no catálogo: criar card</button><button class="btn pri" data-ncnext type="button" ${nc.sel.size?"":"disabled"}>Continuar</button></div>`}
+    <details class="novo-card" style="margin-top:14px"><summary style="cursor:pointer;font-weight:650">Não está no catálogo? Criar card</summary>
+      <div class="field"><label for="nkm">Membro</label><select id="nkm">${MEMBROS.map(m=>`<option ${m===nc.m?"selected":""}>${esc(m)}</option>`).join("")}<option>UNIT</option></select></div>
+      <div class="field"><label for="nke">Era</label><input id="nke" value="${esc(nc.era)}" placeholder="ex.: DO IT"></div>
+      <div class="field"><label for="nkv">Versão / loja</label><input id="nkv" placeholder="ex.: Soundwave fansign 2"></div>
+      <button class="btn" data-act="criarcard" type="button">Criar e escolher</button></details>
+    <div class="actions"><button class="btn pri" data-ncnext type="button" ${nc.sel.size?"":"disabled"}>${nc.mode==="link"?"Ligar":"Continuar"}</button></div>`}
   const r=cegs().find(x=>x.key===nc.ceg);
   return `${bar}<h2 style="margin-top:0">Quanto custou?</h2>
-  <div class="field"><label for="ncv">Valor do item (R$)</label><input id="ncv" inputmode="decimal" placeholder="ex.: 28,50" value="${esc(nc.valor)}"></div>
-  <p class="note">Vai criar ${plural(nc.sel.size,"pedido","pedidos")} em <b>${esc(r?r.lbl||r.nome:"")}</b>, já ligados ao card, e uma conta "Item" pra ${esc(r?r.com:"")}. Os fretes entram depois, quando a GOM cobrar.</p>
+  <div class="field"><label for="ncv">Valor de cada card (R$)</label><input id="ncv" inputmode="decimal" placeholder="ex.: 28,50 (vazio se ainda não sabe)" value="${esc(nc.valor)}"></div>
+  <div class="field"><label for="ncp">Prazo pra pagar</label><input id="ncp" type="date" value="${esc(nc.prazo||"")}"></div>
+  <label style="display:flex;gap:10px;align-items:center;margin:8px 0"><input id="ncpg" type="checkbox" ${nc.pago?"checked":""} style="width:20px;height:20px;accent-color:var(--accent)">Já paguei</label>
+  <p class="note">Vai criar ${plural(nc.sel.size,"pedido","pedidos")} em <b>${esc(r?r.lbl||r.nome:"")}</b>, já ligados ao card. Com valor, cria também uma conta "Item" pra ${esc(r?r.com:"")}. Os fretes entram depois, quando a GOM cobrar.</p>
   <div class="mini">${[...nc.sel].map(id=>{const c=CIDX.get(id);return c?`<div class="tile">${ph(cardBg(c),"","")}<span class="cap">${esc(c.v)}</span></div>`:""}).join("")}</div>
-  <div class="actions"><button class="btn" data-ncback type="button">Voltar</button><button class="btn pri" data-act="proto" type="button">Salvar compra</button></div>`;
+  <div class="actions"><button class="btn" data-ncback type="button">Voltar</button><button class="btn pri" data-act="salvar" type="button">Salvar compra</button></div>`;
 }
 
 // ---------- render ----------
@@ -636,15 +674,34 @@ document.addEventListener("click",async e=>{
   if(ds.ncceg){nc.ceg=ds.ncceg;nc.step=1;nc.q="";nc.era=eraDaCeg(cegs().find(r=>r.key===nc.ceg));$("#shB").innerHTML=novaSheet();lazy();return}
   if(ds.ncm!=null){nc.m=ds.ncm;$("#shB").innerHTML=novaSheet();lazy();return}
   if(ds.ncc){nc.sel.has(ds.ncc)?nc.sel.delete(ds.ncc):nc.sel.add(ds.ncc);b.classList.toggle("sel");const n=$("#shB h2 .n");if(n)n.textContent=nc.sel.size+" escolhidos";const nx=$("[data-ncnext]");if(nx)nx.disabled=!nc.sel.size;return}
+  if(ds.ncnext!=null&&nc.mode==="link"){const ids=[...nc.sel]; b.disabled=true; if(await setMany([["itens",nc.item,{cards:ids}]],`${plural(ids.length,"card ligado","cards ligados")}`))closeSheet(); return}
   if(ds.ncnext!=null){nc.step=2;$("#shB").innerHTML=novaSheet();lazy();return}
   if(ds.ncback!=null){nc.step=1;$("#shB").innerHTML=novaSheet();lazy();return}
+  if(ds.cst){const [id,st]=ds.cst.split("|"); const c=D.cobrancas.get(id); if(!c)return; const patch={status:st}; if(st==="Paga")patch.pagoEm=c.pagoEm||isoToday(); if(st==="Pendente"&&c.status==="Paga")patch.pagoEm=null; b.disabled=true;
+    await setMany([["cobrancas",id,patch]],st==="Paga"?"Marcada como paga":c.status==="Paga"?"Voltou pra pagar":"Valor confirmado"); return}
+  if(ds.liq){const r=cegs().find(x=>x.key===ds.liq); if(!r)return; const dv=r.contas.filter(devo);
+    if(!b.dataset.sure){b.dataset.sure="1";b.textContent=`Toque de novo: marcar ${plural(dv.length,"conta","contas")} como pagas`;setTimeout(()=>{if(b.isConnected){delete b.dataset.sure;b.textContent="Paguei tudo: "+brl(dv.reduce((s,c)=>s+(c.valor||0),0))}},5000);return}
+    b.disabled=true; await setMany(dv.map(c=>["cobrancas",c.id,{status:"Paga",pagoEm:c.pagoEm||isoToday()}]),`${plural(dv.length,"conta paga","contas pagas")}`); return}
+  if(ds.evst){const [id,st]=ds.evst.split("|"); const ids=[...document.querySelectorAll("#shB .evi:checked")].map(x=>x.value);
+    const ch=[["envios",id,{status:st}],...ids.map(i=>["itens",i,{status:st==="Recebido"?"Recebido":"Envio pedido"}])]; b.disabled=true;
+    if(await setMany(ch,st==="Recebido"?`Recebido${ids.length?", "+plural(ids.length,"item","itens")+" comigo":""}`:"Envio pedido"))closeSheet(); return}
+  if(ds.link){const it=D.itens.get(ds.link); if(!it)return; const r=cegs().find(x=>x.com===(it.comunidade||"")&&x.nome===it.ceg);
+    Object.assign(nc,{mode:"link",item:ds.link,step:1,ceg:"",sel:new Set(Array.isArray(it.cards)?it.cards:[]),q:"",m:MEMBROS.includes(membro(it.membro))?membro(it.membro):"",era:eraDaCeg(r)});
+    $("#shT").textContent="Ligar ao catálogo";sheetFn=novaSheet;$("#shB").innerHTML=novaSheet();lazy();$("#shB").scrollTop=0;return}
   const a=ds.act;
   if(a==="fechar"){closeSheet();return}
-  if(a==="proto"){proto();return}
+  if(a==="criarcard"){const m=$("#nkm").value,e2=$("#nke").value.trim(),v=$("#nkv").value.trim(); if(!e2||!v){toast("Preencha era e versão");return}
+    b.disabled=true; const r2=await addMany([["cardsnovos",{m,e:e2,v,t:"POB"}]],"Card criado"); if(r2){nc.sel.add("x-"+r2[0][1]);novos.set(r2[0][1],{m,e:e2,v,t:"POB"});mergeNovos();nc.era=e2;nc.q="";$("#shB").innerHTML=novaSheet();lazy()} else b.disabled=false; return}
+  if(a==="salvar"){const r=cegs().find(x=>x.key===nc.ceg); if(!r)return; const v=parseFloat(String(nc.valor).replace(/\./g,"").replace(",","."));
+    const val=isFinite(v)&&v>0?v:null, cs=[...nc.sel].map(id=>CIDX.get(id)).filter(Boolean); if(!cs.length)return;
+    const pago=val?(nc.pago?"Sim":"Cobrado, não pago"):"Ainda não cobrado";
+    const adds=cs.map(c=>["itens",{item:c.v||"",membro:c.m||"",comunidade:r.com,ceg:r.nome,valor:val,cards:[c.i],status:"Garantido",origem:"Claim",tipo:/[áa]lbum/i.test(c.t||"")?"Álbum":"Photocard / set",pago,criadoEm:isoToday()}]);
+    if(val)adds.push(["cobrancas",{referente:`${cs.length>1?cs.length+" cards":"card"}: ${cs.map(c=>[c.m,c.v].filter(Boolean).join(" ")).join(", ")}`.slice(0,140),comunidade:r.com,ceg:r.nome,tipo:"Item",valor:Math.round(val*cs.length*100)/100,prazo:nc.prazo||"",status:nc.pago?"Paga":"Pendente",...(nc.pago?{pagoEm:isoToday()}:{}),origem:"app novo"}]);
+    b.disabled=true; if(await addMany(adds,`Compra salva: ${plural(cs.length,"card","cards")}`))closeSheet(); else b.disabled=false; return}
   if(a==="envios"){openSheet("Pedir envio",enviosSheet);return}
   if(a==="maiscol"){ui.cn+=240;render();return}
   if(a==="tema"){const tt=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",tt);try{localStorage.setItem("novo-theme",tt)}catch(err){}return}
-  if(a==="nova"){Object.assign(nc,{step:0,ceg:"",sel:new Set(),q:"",m:"",valor:""});openSheet("Nova compra",novaSheet);return}
+  if(a==="nova"){Object.assign(nc,{mode:"nova",item:"",step:0,ceg:"",sel:new Set(),q:"",m:"",valor:"",prazo:"",pago:false,era:""});openSheet("Nova compra",novaSheet);return}
 });
 $("#scrim").addEventListener("click",closeSheet);
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&sheetFn)closeSheet()});
@@ -654,8 +711,10 @@ document.addEventListener("input",e=>{
   if(id==="cq"||id==="gq"){clearTimeout(qt);qt=setTimeout(()=>{ui[id]=e.target.value;const pos=e.target.selectionStart;render();const el=$("#"+id);if(el){el.focus();try{el.setSelectionRange(pos,pos)}catch(err){}}},180);return}
   if(id==="ncq"){clearTimeout(qt);qt=setTimeout(()=>{nc.q=e.target.value;$("#shB").innerHTML=novaSheet();lazy();const el=$("#ncq");el.focus();el.setSelectionRange(nc.q.length,nc.q.length)},200);return}
   if(id==="ncv"){nc.valor=e.target.value}
+  if(id==="ncp"){nc.prazo=e.target.value}
 });
 document.addEventListener("focusout",e=>{if(e.target.matches&&e.target.matches("#cq,#gq"))setTimeout(()=>{if(!document.activeElement||!document.activeElement.matches("input"))render()},50)});
+document.addEventListener("change",e=>{if(e.target.id==="ncpg")nc.pago=e.target.checked; if(e.target.id==="ncp")nc.prazo=e.target.value});
 window.addEventListener("hashchange",()=>{const h=location.hash.slice(1);if(TABS.some(t=>t[0]===h)&&h!==ui.tab){ui.tab=h;render()}});
 
 // ---------- carga ----------
@@ -667,6 +726,7 @@ function mergeNovos(){if(!COL||!COL.base)return;COL.items=COL.base.concat([...no
 (async()=>{
   try{db=await window.claude?.use?.("db")}catch(e){db=null}
   ready=true; render(); if(!db)return;
+  try{const u=await window.claude.use("user"); const w=u&&u.can?await u.can("data.write"):null; if(w===false)canWrite=false}catch(e){}
   COLS.forEach(k=>db.collection(k).limit(1000).onSnapshot(s=>{const m=new Map();s.docs.forEach(d=>m.set(d.id,d.data()));D[k]=m;schedule()},()=>{}));
   db.collection("fotos").limit(1000).onSnapshot(s=>{const m={};s.docs.forEach(d=>m[d.id]=d.data());fotos=m;schedule()},()=>{});
   db.collection("colecao").limit(50).onSnapshot(s=>{const m={};s.docs.forEach(d=>{const x=d.data();m[d.id]=(x&&x.s&&typeof x.s==="object")?x.s:{}});posse=m;schedule()},()=>{});
