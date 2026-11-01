@@ -252,8 +252,9 @@ body{font-feature-settings:"tnum" 1}
 h1{font-size:40px;font-weight:900;letter-spacing:-.035em;line-height:1;margin:6px 0 8px}
 .lede{color:var(--ink2);font-size:15px}
 h2{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin:30px 0 0;padding-bottom:8px;border-bottom:2px solid var(--rule)}
-h2 .n{font-size:12px;letter-spacing:0;text-transform:none;font-weight:500;color:var(--ink3);margin-left:auto}
-h2 .r{font-size:13px;letter-spacing:0;text-transform:none;font-weight:800;margin-left:12px}
+h2{flex-wrap:wrap}
+h2 .n{font-size:12px;letter-spacing:0;text-transform:none;font-weight:500;color:var(--ink3);margin-left:4px}
+h2 .r{font-size:13px;letter-spacing:0;text-transform:none;font-weight:800;margin-left:auto;text-align:right}
 .btn{border:1.5px solid var(--ink);background:transparent;border-radius:10px;font-weight:700}
 .btn:hover{border-color:var(--ink);background:var(--surface2)}
 .btn.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
@@ -288,9 +289,13 @@ h2 .r{font-size:13px;letter-spacing:0;text-transform:none;font-weight:800;margin
 .trks{list-style:none;margin:0;padding:0;counter-reset:trk}
 .trk{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:10px;align-items:baseline;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:12px 2px;cursor:pointer;color:var(--ink)}
 .trk:hover{background:var(--surface2)}
+h2>.n:last-child{margin-left:auto}
 .trk .no::before{counter-increment:trk;content:counter(trk,decimal-leading-zero);font-weight:800;font-size:13px;color:var(--ink3)}
 .trk .t{display:block;font-weight:650;font-size:15.5px;line-height:1.25}
-.trk .s{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--ink2);margin-top:3px}
+.trk .s{display:block;font-size:13px;color:var(--ink2);margin-top:3px}
+.trk .s .ed,.trk .s .av,.trk .s .avs{vertical-align:middle;margin-right:6px}
+.row .s{display:block}
+.row .s .av{vertical-align:middle;margin-right:6px}
 .trk .d{font-weight:800;font-size:13px;white-space:nowrap}
 .trk.late .d{color:var(--late)}
 .trk.soon .d{color:var(--soon)}
@@ -657,7 +662,7 @@ function renderColecao(){
   const groups=[]; shown.forEach(e=>{const g=gk(e); if(!groups.length||groups[groups.length-1][0]!==g)groups.push([g,[]]); groups[groups.length-1][1].push(e)});
   const tile=e=>{const b=e.fase==="rec"?"":`<span class="pill ${FTONE[e.fase]} bdg">${FLBL[e.fase]}</span>`;
     return `<button class="tile ${e.fase==="quero"?"dim":""}" data-card="${esc(e.key)}" type="button">${ph(bgOf(e),e.tipo==="Photocard / set"?"":"wide",(e.card||bgOf(e)?"":esc(e.nome))+b+(e.copias>1?`<span class="cp">×${e.copias}</span>`:""))}<span class="cap">${esc(e.nome)}<small>${esc(e.membro||e.era)}${e.semCard?" · sem card":""}</small></span></button>`};
-  $("#main").innerHTML=`${head("Coleção",`${cnt("comigo")} comigo · ${cnt("vindo")} vindo · ${cnt("esperando")} esperando a CEG · ${cnt("quero")} quero`)}
+  $("#main").innerHTML=`${head("Coleção",(()=>{const t=f=>all.filter(e=>GRUPO_F[f].includes(e.fase)).length; return `${t("comigo")} comigo · ${t("vindo")} vindo · ${t("esperando")} esperando a CEG · ${t("quero")} quero`})())}
   <div class="search">${ico("search")}<input id="cq" type="search" placeholder="Buscar card, era, membro ou CEG" value="${esc(ui.cq)}" aria-label="Buscar na coleção"></div>
   <div class="chips scroll" role="group" aria-label="Onde está">${F.map(([k,l])=>`<button class="chip" data-cf="${k}" aria-pressed="${ui.cf===k}" type="button">${l}<span class="c">${cnt(k)}</span></button>`).join("")}</div>
   <div class="chips scroll" role="group" aria-label="Membro"><button class="chip" data-cm="" aria-pressed="${!ui.cm}" type="button">Todos</button>${MEMBROS.map(m=>`<button class="chip" data-cm="${esc(m)}" aria-pressed="${ui.cm===m}" type="button">${esc(m)}</button>`).join("")}</div>
