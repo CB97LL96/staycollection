@@ -554,7 +554,7 @@ function itemThumbs(r,max){
 // visão geral: um cartão por comunidade; tocar abre as CEGs dela
 function comCard(c,rs){const ci=comInfo(c), deve=rs.reduce((s,r)=>s+r.deve,0), por=rs.reduce((s,r)=>s+r.ativos,0);
   const ts=[]; rs.forEach(r=>{const t=itemThumbs(r,5); if(t.html)ts.push(t.html)}); const fotos=ts.join("").split("</span>").filter(Boolean).slice(0,6).map(x=>x+"</span>").join("");
-  return `<button class="ceg" data-gc="${esc(c)}" type="button"><span class="top">${av("com",c,"lg")}<span class="tx"><span class="t" style="font-size:17px">${esc(c)}</span><span class="s">${esc([ci&&ci.goms,plural(rs.length,"CEG","CEGs")].filter(Boolean).join(" · "))}</span></span>${deve?`<span class="pill late">devo ${brl(deve)}</span>`:""}</span>
+  return `<button class="ceg" data-gc="${esc(c)}" type="button"><span class="top">${av("com",c,"lg")}<span class="tx"><span class="t" style="font-size:17px;white-space:normal">${esc(c)}</span><span class="s">${esc([ci&&ci.goms,plural(rs.length,"CEG","CEGs")].filter(Boolean).join(" · "))}</span></span>${deve?`<span class="pill late">devo ${brl(deve)}</span>`:""}</span>
     ${fotos?`<span class="strip">${fotos}</span>`:""}<span class="s" style="color:var(--ink2);font-size:13px">${por?plural(por,"item por chegar","itens por chegar"):"tudo comigo"}</span></button>`}
 function renderCegs(){
   let all=cegs();
