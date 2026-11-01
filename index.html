@@ -1308,6 +1308,16 @@ nav.tabs.areas button[aria-current="page"] .badge{background:var(--accent-ink);c
 .dv .dvmain{padding:12px 14px}
 .n-rep{display:inline-flex;align-items:center;gap:6px;margin:2px 10px 2px 0;font-size:13px;color:var(--ink2)}
 .n-h3{font-size:16px;margin:22px 0 8px;display:flex;gap:8px;align-items:baseline}
+.n-av{display:inline-flex;align-items:center;justify-content:center;flex:none;width:48px;height:48px;border-radius:50%;background-size:cover;background-position:center;box-shadow:0 0 0 2px var(--surface),0 0 0 3px var(--line)}
+.n-av.none{background:color-mix(in srgb,var(--c,var(--accent)) 22%,var(--surface));color:var(--ink);font-weight:700;font-size:16px;letter-spacing:.02em}
+.n-av.lg{width:56px;height:56px;font-size:19px}
+.n-av.md{width:40px;height:40px;font-size:14px}
+.n-withav{display:flex;align-items:center;gap:12px}
+.n-avtx{display:grid;gap:2px;min-width:0}
+.n-cgrp h2{font-size:19px;gap:14px}
+.n-cb{gap:10px}
+.n-ico{width:24px;height:24px}
+@media (max-width:720px){.n-av{width:44px;height:44px}.n-av.lg{width:48px;height:48px}}
 </style>
 
 <div class="wrap">
@@ -1589,7 +1599,7 @@ function renderPedidos(){
   const card=r=>{
     const key="n|"+r.n, open=ui.gclosed[key]===false||!!q&&r.hay.includes(q)&&rows.length<=3, ci=comInfo(r.n);
     const resumoI=STG.filter(([k])=>r.cnt[k]).map(([k,l])=>`${r.cnt[k]} ${l}`).join(" · ");
-    const head=`<button type="button" class="n-com-h" data-n-com="${esc(key)}" aria-expanded="${open}">${r.prox?stub(r.prox):`<span class="tdate none"><b>–</b><small>sem prazo</small></span>`}<span class="n-tk-body"><span class="n-tk-t">${comChip(r.n)}${esc(r.n)}</span><span class="n-tk-s">${esc(resumoI||"sem itens em andamento")}</span></span><span class="n-com-a ${r.fazer?"fazer":""}">${esc(r.acao)} ${I("chev",open?"up":"")}</span></button>`;
+    const head=`<button type="button" class="n-com-h" data-n-com="${esc(key)}" aria-expanded="${open}">${r.prox?stub(r.prox):`<span class="tdate none"><b>–</b><small>sem prazo</small></span>`}<span class="n-tk-body n-withav">${bigAv("com",r.n)}<span class="n-avtx"><span class="n-tk-t">${esc(r.n)}</span><span class="n-tk-s">${esc(resumoI||"sem itens em andamento")}</span></span></span><span class="n-com-a ${r.fazer?"fazer":""}">${esc(r.acao)} ${I("chev",open?"up":"")}</span></button>`;
     let body="";
     if(open){
       const cabec=(t,n)=>`<h3>${esc(t)}<span class="n-cnt">${n}</span></h3>`;
@@ -1664,7 +1674,7 @@ function renderCegs(){
     return `<tr class="n-ir" data-k="itens" id="row-${esc(d.id)}"><td class="n-ph">${nThumb(d)}</td><td>${esc(d.membro||"")}</td><td>${esc(d.item||"")}${d.comQuem?`<small> · com ${esc(d.comQuem)}</small>`:""}</td><td>${canWrite?`<select class="n-sel" data-status="${esc(d.id)}" aria-label="Status de ${esc(d.item||"item")}">${opts.map(o=>`<option ${o===sv?"selected":""}>${esc(o)}</option>`).join("")}</select>`:esc(sv)}</td><td class="n-num">${typeof d.valor==="number"?brl(d.valor):""}</td><td class="n-acts">${canWrite&&tipoDe(d)==="Photocard / set"?`<button type="button" class="n-btn ghost" data-link="${esc(d.id)}" aria-expanded="${ui.linking===d.id}" title="ligar este item aos photocards do catálogo">cards${Array.isArray(d.cards)&&d.cards.length?` (${d.cards.length})`:""}</button>`:""}${canWrite?`<button type="button" class="n-btn ghost" data-edit="${esc(d.id)}">${ui.editing===d.id?"fechar":"editar"}</button>`:""}</td></tr>${ui.linking===d.id?`<tr><td colspan="6">${pickerHtml(d)}</td></tr>`:""}${ui.editing===d.id?`<tr><td colspan="6">${formHtml("itens",d.id,d)}</td></tr>`:""}`;};
   const cegRow=r=>{
     const key="ng|"+r.k, open=ui.gclosed[key]===false||(!!q&&rows.length<=3), doc=r.doc;
-    const head=`<tr class="n-cr ${open?"open":""}"><th scope="row"><button type="button" class="n-cb" data-n-ceg="${esc(key)}" aria-expanded="${open}">${I("chev",open?"up":"")}${iconImg("grp",r.doc&&r.doc.grupo,"g")}<span>${esc(r.nome)}</span></button></th><td class="n-hide">${esc(doc&&doc.gom||"")}</td><td>${doc?esc(doc.status||""):""}</td><td class="n-num">${r.ativos||"–"}</td><td class="n-num n-hide ${r.cnt.lib?"n-okc":""}">${r.cnt.lib||"–"}</td><td class="n-num n-hide">${r.cnt.br||"–"}</td><td class="n-num n-hide">${r.cnt.cam||"–"}</td><td class="n-num n-hide">${r.cnt.esp||"–"}</td><td class="n-num n-hide">${r.rec||"–"}</td><td class="n-num ${r.devo?"n-devo":""}">${r.devo?brl(r.devo):"–"}</td></tr>`;
+    const head=`<tr class="n-cr ${open?"open":""}"><th scope="row"><button type="button" class="n-cb" data-n-ceg="${esc(key)}" aria-expanded="${open}">${I("chev",open?"up":"")}${bigAv("grp",r.doc&&r.doc.grupo,"md")}<span>${esc(r.nome)}</span></button></th><td class="n-hide">${esc(doc&&doc.gom||"")}</td><td>${doc?esc(doc.status||""):""}</td><td class="n-num">${r.ativos||"–"}</td><td class="n-num n-hide ${r.cnt.lib?"n-okc":""}">${r.cnt.lib||"–"}</td><td class="n-num n-hide">${r.cnt.br||"–"}</td><td class="n-num n-hide">${r.cnt.cam||"–"}</td><td class="n-num n-hide">${r.cnt.esp||"–"}</td><td class="n-num n-hide">${r.rec||"–"}</td><td class="n-num ${r.devo?"n-devo":""}">${r.devo?brl(r.devo):"–"}</td></tr>`;
     if(!open)return head;
     const sheet=doc&&safeUrl(doc.planilha);
     const itens=r.it.filter(i=>!["Cancelado","Abandonado","Repassei","Claim perdida"].includes(i.status)).sort((a,b)=>String(a.membro||"").localeCompare(String(b.membro||""),"pt-BR")||String(a.item||"").localeCompare(String(b.item||""),"pt-BR"));
@@ -1673,7 +1683,7 @@ function renderCegs(){
     return head+det;
   };
   const tabela=n=>{const g=by.get(n), ci=comInfo(n), tot=g.reduce((a,r)=>a+r.devo,0), nIt=g.reduce((a,r)=>a+r.ativos,0);
-    return `<section class="n-cgrp" style="--c:${okHex(ci&&ci.cor)}"><h2>${comChip(n)}<span>${esc(n)}</span><span class="n-cnt">${g.length} ${g.length===1?"CEG":"CEGs"}</span><span class="n-dica">${nIt} ${nIt===1?"item":"itens"} em andamento${tot?` · devo ${brl(tot)}`:""}</span></h2>
+    return `<section class="n-cgrp" style="--c:${okHex(ci&&ci.cor)}"><h2>${bigAv("com",n,"lg")}<span>${esc(n)}</span><span class="n-cnt">${g.length} ${g.length===1?"CEG":"CEGs"}</span><span class="n-dica">${nIt} ${nIt===1?"item":"itens"} em andamento${tot?` · devo ${brl(tot)}`:""}</span></h2>
       <div class="n-tabw"><table class="n-tab"><thead><tr><th scope="col">CEG</th><th class="n-hide">GOM</th><th>Situação</th><th class="n-num">Itens</th><th class="n-num n-hide" title="liberados pra pedir">Lib.</th><th class="n-num n-hide" title="no Brasil, sem liberar">Brasil</th><th class="n-num n-hide">A caminho</th><th class="n-num n-hide">Esperando</th><th class="n-num n-hide">Recebidos</th><th class="n-num">Devo</th></tr></thead><tbody>${g.sort((a,b)=>(b.devo-a.devo)||(b.ativos-a.ativos)||a.nome.localeCompare(b.nome,"pt-BR")).map(cegRow).join("")}</tbody></table></div></section>`;};
   $("#view").innerHTML=`<div class="n-page"><section class="n-barra">
     <input type="search" id="ncq" placeholder="Buscar CEG, GOM, membro ou item" value="${esc(ui.cq)}" aria-label="Buscar nas CEGs">
@@ -1945,6 +1955,7 @@ function comInfo(name){if(!name)return null;for(const c of data.comunidades.valu
 const okHex=c=>/^#[0-9a-f]{6}$/i.test(c||"")?c:"#8A8F99";
 const iconKey=(t,n)=>{let h=5381; const x=String(n||"").toLowerCase().normalize("NFD").replace(/[^a-z0-9]/g,""); for(let i=0;i<x.length;i++)h=((h<<5)+h+x.charCodeAt(i))>>>0; return "icon-"+t+"-"+h.toString(16)};
 const iconImg=(t,n,cls="")=>{const f=n&&typeof fotoSpr==="function"?fotoSpr(iconKey(t,n)):null; return f&&okSpr(f)?`<span class="n-ico ${cls}" style="background-image:url('${f.u}')" aria-hidden="true"></span>`:""};
+function bigAv(t,name,cls=""){const f=name&&typeof fotoSpr==="function"?fotoSpr(iconKey(t,name)):null; if(f&&okSpr(f))return `<span class="n-av ${cls}" style="background-image:url('${f.u}')" aria-hidden="true"></span>`; const c=t==="com"?comInfo(name):null; const ini=String((c&&c.sigla)||name||"?").replace(/[^\p{L}\p{N}]/gu,"").slice(0,2).toUpperCase(); return `<span class="n-av none ${cls}" style="--c:${okHex(c&&c.cor)}" aria-hidden="true">${esc(ini)}</span>`}
 function comChip(name){const c=comInfo(name); const sg=name?((c&&c.sigla)||name.replace(/[^A-Za-z]/g,"").slice(0,4).toUpperCase()):"?"; const ic=iconImg("com",name); return `<span class="cchip ${ic?"has-ico":""}" style="--c:${okHex(c&&c.cor)}" title="${esc(name||"sem comunidade")}">${ic}${esc(sg)}</span>`;}
 function cegInfo(name){if(!name)return null;for(const g of data.cegs.values()){if(g.nome===name)return g;}return null;}
 const grupoDe=d=>d.grupo||((cegInfo(d.ceg)||{}).grupo)||"";
