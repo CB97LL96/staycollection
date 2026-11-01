@@ -2304,13 +2304,19 @@ function guessCards0(d){ const g=gIndex(); if(!g)return {eras:[],c:[]};
   const out=[]; COL.items.forEach(c=>{ if(!eras.includes(c.e))return; if(mems.length&&!mems.includes(c.m))return; if(!mems.length&&c.m==="UNIT"&&!/unit|dupla|duplinha/.test(txt))return;
     const ct=g.tok.get(c.i); let sc=0; ex.forEach(t=>{ if(ct.has(t))sc+=2; else if(t.length>=4)for(const x of ct){if(x.startsWith(t)||t.startsWith(x)&&x.length>=4){sc+=1;break}} });
     if(sc>0)out.push([sc-(c.v.length/100),c]); });
-  out.sort((a,b)=>b[0]-a[0]); return {eras,c:out.slice(0,mems.length>1?6:3).map(x=>x[1])}; }
+  out.sort((a,b)=>b[0]-a[0]);
+  let lista=out.map(x=>x[1]), faltam=[];
+  const mN=String(d.item||"").match(/\b(round|rd|r|[a-zà-ú]{3,})\s*(\d)\b/i);
+  if(mN){ const N=mN[2], w=nzs(mN[1]); const toks=c=>g.tok.get(c.i)||new Set(); const tem=c=>toks(c).has(N); const dig=c=>[...toks(c)].some(t=>/^\d$/.test(t));
+    // estrito quando algum card tem esse número, ou quando a palavra antes do número aparece em cards numerados (ex.: "fansign 2" e só existe "Fansign 3")
+    if(lista.some(tem)||lista.some(c=>dig(c)&&toks(c).has(w))){ lista=lista.filter(tem); faltam=mems.length?mems.filter(m=>!lista.some(c=>c.m===m)):(lista.length?[]:["este pedido"]); } }
+  return {eras,c:lista.slice(0,mems.length>1?6:3),faltam,num:mN?mN[2]:""}; }
 const CF_OFF=["Set não fechou","Claim perdida","Repassei","Abandonado","Cancelado","Não liberado"];
 let cfSkip=new Set(); try{cfSkip=new Set(JSON.parse(localStorage.getItem("cfskip")||"[]"))}catch(e){}
 const cfTouched=new Set();
 function cfQueue(){ if(!COL)return {q:[],sem:0};
   const pend=list("itens").filter(d=>tipoDe(d)==="Photocard / set"&&!CF_OFF.includes(d.status)&&(cfTouched.has(d.id)||!(Array.isArray(d.cards)&&d.cards.length)));
-  const q=[];let sem=0; pend.forEach(d=>{ if(cfSkip.has(d.id)&&!cfTouched.has(d.id))return; const g=guessCards(d); if(g.c.length)q.push([d,g]); else sem++; });
+  const q=[];let sem=0; pend.forEach(d=>{ if(cfSkip.has(d.id)&&!cfTouched.has(d.id))return; const g=guessCards(d); if(g.c.length||(g.faltam&&g.faltam.length))q.push([d,g]); else sem++; });
   return {q,sem}; }
 function renderConfirm(){
   if(!COL){ $("#view").innerHTML=`<div class="empty">${colErr?"Não deu pra carregar o catálogo; recarregue a página.":"Carregando catálogo…"}</div>`; loadCol(); return; }
@@ -2335,7 +2341,8 @@ function renderConfirm(){
       <div class="cfask">${multi?"Quais destes cards vieram neste pedido? Marque todos.":"Qual destes é o card deste pedido?"}</div>
       <div class="cfped"><span class="eyebrow">seu pedido</span><b>${esc(d.item||"")}</b><span class="cfm">${comChip(d.comunidade)}${esc([d.membro,cegLbl(d)||d.ceg,d.status].filter(Boolean).join(" · "))}</span></div>
       <div class="cfgrid">${g.c.map(tile).join("")}</div>
-      <div class="cfnone">${(multi||cfTouched.has(d.id))&&done?`<button class="btn" data-cfdone="${esc(d.id)}">pronto, próximo</button>`:""}<span class="hint">${done&&multi?"":"nenhum destes?"}</span>
+      ${g.faltam&&g.faltam.length?`<p class="hint cffalta">No catálogo não achei o número ${esc(g.num)} para ${esc(g.faltam.join(", "))}. Se o card existe, use "procurar no catálogo"; se não, "criar" abaixo.</p>`:""}
+      <div class="cfnone">${multi&&!done&&g.c.length>1?`<button class="btn" data-cfall="${esc(d.id)}">marcar todos estes (${g.c.length})</button>`:""}${(multi||cfTouched.has(d.id))&&done?`<button class="btn" data-cfdone="${esc(d.id)}">pronto, próximo</button>`:""}<span class="hint">${done&&multi?"":"nenhum destes?"}</span>
         ${canWrite&&!done?`<button class="btn ghost small" data-cfnew="${esc(d.id)}">criar “${esc(capV(d.item).slice(0,30))}” no catálogo</button>`:""}
         <button class="btn ghost small" data-link="${esc(d.id)}" aria-expanded="${ui.linking===d.id}">${ui.linking===d.id?"fechar busca":"procurar no catálogo"}</button>
         ${done?"":`<button class="btn ghost small" data-cfskip="${esc(d.id)}">pular por agora</button>`}</div>
@@ -2348,6 +2355,8 @@ $("#view").addEventListener("click",async e=>{ if(ui.tab!=="colecao"||cf.view!==
   const pk=e.target.closest("[data-pk]"); if(pk){ const id=pk.dataset.pkitem, d=data.itens.get(id); if(!d)return; const mems=membrosDe(d).filter(m=>m!=="OT8");
     const multi=mems.length>1||/\d+\s*[,e]\s*\d+|\(x\d|duplinha|dupla|unit/i.test(d.item||""); const cur=Array.isArray(d.cards)?d.cards:[];
     if(multi||ui.linking===id)cfTouched.add(id); else if(!cur.includes(pk.dataset.pk)){ui.cfLast={id,cards:[pk.dataset.pk]};} return; }
+  const all=e.target.closest("[data-cfall]"); if(all&&db){const id=all.dataset.cfall, d=data.itens.get(id); if(!d)return; const ids=guessCards(d).c.map(c=>c.i); const nx=[...new Set([...(Array.isArray(d.cards)?d.cards:[]),...ids])]; const antes=d.cards||[]; data.itens.set(id,{...d,cards:nx}); cfTouched.add(id); render();
+    try{await db.doc("itens/"+id).update({cards:nx}); toast(`${ids.length} cards ligados`,{label:"desfazer",fn:async()=>{try{await db.doc("itens/"+id).update({cards:antes});toast("Desfeito")}catch(err){toast("Não deu pra desfazer")}}})}catch(err){data.itens.set(id,d); render(); toast("Não deu pra salvar; tente de novo")} return}
   const dn=e.target.closest("[data-cfdone]"); if(dn){const d=data.itens.get(dn.dataset.cfdone); cfTouched.delete(dn.dataset.cfdone); ui.linking=null; ui.cfLast=d?{id:d.id,cards:(d.cards||[]).slice(0,1)}:null; renderColecao(); e.stopPropagation(); return}
   if(e.target.closest("[data-cfundo]")&&ui.cfLast&&db){ const {id,cards}=ui.cfLast; const d=data.itens.get(id); ui.cfLast=null; if(!d){renderColecao();return} const nx=(d.cards||[]).filter(x=>!cards.includes(x)); data.itens.set(id,{...d,cards:nx}); renderColecao(); try{await db.doc("itens/"+id).update({cards:nx}); toast("Desfeito")}catch(err){toast("Não deu pra desfazer")} e.stopPropagation(); return }
   const sk=e.target.closest("[data-cfskip]"); if(sk){cfSkip.add(sk.dataset.cfskip); ui.linking=null; try{localStorage.setItem("cfskip",JSON.stringify([...cfSkip]))}catch(err){} renderColecao(); e.stopPropagation(); return}
