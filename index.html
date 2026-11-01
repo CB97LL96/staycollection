@@ -4,21 +4,26 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Coleção SKZ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script>(function(){var t="light";try{var v=localStorage.getItem("novo-theme");if(v==="dark"||v==="light")t=v;else if(matchMedia("(prefers-color-scheme: dark)").matches)t="dark";}catch(e){}document.documentElement.setAttribute("data-theme",t);})();</script>
 <style>
 :root{
-  --bg:#F5F2EC;--surface:#FFFFFF;--surface2:#EEE9E1;--ink:#24211D;--ink2:#5A544C;--ink3:#6F675C;--line:#E2DBD0;
-  --accent:#3D5A4E;--accent-ink:#FFFFFF;--accent-soft:#E1EAE4;
-  --late:#A3442C;--late-soft:#F6E3DC;--soon:#7E5A12;--soon-soft:#F4EAD3;--ok:#3C6B4D;--ok-soft:#E0EDE3;--info:#3C5C7A;--info-soft:#E1E9F1;
-  --r:16px;--r-sm:10px;--shadow:0 1px 2px rgba(36,33,29,.06),0 6px 18px rgba(36,33,29,.06);
-  --font:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --bg:#F7F6F2;--surface:#FFFFFF;--surface2:#ECEAE3;--ink:#111114;--ink2:#4B4A52;--ink3:#66656D;--line:#DCD9D0;--rule:#111114;
+  --accent:#111114;--accent-ink:#F7F6F2;--accent-soft:#ECEAE3;
+  --late:#C2311E;--late-soft:#FBE3DE;--soon:#835600;--soon-soft:#FBEFD2;--ok:#1F6E43;--ok-soft:#DCEFE3;--info:#1F51BF;--info-soft:#E2EAFB;
+  --tray:#1B1B20;--tray-ink:#F7F6F2;
+  --r:12px;--r-sm:8px;--shadow:none;
+  --font:"Archivo",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
   color-scheme:light;
 }
 :root[data-theme="dark"]{
-  --bg:#161513;--surface:#201E1B;--surface2:#2A2723;--ink:#EEE9E1;--ink2:#BDB5A9;--ink3:#9A9287;--line:#36322D;
-  --accent:#9FC2AF;--accent-ink:#13201A;--accent-soft:#25332C;
-  --late:#E89A84;--late-soft:#3A2420;--soon:#E3BE72;--soon-soft:#352C1A;--ok:#94C9A4;--ok-soft:#1F3125;--info:#9DBEDD;--info-soft:#1E2B38;
-  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
+  --bg:#111114;--surface:#1A1A1F;--surface2:#25252B;--ink:#F7F6F2;--ink2:#C9C7C0;--ink3:#A2A0A8;--line:#2F2F36;--rule:#F7F6F2;
+  --accent:#F7F6F2;--accent-ink:#111114;--accent-soft:#25252B;
+  --late:#FF7D66;--late-soft:#3B1C17;--soon:#F1C25B;--soon-soft:#352A12;--ok:#7FD3A2;--ok-soft:#173226;--info:#8FB2FF;--info-soft:#18243F;
+  --tray:#000000;--tray-ink:#F7F6F2;
+  --shadow:none;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -235,7 +240,110 @@ h2 .r{margin-left:auto;font-size:14px;font-weight:700}
 .picked .tx{flex:1;min-width:0;font-weight:650}
 .picked .tx small{display:block;font-weight:400;color:var(--ink2);font-size:13px}
 .semcard-line{display:flex;gap:12px;align-items:center;justify-content:space-between;background:var(--surface);border-radius:var(--r);padding:12px 16px;margin:18px 0 0;box-shadow:var(--shadow);color:var(--ink2);font-size:14px}
+/* ===== encarte ===== */
+body{font-feature-settings:"tnum" 1}
+.brand{font-size:15px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;padding:0 12px 20px}
+.rail{border-right:2px solid var(--rule);padding:26px 16px}
+.nv{border-radius:0;padding:10px 12px;font-weight:800;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
+.nv svg{display:none}
+.nv:hover{background:none;color:var(--ink)}
+.nv[aria-current="page"]{background:none;box-shadow:none;color:var(--ink);text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:7px}
+.nv .ct{background:var(--late);color:var(--accent-ink)}
+h1{font-size:40px;font-weight:900;letter-spacing:-.035em;line-height:1;margin:6px 0 8px}
+.lede{color:var(--ink2);font-size:15px}
+h2{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin:30px 0 0;padding-bottom:8px;border-bottom:2px solid var(--rule)}
+h2 .n{font-size:12px;letter-spacing:0;text-transform:none;font-weight:500;color:var(--ink3);margin-left:auto}
+h2 .r{font-size:13px;letter-spacing:0;text-transform:none;font-weight:800;margin-left:12px}
+.btn{border:1.5px solid var(--ink);background:transparent;border-radius:10px;font-weight:700}
+.btn:hover{border-color:var(--ink);background:var(--surface2)}
+.btn.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.pri:hover{filter:none;opacity:.9;background:var(--accent)}
+.chip{border:1.5px solid var(--ink);background:transparent;font-weight:700}
+.chip .c{color:var(--ink3)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.seg{background:none;border:1.5px solid var(--ink);border-radius:10px;padding:2px}
+.seg button{border-radius:7px;font-weight:700}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg);box-shadow:none}
+.search input{border:1.5px solid var(--ink);background:transparent;border-radius:10px}
+.pill{font-weight:700;font-size:11.5px;padding:3px 9px}
+.pill.guess{border:1.5px dashed var(--ink2)}
+.panel{background:none;box-shadow:none;border-radius:0;border-bottom:1px solid var(--line)}
+.row{padding:12px 2px}
+.row:hover{background:var(--surface2)}
+.row .t{font-weight:650}
+.date b{font-weight:900;font-size:20px}
+.calm{background:none;border-bottom:1px solid var(--line);border-radius:0}
+.note{background:var(--surface2);border-radius:8px}
+.av{box-shadow:0 0 0 1.5px var(--rule)}
+
+.topline{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;padding-bottom:4px}
+.topline span:last-child{color:var(--ink3);letter-spacing:.04em;text-transform:none;font-weight:600;font-size:12.5px}
+.cover{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:2px solid var(--rule);padding:18px 0 18px;cursor:pointer;color:var(--ink)}
+.cover small{display:block;font-size:14px;font-weight:600;color:var(--ink2)}
+.cover b{display:block;font-size:clamp(56px,9vw,84px);font-weight:900;letter-spacing:-.045em;line-height:.92;margin:4px 0 12px}
+.stks{display:flex;gap:6px;flex-wrap:wrap}
+.stk{display:inline-flex;align-items:center;font-size:12px;font-weight:700;border-radius:99px;padding:4px 10px;background:var(--ink);color:var(--bg)}
+.stk.g{background:none;color:var(--ink);border:1.5px dashed var(--ink)}
+.stk.r{background:var(--late);color:#fff}
+.trks{list-style:none;margin:0;padding:0;counter-reset:trk}
+.trk{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:10px;align-items:baseline;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:12px 2px;cursor:pointer;color:var(--ink)}
+.trk:hover{background:var(--surface2)}
+.trk .no::before{counter-increment:trk;content:counter(trk,decimal-leading-zero);font-weight:800;font-size:13px;color:var(--ink3)}
+.trk .t{display:block;font-weight:650;font-size:15.5px;line-height:1.25}
+.trk .s{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--ink2);margin-top:3px}
+.trk .d{font-weight:800;font-size:13px;white-space:nowrap}
+.trk.late .d{color:var(--late)}
+.trk.soon .d{color:var(--soon)}
+.trk.guess .d{border:1.5px dashed currentColor;border-radius:99px;padding:1px 8px;font-size:12px}
+.ed{width:10px;height:10px;border-radius:50%;background:var(--e);display:inline-block;flex:none}
+.avs{display:inline-flex}
+.avs .av{margin-right:-5px}
+.avs+*{margin-left:6px}
+.tray{display:block;width:100%;text-align:left;margin:24px 0 0;background:var(--tray);color:var(--tray-ink);border:0;border-radius:16px;padding:14px 14px 12px;cursor:pointer}
+.tray .lab{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:10px}
+.tray .lab b{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+.tray .lab span{font-size:12.5px;color:#B9B8BF}
+.slots{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;max-width:560px}
+.slot{border-radius:9px;padding:3px;background:linear-gradient(160deg,rgba(255,255,255,.2),rgba(255,255,255,.04) 45%,rgba(255,255,255,.12));box-shadow:inset 0 0 0 1px rgba(255,255,255,.16)}
+.slot .ph{border-radius:6px;box-shadow:none}
+.erah{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;color:var(--e);border-bottom:2px solid var(--e);padding-bottom:6px;margin:30px 0 12px}
+.erah b{font-size:clamp(34px,5vw,52px);font-weight:900;letter-spacing:-.04em;line-height:.9;text-transform:uppercase;min-width:0;overflow-wrap:anywhere}
+.erah span{font-size:12px;font-weight:700;color:var(--ink);text-align:right;white-space:nowrap}
+.ph{border-radius:7px;box-shadow:0 0 0 1px var(--line)}
+.tile .cap{font-weight:600}
+.tile .cap small{font-weight:500}
+.ceg{background:none;box-shadow:none;border-radius:0;border-top:4px solid var(--e,var(--rule));border-bottom:1px solid var(--line);padding:14px 2px}
+.ceg:hover{box-shadow:none;background:var(--surface2)}
+.ceg .t{font-weight:800;font-size:16px}
+.chead b{font-weight:900;font-size:22px;letter-spacing:-.02em}
+.steps i{border-radius:0;height:4px;background:var(--line)}
+.steps i.on,.steps i.now{background:var(--ink)}
+.steps i.now{box-shadow:none;height:8px}
+.bigsteps li.on .d{background:var(--ink);border-color:var(--ink)}
+.bigsteps li.now .d{box-shadow:0 0 0 4px var(--surface2)}
+.sh-h{border-bottom:2px solid var(--rule)}
+.sh-h .t{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+.sheet{box-shadow:-2px 0 0 var(--rule)}
+.hero .big{font-weight:900;font-size:40px;letter-spacing:-.035em}
+.ref{font-weight:700;font-size:19px}
+.kv dt{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);padding-top:2px}
+.sug{background:none;box-shadow:none;border-radius:0;border-top:2px solid var(--rule);padding:14px 2px}
+.picked{box-shadow:none;border:1.5px solid var(--ink);background:none}
+.semcard-line{box-shadow:none;background:var(--surface2)}
+.toast{border-radius:10px}
+.btn.fab{border-radius:99px}
 /* celular */
+@media (max-width:820px){
+  .tabbar{background:var(--bg);border-top:2px solid var(--rule);padding:12px 4px calc(10px + env(safe-area-inset-bottom))}
+  .tabbar svg{display:none}
+  .tabbar button{font-size:11.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);padding:8px 0}
+  .tabbar button[aria-current="page"]{color:var(--ink);text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:6px}
+  .tabbar .ct{top:-4px}
+  .slots{grid-template-columns:repeat(5,minmax(0,1fr))}
+  .slots .slot:nth-child(6){display:none}
+  h1{font-size:32px}
+  .grid{gap:10px 8px}
+}
 @media (max-width:820px){
   .app{grid-template-columns:1fr}
   .rail{display:none}
@@ -266,6 +374,14 @@ h2 .r{margin-left:auto;font-size:14px;font-weight:700}
 </style>
 </head>
 <body>
+<!--
+THESIS: o app é impresso como o encarte de um álbum: papel couché, tinta preta, régua grossa, e cada era (CEG) com a sua cor. Recusa o painel de finanças em cartões e o pastel fofo.
+OWN-WORLD: fundo papel #F7F6F2 (preto #111114 no escuro), Archivo de 500 a 900, títulos grandes e apertados, réguas de 2px, adesivos redondos (cheio = certo, tracejado = suposto), foto de card em formato photocard, faixa escura de plástico para os cards a caminho, cor da era só em títulos, pontos e faixas.
+STORY: ela abre, vê quanto deve com certeza, faz a lista do dia de cima pra baixo e vê os cards que estão vindo.
+FIRST VIEWPORT: no celular, o valor devido em 64px no topo, adesivos logo abaixo, a lista numerada "Pra fazer hoje" e a faixa "Vindo pra mim" com fotos; "Nova compra" preto embaixo à direita.
+FORM: O encarte do álbum, candidata 3 da lista ordenada, chave f4465abc. Termos de álbum só na Coleção (nome da era).
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
+-->
 <div class="app">
   <nav class="rail" aria-label="Seções">
     <div class="brand">Coleção SKZ</div>
@@ -376,6 +492,14 @@ function cardBg(c){
 // foto de um pedido sem card: a foto enviada para o item, se houver
 const itemBg=d=>{const u=fotoUrl(d.id)||fotoUrl("item-"+d.id); return u?`background-image:url('${u}');background-size:cover`:""};
 const ph=(bg,cls,inner)=>bg?`<span class="ph ${cls||""}" data-bg="${esc(bg)}">${inner||""}</span>`:`<span class="ph txt ${cls||""}">${inner||""}</span>`;
+
+// ---------- cor da era: cada álbum/era tem a sua; o resto vem de uma paleta fixa ----------
+const ERA_COR={"do it":"#D9362B","hop":"#2E6FE0","ate":"#D99A12","rock star":"#B8325A","5 star":"#C08A1E","maxident":"#D2557A","this that":"#1F8A70","karma":"#6A4BC4","oddinary":"#2F8F55","noeasy":"#3B3B44","hollow":"#5E7186","celebrate":"#E0559A","giant":"#C7542A","the sound":"#2B7FB0","in life":"#3E9C8F","go live":"#D0402B","mixtape":"#4A6FA5","i am you":"#8C5BB0","skzoo":"#E07A2A","dominate":"#B23A48","sg26":"#2A6F4E"};
+const ERA_PAL=["#D9362B","#2E6FE0","#D99A12","#1F8A70","#6A4BC4","#E0559A","#C7542A","#2B7FB0"];
+function eraCor(nome){const k=norm(nome).replace(/[^a-z0-9]+/g," ").trim(); if(!k)return "var(--rule)"; for(const e in ERA_COR){if(k===e||k.startsWith(e+" ")||k.endsWith(" "+e)||k.includes(" "+e+" "))return ERA_COR[e]} let h=0; for(let i=0;i<k.length;i++)h=(h*31+k.charCodeAt(i))>>>0; return ERA_PAL[h%ERA_PAL.length]}
+const eraMemo=new Map();
+const eraDe=r=>{if(!r)return ""; if(!eraMemo.has(r.key))eraMemo.set(r.key,eraDaCeg(r)||r.lbl||r.nome); return eraMemo.get(r.key)};
+let ERA_ORD=new Map();
 
 // ---------- modelo: coleção ----------
 let colCache={v:-1,out:[]};
@@ -494,24 +618,25 @@ function renderInicio(){
   const semCard=list("itens").filter(d=>tipoDe(d)==="Photocard / set"&&faseDe(d.status)!=="fora"&&!(Array.isArray(d.cards)&&d.cards.length)).length;
   const robo=nSug();
   const dt=new Date().toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"});
-  const task=(tone,ic,t,s,act,btn)=>`<div class="task ${tone}"><span class="ic">${ico(ic)}</span><span class="tx"><span class="t">${t}</span><br><span class="s">${s}</span></span>${btn?`<button class="btn sm" type="button" ${act}>${btn}</button>`:""}</div>`;
+  const eraDot=arr=>{const c=arr&&arr.find(x=>x.ceg); const r=c&&cegs().find(x=>x.com===(c.comunidade||"")&&x.nome===c.ceg); return `<i class="ed" style="--e:${r?eraCor(eraDe(r)):"var(--ink3)"}"></i>`};
+  const item=(tone,t,sub,act,d)=>`<li><button class="trk ${tone}" type="button" ${act}><span class="no" aria-hidden="true"></span><span class="tx"><span class="t">${t}</span><span class="s">${sub}</span></span><span class="d">${d}</span></button></li>`;
   const tasks=[];
-  if(k.venc.length)tasks.push(task("late","alert",`${plural(k.venc.length,"conta vencida","contas vencidas")}: ${total(k.venc)}`,`A mais antiga venceu há ${plural(Math.max(...k.venc.map(c=>-daysTo(c.prazo))),"dia","dias")}.`,'data-go="contas"',"ver contas"));
-  if(semana.length)tasks.push(task("soon","clock",`${plural(semana.length,"conta vence","contas vencem")} em até 7 dias`,`${total(semana)} no total.`,'data-go="contas"',"ver"));
-  if(k.confVenc.length)tasks.push(task("","alert",`${plural(k.confVenc.length,"conta a confirmar já venceu","contas a confirmar já venceram")}`,"Ainda são palpites. Confirme o valor com a GOM.",'data-go="contas"',"ver"));
-  if(aPedir.length)tasks.push(task("info","truck",`Pedir envio em ${plural(aPedir.length,"lugar","lugares")}`,`<span style="display:inline-flex;gap:4px;vertical-align:middle">${aPedir.slice(0,8).map(e=>av("com",e.comunidade,"xs")).join("")}</span> ${esc(aPedir.map(e=>e.gom||e.comunidade).slice(0,4).join(", "))}${aPedir.length>4?"…":""}`,'data-act="envios"',"ver"));
-  chegando.forEach(e=>tasks.push(task("","box",`Chegou? ${esc(e.gom||e.comunidade||"envio")}`,"Enviado. Confirme quando receber.",`data-envio="${esc(e.id)}"`,"ver")));
-  if(semCard)tasks.push(task("","link",`${plural(semCard,"pedido sem card ligado","pedidos sem card ligado")}`,"Ligar ao catálogo dá foto e conta repetidos.",'data-go="colecao" data-cf="semcard"',"ver"));
-  if(robo)tasks.push(task("","spark",`${plural(robo,"sugestão do robô","sugestões do robô")}`,"Ele só sugere; você decide.",'data-act="robo"',"conferir"));
-  const recent=k.pagas.slice(0,4);
-  $("#main").innerHTML=`${head("Oi, Lari",dt.charAt(0).toUpperCase()+dt.slice(1))}
-  <div class="stats">
-    <button class="stat ${k.venc.length?"alert":""}" data-go="contas" type="button"><span class="k">Devo agora</span><span class="n">${brl(k.soma(k.devoL))}</span><span class="h">${plural(k.devoL.length,"conta","contas")}${semValor(k.devoL)?` · ${semValor(k.devoL)} sem valor`:""}${k.conf.length?` · ${plural(k.conf.length,"a confirmar","a confirmar")} fora da soma`:""}</span></button>
-    <button class="stat" data-go="colecao" data-cf="vindo" type="button"><span class="k">Vindo pra mim</span><span class="n">${n("vindo")}</span><span class="h">+ ${n("esperando")} esperando a CEG</span></button>
-    <button class="stat" data-go="colecao" data-cf="comigo" type="button"><span class="k">Comigo</span><span class="n">${n("comigo")}</span><span class="h">${n("quero")} na lista de quero</span></button>
-  </div>
-  <h2>Precisa de você <span class="n">${tasks.length||""}</span></h2>
-  ${tasks.length?`<div class="todo">${tasks.join("")}</div>`:`<div class="calm">Nada pra fazer hoje.</div>`}
+  if(k.venc.length)tasks.push(item("late",`${plural(k.venc.length,"conta vencida","contas vencidas")}: ${total(k.venc)}`,`${eraDot(k.venc)}a mais antiga venceu há ${plural(Math.max(...k.venc.map(c=>-daysTo(c.prazo))),"dia","dias")}`,'data-go="contas"',"venceu"));
+  if(semana.length){const first=[...semana].sort(byPrazo)[0]; tasks.push(item("soon",semana.length===1?esc(first.referente||"Conta"):`${semana.length} contas vencem em até 7 dias`,`${eraDot(semana)}${esc(first.comunidade||"")} · ${total(semana)}`,semana.length===1?`data-conta="${esc(first.id)}"`:'data-go="contas"',fdd(first.prazo)))}
+  if(k.confVenc.length)tasks.push(item("guess",`${plural(k.confVenc.length,"conta a confirmar já venceu","contas a confirmar já venceram")}`,`${eraDot(k.confVenc)}ainda são palpites; confirme o valor com a GOM`,'data-go="contas"',"confirmar"));
+  if(aPedir.length)tasks.push(item("",`Pedir envio em ${plural(aPedir.length,"lugar","lugares")}`,`<span class="avs">${aPedir.slice(0,6).map(e=>av("com",e.comunidade,"xs")).join("")}</span>${esc(aPedir.map(e=>e.gom||e.comunidade).slice(0,3).join(", "))}${aPedir.length>3?"…":""}`,'data-act="envios"',"pedir"));
+  chegando.forEach(e=>tasks.push(item("",`Chegou? ${esc(e.gom||e.comunidade||"envio")}`,`${av("com",e.comunidade,"xs")}enviado; confirme quando receber`,`data-envio="${esc(e.id)}"`,"conferir")));
+  if(robo)tasks.push(item("",`${plural(robo,"sugestão do robô","sugestões do robô")}`,"ele só sugere; você decide",'data-act="robo"',"conferir"));
+  if(semCard)tasks.push(item("",`${plural(semCard,"pedido sem card ligado","pedidos sem card ligado")}`,"ligar ao catálogo dá foto e conta repetidos",'data-go="colecao" data-cf="semcard"',"ligar"));
+  const vindo=col.filter(e=>GRUPO_F.vindo.includes(e.fase)&&bgOf(e)).sort((a,b)=>FORD[b.fase]-FORD[a.fase]).slice(0,6);
+  const recent=k.pagas.slice(0,4), sv=semValor(k.devoL);
+  $("#main").innerHTML=`<div class="topline"><span>Coleção SKZ</span><span>${esc(dt)}</span></div>
+  <button class="cover" data-go="contas" type="button"><small>Devo hoje</small><b>${brl(k.soma(k.devoL))}</b>
+    <span class="stks"><span class="stk">${plural(k.devoL.length,"conta","contas")}</span>${sv?`<span class="stk g">${sv} sem valor</span>`:""}${k.conf.length?`<span class="stk g">${k.conf.length} a confirmar, fora da soma</span>`:""}${k.venc.length?`<span class="stk r">${k.venc.length} vencida${k.venc.length>1?"s":""}</span>`:""}</span></button>
+  <h2>Pra fazer hoje <span class="n">${tasks.length?plural(tasks.length,"item","itens"):""}</span></h2>
+  ${tasks.length?`<ol class="trks">${tasks.join("")}</ol>`:`<div class="calm">Nada pra fazer hoje.</div>`}
+  <button class="tray" data-go="colecao" data-cf="vindo" type="button"><span class="lab"><b>Vindo pra mim</b><span>${n("vindo")} a caminho · ${n("esperando")} esperando a CEG · ${n("comigo")} comigo</span></span>
+    ${vindo.length?`<span class="slots">${vindo.map(e=>`<span class="slot">${ph(bgOf(e),"","")}</span>`).join("")}</span>`:""}</button>
   ${recent.length?`<h2>Pagas por último</h2><div class="panel"><ul class="rows">${recent.map(contaRow).join("")}</ul></div>`:""}`;
 }
 
@@ -525,20 +650,20 @@ function renderColecao(){
   if(ui.ct)v=v.filter(e=>e.tipo===ui.ct);
   if(q)v=v.filter(e=>norm([e.nome,e.era,e.membro,e.itens.map(d=>d.ceg+" "+d.comunidade).join(" ")].join(" ")).includes(q));
   const semN=ui.cf==="semcard"?0:v.filter(e=>e.semCard).length; if(ui.cf!=="semcard")v=v.filter(e=>!e.semCard);
-  const gk=e=>e.membro||"Grupo / outros", mo=m=>{const i=MEMBROS.indexOf(m);return i<0?99:i};
-  const temF=e=>bgOf(e)?0:1; v.sort((a,b)=>mo(gk(a))-mo(gk(b))||gk(a).localeCompare(gk(b),"pt-BR")||temF(a)-temF(b)||String(a.era).localeCompare(String(b.era),"pt-BR")||String(a.nome).localeCompare(String(b.nome),"pt-BR"));
+  const gk=e=>e.era||"Sem era", mo=m=>{const i=MEMBROS.indexOf(m);return i<0?99:i}, eo=e=>ERA_ORD.has(gk(e))?ERA_ORD.get(gk(e)):-1;
+  const temF=e=>bgOf(e)?0:1; v.sort((a,b)=>eo(b)-eo(a)||gk(a).localeCompare(gk(b),"pt-BR")||temF(a)-temF(b)||mo(a.membro)-mo(b.membro)||String(a.nome).localeCompare(String(b.nome),"pt-BR"));
   const F=[["todos","Tudo"],["comigo","Comigo"],["vindo","Vindo"],["esperando","Esperando CEG"],["quero","Quero"],["repetidos","Repetidos"],["semcard","Sem card"]];
   const shown=v.slice(0,ui.cn);
-  const groups=[]; shown.forEach(e=>{const g=e.membro||"Grupo / outros"; if(!groups.length||groups[groups.length-1][0]!==g)groups.push([g,[]]); groups[groups.length-1][1].push(e)});
+  const groups=[]; shown.forEach(e=>{const g=gk(e); if(!groups.length||groups[groups.length-1][0]!==g)groups.push([g,[]]); groups[groups.length-1][1].push(e)});
   const tile=e=>{const b=e.fase==="rec"?"":`<span class="pill ${FTONE[e.fase]} bdg">${FLBL[e.fase]}</span>`;
-    return `<button class="tile ${e.fase==="quero"?"dim":""}" data-card="${esc(e.key)}" type="button">${ph(bgOf(e),e.tipo==="Photocard / set"?"":"wide",(e.card||bgOf(e)?"":esc(e.nome))+b+(e.copias>1?`<span class="cp">×${e.copias}</span>`:""))}<span class="cap">${esc(e.nome)}<small>${esc(e.era)}${e.semCard?" · sem card":""}</small></span></button>`};
+    return `<button class="tile ${e.fase==="quero"?"dim":""}" data-card="${esc(e.key)}" type="button">${ph(bgOf(e),e.tipo==="Photocard / set"?"":"wide",(e.card||bgOf(e)?"":esc(e.nome))+b+(e.copias>1?`<span class="cp">×${e.copias}</span>`:""))}<span class="cap">${esc(e.nome)}<small>${esc(e.membro||e.era)}${e.semCard?" · sem card":""}</small></span></button>`};
   $("#main").innerHTML=`${head("Coleção",`${cnt("comigo")} comigo · ${cnt("vindo")} vindo · ${cnt("esperando")} esperando a CEG · ${cnt("quero")} quero`)}
   <div class="search">${ico("search")}<input id="cq" type="search" placeholder="Buscar card, era, membro ou CEG" value="${esc(ui.cq)}" aria-label="Buscar na coleção"></div>
   <div class="chips scroll" role="group" aria-label="Onde está">${F.map(([k,l])=>`<button class="chip" data-cf="${k}" aria-pressed="${ui.cf===k}" type="button">${l}<span class="c">${cnt(k)}</span></button>`).join("")}</div>
   <div class="chips scroll" role="group" aria-label="Membro"><button class="chip" data-cm="" aria-pressed="${!ui.cm}" type="button">Todos</button>${MEMBROS.map(m=>`<button class="chip" data-cm="${esc(m)}" aria-pressed="${ui.cm===m}" type="button">${esc(m)}</button>`).join("")}</div>
   <div class="chips scroll" role="group" aria-label="Tipo"><button class="chip" data-ct="" aria-pressed="${!ui.ct}" type="button">Todo tipo</button>${TIPOS.map(t=>`<button class="chip" data-ct="${esc(t)}" aria-pressed="${ui.ct===t}" type="button">${esc(t==="Photocard / set"?"Photocards":t)}</button>`).join("")}</div>
   ${ui.cf==="semcard"?`<p class="note">Estes pedidos ainda não estão ligados a um card do catálogo. No app novo, toda compra já nasce com o card escolhido, então esta lista só vai encolher.</p>`:""}
-  ${!COL?`<p class="empty">Carregando catálogo…</p>`:v.length?groups.map(([g,es])=>`<h2>${esc(g)} <span class="n">${es.length}</span></h2><div class="grid">${es.map(tile).join("")}</div>`).join(""):`<p class="empty">Nada aqui com esses filtros.</p>`}
+  ${!COL?`<p class="empty">Carregando catálogo…</p>`:v.length?groups.map(([g,es])=>`<div class="erah" style="--e:${eraCor(g)}"><b>${esc(g)}</b><span>${plural(es.length,"card","cards")}${es.filter(e=>e.fase==="rec").length?`<br>${es.filter(e=>e.fase==="rec").length} comigo`:""}</span></div><div class="grid">${es.map(tile).join("")}</div>`).join(""):`<p class="empty">Nada aqui com esses filtros.</p>`}
   ${v.length>shown.length?`<div class="more"><button class="btn" data-act="maiscol" type="button">Mostrar mais ${Math.min(240,v.length-shown.length)}</button></div>`:""}
   ${semN?`<div class="semcard-line"><span>${plural(semN,"pedido ainda sem card ligado","pedidos ainda sem card ligado")} com esses filtros.</span><button class="btn sm" data-cf="semcard" type="button">ver e ligar</button></div>`:""}`;
 }
@@ -585,7 +710,7 @@ function renderCegs(){
   const q=norm(ui.gq); if(q)v=v.filter(r=>norm([r.nome,r.com,r.doc&&r.doc.gom,r.itens.map(d=>d.item+" "+d.membro).join(" ")].join(" ")).includes(q));
   const m=new Map(); v.forEach(r=>{const k=r.com||"Sem comunidade"; if(!m.has(k))m.set(k,[]); m.get(k).push(r)});
   const grupos=[...m.entries()].sort((a,b)=>b[1].reduce((s,r)=>s+r.ativos,0)-a[1].reduce((s,r)=>s+r.ativos,0));
-  const card=r=>{const t=itemThumbs(r,5); return `<button class="ceg" data-ceg="${esc(r.key)}" type="button">
+  const card=r=>{const t=itemThumbs(r,5); return `<button class="ceg" style="--e:${eraCor(eraDe(r))}" data-ceg="${esc(r.key)}" type="button">
     <span class="top">${grpAv(r.doc,r.com,"")}<span class="tx"><span class="t">${esc(r.lbl||r.nome)}</span><span class="s">${esc([r.doc&&r.doc.gom,plural(r.itens.length,"item","itens")].filter(Boolean).join(" · "))}</span></span>${r.devN?`<span class="pill late">devo ${r.deve?brl(r.deve):"sem valor"}</span>`:""}</span>
     ${t.n||t.sem?`<span class="strip">${t.html}${t.n+t.sem>5&&t.n?`<span class="more-n">+${t.n+t.sem-Math.min(5,t.n)}</span>`:""}${!t.n?`<span class="more-n">${plural(t.sem,"item sem foto","itens sem foto")}</span>`:""}</span>`:""}
     <span>${steps(r.step)}<span class="stepl"><span><b>${CSTEPS[r.step]}</b></span><span>${r.ativos?r.ativos+" por chegar":r.itens.length?"tudo comigo":""}</span></span></span>
@@ -873,7 +998,7 @@ async function loadCol(){
   try{const r=await fetch("colecao.json");if(!r.ok)throw 0;COL=await r.json();COL.base=COL.items.slice();mergeNovos();}catch(e){COL=null}
   schedule();
 }
-function mergeNovos(){if(!COL||!COL.base)return;COL.items=COL.base.concat([...novos].map(([id,d])=>({i:"x-"+id,m:d.m||"",e:d.e||"",t:d.t||"POB",v:d.v||"",s:"",novo:true})));CIDX=new Map(COL.items.map(c=>[c.i,c]));}
+function mergeNovos(){if(!COL||!COL.base)return;ERA_ORD=new Map();COL.base.forEach((c,i)=>ERA_ORD.set(c.e,i));eraMemo.clear();COL.items=COL.base.concat([...novos].map(([id,d])=>({i:"x-"+id,m:d.m||"",e:d.e||"",t:d.t||"POB",v:d.v||"",s:"",novo:true})));CIDX=new Map(COL.items.map(c=>[c.i,c]));}
 (async()=>{
   try{db=await window.claude?.use?.("db")}catch(e){db=null}
   ready=true; render(); if(!db)return;
