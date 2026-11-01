@@ -133,6 +133,15 @@ Nomes e valores ficam no app (Cobranças, filtro "A confirmar"), nunca aqui.
 - Cinco comunidades de CEG novas foram lidas (sem mensagens dela), mas o roteiro
   ainda cita só as 20 primeiras.
 - Do plano: relatório de cobertura, casos de teste, reforma de Cobranças.
+- Backlog (01/11/2026), pedido e adiado:
+  - Ler as mensagens dos grupos de CEG desde setembro e procurar cobranças que
+    faltam no app. Mandar o que achar como sugestão do robô; nada entra direto.
+    Reaproveitar `docs/roteiro-whatsapp.md` e `scripts/filtrar-whatsapp.mjs`.
+  - Deixar o campo "grupo" das CEGs com o nome exatamente igual ao do WhatsApp.
+    Ao renomear, mover a foto, porque a chave `icon-grp-<hash>` vem do nome.
+  - Procurar, em todas as conversas desde setembro, grupos de CEG que estão fora
+    da lista "cegs" do WhatsApp. Só listar; ela decide se entram na lista.
+  - Fotos de grupo que faltam: HYUNLIX (Vicky e Bibi) e Drop collection (Nana).
 
 ## Pontos em aberto
 - Plano Hobby da Vercel: no máximo 2 crons, por isso tudo que é diário entra no
