@@ -571,17 +571,20 @@ function envioSheet(id){const e=D.envios.get(id); if(!e)return ""; return `<div 
   <div class="actions"><button class="btn pri" data-act="proto" type="button">${e.status==="Enviado"?"Recebi":"Pedi"}</button></div>`}
 
 // ---------- nova compra (3 passos) ----------
-const nc={step:0,ceg:"",sel:new Set(),q:"",m:"",valor:""};
+const nc={step:0,ceg:"",sel:new Set(),q:"",m:"",valor:"",era:""};
+// adivinha a era pelo nome da CEG (ex.: "Do It Pobs" -> DO IT); a mais longa que couber vence
+function eraDaCeg(r){ if(!COL||!r)return ""; const n=" "+norm(r.nome).replace(/[^a-z0-9]+/g," ")+" "; let best="";
+  new Set(COL.items.map(c=>c.e)).forEach(e=>{const k=norm(e).replace(/[^a-z0-9]+/g," ").trim(); if(k.length>=3&&n.includes(" "+k+" ")&&k.length>norm(best).length)best=e}); return best }
 function novaSheet(){
   const bar=`<div class="stepper">${[0,1,2].map(i=>`<span class="${i<=nc.step?"on":""}"></span>`).join("")}</div>`;
   if(nc.step===0){const q=norm(nc.q); const rs=cegs().filter(r=>r.aberta&&(!q||norm(r.nome+" "+r.com).includes(q))).slice(0,40);
     return `${bar}<h2 style="margin-top:0">Em qual CEG?</h2><div class="search">${ico("search")}<input id="ncq" type="search" placeholder="Buscar CEG ou comunidade" value="${esc(nc.q)}" aria-label="Buscar CEG"></div>
     <div class="panel"><ul class="rows">${rs.map(r=>`<li><button class="row" data-ncceg="${esc(r.key)}" type="button">${grpAv(r.doc,r.com,"sm")}<span class="tx"><span class="t">${esc(r.lbl||r.nome)}</span><span class="s">${esc(r.com)}</span></span></button></li>`).join("")}</ul></div>`}
   if(nc.step===1){const q=norm(nc.q);
-    let cs=COL?COL.items.filter(c=>(!nc.m||membro(c.m)===nc.m)&&(!q||norm([c.v,c.e,c.m,c.s].join(" ")).includes(q))):[]; const tot=cs.length; cs=cs.slice(-90).reverse();
+    let cs=COL?COL.items.filter(c=>(!nc.era||c.e===nc.era)&&(!nc.m||membro(c.m)===nc.m)&&(!q||norm([c.v,c.e,c.m,c.s].join(" ")).includes(q))):[]; const tot=cs.length; cs=cs.slice(-90).reverse();
     return `${bar}<h2 style="margin-top:0">Quais cards? <span class="n">${nc.sel.size} escolhidos</span></h2>
     <div class="search">${ico("search")}<input id="ncq" type="search" placeholder="Era, versão ou loja" value="${esc(nc.q)}" aria-label="Buscar card"></div>
-    <div class="chips scroll">${["",...MEMBROS].map(m=>`<button class="chip" data-ncm="${esc(m)}" aria-pressed="${nc.m===m}" type="button">${esc(m||"Todos")}</button>`).join("")}</div>
+    ${nc.era?`<div class="chips"><button class="chip" data-ncera aria-pressed="true" type="button">Só ${esc(nc.era)} ✕</button></div>`:""}<div class="chips scroll">${["",...MEMBROS].map(m=>`<button class="chip" data-ncm="${esc(m)}" aria-pressed="${nc.m===m}" type="button">${esc(m||"Todos")}</button>`).join("")}</div>
     <div class="mini picker">${cs.map(c=>`<button class="tile ${nc.sel.has(c.i)?"sel":""}" data-ncc="${esc(c.i)}" type="button">${ph(cardBg(c),"",cardBg(c)?"":esc(c.v))}<span class="cap">${esc(c.v)}<small>${esc(c.m)} · ${esc(c.e)}</small></span></button>`).join("")}</div>
     ${tot>90?`<p class="note">Mostrando os 90 mais recentes de ${tot}. Busque para achar outros.</p>`:""}
     <div class="actions"><button class="btn" data-act="proto" type="button">não está no catálogo: criar card</button><button class="btn pri" data-ncnext type="button" ${nc.sel.size?"":"disabled"}>Continuar</button></div>`}
@@ -629,7 +632,8 @@ document.addEventListener("click",async e=>{
   if(ds.cegk!=null){const k=ds.cegk;if(cegs().some(r=>r.key===k)){$("#shT").textContent="CEG";sheetFn=()=>cegSheet(k);$("#shB").innerHTML=sheetFn();lazy();$("#shB").scrollTop=0}return}
   if(ds.envio){const id=ds.envio; if(sheetFn){$("#shT").textContent="Envio";sheetFn=()=>envioSheet(id);$("#shB").innerHTML=sheetFn();$("#shB").scrollTop=0}else openSheet("Envio",()=>envioSheet(id));return}
   if(ds.pix){const c=comInfo(ds.pix);try{await navigator.clipboard.writeText(c.pix);toast("Pix copiado")}catch(err){toast("Não deu pra copiar")}return}
-  if(ds.ncceg){nc.ceg=ds.ncceg;nc.step=1;nc.q="";$("#shB").innerHTML=novaSheet();lazy();return}
+  if(ds.ncera!=null){nc.era="";$("#shB").innerHTML=novaSheet();lazy();return}
+  if(ds.ncceg){nc.ceg=ds.ncceg;nc.step=1;nc.q="";nc.era=eraDaCeg(cegs().find(r=>r.key===nc.ceg));$("#shB").innerHTML=novaSheet();lazy();return}
   if(ds.ncm!=null){nc.m=ds.ncm;$("#shB").innerHTML=novaSheet();lazy();return}
   if(ds.ncc){nc.sel.has(ds.ncc)?nc.sel.delete(ds.ncc):nc.sel.add(ds.ncc);b.classList.toggle("sel");const n=$("#shB h2 .n");if(n)n.textContent=nc.sel.size+" escolhidos";const nx=$("[data-ncnext]");if(nx)nx.disabled=!nc.sel.size;return}
   if(ds.ncnext!=null){nc.step=2;$("#shB").innerHTML=novaSheet();lazy();return}
