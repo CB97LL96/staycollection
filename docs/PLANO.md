@@ -105,6 +105,21 @@ Falta ou ficou parcial:
 - Alvos de toque ainda pequenos na Coleção (botão "info" dos cards, mitigado com área de clique maior).
 - Não conferi o escuro em Itens e Coleção, nem a faixa de contraste de todos os chips de comunidade (cores por comunidade).
 
+## App novo do zero (01/11/2026)
+
+O `index.html` agora é um app novo, feito do zero. O antigo está em `/antigo.html`, e `/novo.html` só redireciona para `/`.
+
+- **Ideia central:** o card do catálogo é a unidade de tudo. A situação dele (quero, esperando a CEG, a caminho, no Brasil, liberado, vindo pra mim, comigo) vem do status do pedido. Toda compra nova já nasce ligada ao card.
+- **Abas:** Início (o que precisa de você), Coleção (grade de fotos com o filtro "onde está"), Contas (por prazo ou por comunidade, e o "a confirmar" fora da soma) e CEGs (por comunidade, com foto do grupo e barra de etapas).
+- **O que grava,** sempre com "desfazer":
+  - Paguei, Voltar pra pagar e Valor certo.
+  - Paguei tudo da CEG, com 2 toques.
+  - Pedi o envio e Recebi, mudando junto os itens da comunidade.
+  - Ligar pedido ao catálogo e Criar card.
+  - Nova compra: cria os pedidos e a conta "Item".
+- **Ainda só no antigo:** sugestões do robô, edição de campos, cadastro de comunidade e repasses.
+- **Fotos de grupo:** vieram do WhatsApp Web pela busca, 64 de 67, salvas em `fotos` como `icon-grp-<hash>`.
+
 ## Pendências abertas (30/10/2026)
 Nomes e valores ficam no app (Cobranças, filtro "A confirmar"), nunca aqui.
 - Taxa RF que venceu em 20/10 e cujos itens a GOM disse ter repassado: conferir
