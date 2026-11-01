@@ -2306,7 +2306,7 @@ function guessCards0(d){ const g=gIndex(); if(!g)return {eras:[],c:[]};
     if(sc>0)out.push([sc-(c.v.length/100),c]); });
   out.sort((a,b)=>b[0]-a[0]);
   let lista=out.map(x=>x[1]), faltam=[];
-  const mN=String(d.item||"").match(/\b(round|rd|r|[a-zà-ú]{3,})\s*(\d)\b/i);
+  const mN=String(d.item||"").match(/\b(round|rd|r|[a-zà-ú]{2,})\s*(\d)\b/i);
   if(mN){ const N=mN[2], w=nzs(mN[1]); const toks=c=>g.tok.get(c.i)||new Set(); const tem=c=>toks(c).has(N); const dig=c=>[...toks(c)].some(t=>/^\d$/.test(t));
     // estrito quando algum card tem esse número, ou quando a palavra antes do número aparece em cards numerados (ex.: "fansign 2" e só existe "Fansign 3")
     if(lista.some(tem)||lista.some(c=>dig(c)&&toks(c).has(w))){ lista=lista.filter(tem); faltam=mems.length?mems.filter(m=>!lista.some(c=>c.m===m)):(lista.length?[]:["este pedido"]); } }
