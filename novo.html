@@ -133,7 +133,7 @@ h2 .r{margin-left:auto;font-size:14px;font-weight:700}
 .tile{border:0;background:none;padding:0;cursor:pointer;text-align:left;display:grid;gap:6px;min-width:0}
 .ph{position:relative;display:block;aspect-ratio:55/85;border-radius:10px;background:var(--surface2) center/cover no-repeat;box-shadow:0 0 0 1px var(--line);overflow:hidden}
 .ph.wide{aspect-ratio:1}
-.ph.txt{display:grid;place-items:center;padding:10px;text-align:center;font-size:12.5px;font-weight:600;color:var(--ink2);background:repeating-linear-gradient(135deg,var(--surface2) 0 8px,var(--surface) 8px 16px)}
+.ph.txt{display:grid;place-items:center;padding:10px;text-align:center;font-size:12.5px;font-weight:600;color:var(--ink2);background:var(--surface2);box-shadow:inset 0 0 0 1px var(--line);border:1px dashed var(--ink3)}
 .ph .bdg{position:absolute;left:6px;bottom:6px;right:auto}
 .ph .cp{position:absolute;right:6px;top:6px;background:var(--ink);color:var(--bg);font-size:11.5px;font-weight:800;border-radius:99px;padding:1px 7px}
 .tile .cap{font-size:12.5px;line-height:1.3;color:var(--ink);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
@@ -153,6 +153,7 @@ h2 .r{margin-left:auto;font-size:14px;font-weight:700}
 .ceg:hover{box-shadow:0 0 0 1px var(--ink3),var(--shadow)}
 .ceg .top{display:flex;gap:12px;align-items:center;min-width:0}
 .ceg .top .tx{min-width:0;flex:1}
+.ceg .t,.ceg .s{display:block}
 .ceg .t{font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ceg .s{font-size:13px;color:var(--ink2)}
 .strip{display:flex;gap:6px;min-height:0}
@@ -441,7 +442,7 @@ function renderInicio(){
   const tasks=[];
   if(k.venc.length)tasks.push(task("late","alert",`${plural(k.venc.length,"conta vencida","contas vencidas")}, ${brl(k.soma(k.venc))}`,`A mais antiga venceu há ${plural(Math.max(...k.venc.map(c=>-daysTo(c.prazo))),"dia","dias")}.`,'data-go="contas"',"ver contas"));
   if(semana.length)tasks.push(task("soon","clock",`${plural(semana.length,"conta vence","contas vencem")} em até 7 dias`,`${brl(k.soma(semana))} no total.`,'data-go="contas"',"ver"));
-  aPedir.forEach(e=>tasks.push(task("info","truck",`Pedir envio: ${esc(e.gom||e.comunidade||"envio")}`,esc([e.comunidade,e.tipo,e.prazo?"até "+fdd(e.prazo):""].filter(Boolean).join(" · ")),`data-envio="${esc(e.id)}"`,"como pedir")));
+  if(aPedir.length)tasks.push(task("info","truck",`Pedir envio em ${plural(aPedir.length,"lugar","lugares")}`,`<span style="display:inline-flex;gap:4px;vertical-align:middle">${aPedir.slice(0,8).map(e=>av("com",e.comunidade,"xs")).join("")}</span> ${esc(aPedir.map(e=>e.gom||e.comunidade).slice(0,4).join(", "))}${aPedir.length>4?"…":""}`,'data-act="envios"',"ver"));
   chegando.forEach(e=>tasks.push(task("","box",`Chegou? ${esc(e.gom||e.comunidade||"envio")}`,"Enviado. Confirme quando receber.",`data-envio="${esc(e.id)}"`,"ver")));
   if(semCard)tasks.push(task("","link",`${plural(semCard,"pedido sem card ligado","pedidos sem card ligado")}`,"Ligar ao catálogo dá foto e conta repetidos.",'data-go="colecao" data-cf="semcard"',"ver"));
   if(robo)tasks.push(task("","spark",`${plural(robo,"sugestão do robô","sugestões do robô")}`,"Ainda ficam no app atual.",'data-href="/"',"abrir"));
@@ -467,7 +468,7 @@ function renderColecao(){
   if(ui.ct)v=v.filter(e=>e.tipo===ui.ct);
   if(q)v=v.filter(e=>norm([e.nome,e.era,e.membro,e.itens.map(d=>d.ceg+" "+d.comunidade).join(" ")].join(" ")).includes(q));
   const mo=m=>{const i=MEMBROS.indexOf(m);return i<0?99:i};
-  v.sort((a,b)=>mo(a.membro)-mo(b.membro)||String(a.era).localeCompare(String(b.era),"pt-BR")||String(a.nome).localeCompare(String(b.nome),"pt-BR"));
+  const temF=e=>bgOf(e)?0:1; v.sort((a,b)=>mo(a.membro)-mo(b.membro)||temF(a)-temF(b)||String(a.era).localeCompare(String(b.era),"pt-BR")||String(a.nome).localeCompare(String(b.nome),"pt-BR"));
   const F=[["todos","Tudo"],["comigo","Comigo"],["vindo","Vindo"],["esperando","Esperando CEG"],["quero","Quero"],["repetidos","Repetidos"],["semcard","Sem card"]];
   const shown=v.slice(0,ui.cn);
   const groups=[]; shown.forEach(e=>{const g=e.membro||"Grupo / outros"; if(!groups.length||groups[groups.length-1][0]!==g)groups.push([g,[]]); groups[groups.length-1][1].push(e)});
@@ -509,7 +510,7 @@ function renderContas(){
 function steps(n){return `<div class="steps" aria-hidden="true">${CSTEPS.map((s,i)=>`<i class="${i<n?"on":i===n?"now":""}"></i>`).join("")}</div>`}
 function itemThumbs(r,max){
   const ts=[]; r.itens.forEach(d=>{const cs=Array.isArray(d.cards)?d.cards:[]; if(cs.length&&COL)cs.forEach(cid=>{const c=CIDX.get(cid); if(c)ts.push(cardBg(c))}); else ts.push(itemBg(d))});
-  return {html:ts.slice(0,max).map(bg=>ph(bg,"","")).join(""),n:ts.length};
+  const com=ts.filter(Boolean); return {html:com.slice(0,max).map(bg=>ph(bg,"","")).join(""),n:com.length,sem:ts.length-com.length};
 }
 function renderCegs(){
   let all=cegs();
@@ -521,7 +522,7 @@ function renderCegs(){
   const grupos=[...m.entries()].sort((a,b)=>b[1].reduce((s,r)=>s+r.ativos,0)-a[1].reduce((s,r)=>s+r.ativos,0));
   const card=r=>{const t=itemThumbs(r,7); return `<button class="ceg" data-ceg="${esc(r.key)}" type="button">
     <span class="top">${grpAv(r.doc,r.com,"")}<span class="tx"><span class="t">${esc(r.lbl||r.nome)}</span><span class="s">${esc([r.doc&&r.doc.gom,plural(r.itens.length,"item","itens")].filter(Boolean).join(" · "))}</span></span>${r.deve?`<span class="pill late">devo ${brl(r.deve)}</span>`:""}</span>
-    ${t.n?`<span class="strip">${t.html}${t.n>7?`<span class="more-n">+${t.n-7}</span>`:""}</span>`:""}
+    ${t.n||t.sem?`<span class="strip">${t.html}${t.n>7?`<span class="more-n">+${t.n-7}</span>`:""}${t.sem?`<span class="more-n">${t.n?"+ ":""}${plural(t.sem,"sem foto","sem foto")}</span>`:""}</span>`:""}
     <span>${steps(r.step)}<span class="stepl"><span><b>${CSTEPS[r.step]}</b></span><span>${r.ativos?r.ativos+" por chegar":r.itens.length?"tudo comigo":""}</span></span></span>
   </button>`};
   $("#main").innerHTML=`${head("CEGs",`${plural(all.filter(r=>r.aberta).length,"CEG aberta","CEGs abertas")} em ${plural(new Set(all.filter(r=>r.aberta).map(r=>r.com)).size,"comunidade","comunidades")}`)}
@@ -563,6 +564,8 @@ function cegSheet(key){const r=cegs().find(x=>x.key===key); if(!r)return "<p cla
   ${r.contas.length?`<h2>Contas desta CEG <span class="n">${r.contas.length}</span></h2><div class="panel"><ul class="rows">${[...r.contas].sort(byPrazo).map(contaRow).join("")}</ul></div>`:""}
   ${deve.length?`<div class="actions"><button class="btn pri" data-act="proto" type="button">Liquidar ${brl(sum(deve))}</button></div>`:""}`;
 }
+function enviosSheet(){const es=list("envios").filter(e=>e.status==="A pedir").sort(byPrazo);
+  return `<p class="lede" style="margin:0 0 12px">Já liberados. Peça o envio com cada GOM.</p><div class="panel"><ul class="rows">${es.map(e=>`<li><button class="row" data-envio="${esc(e.id)}" type="button">${dateBlk(e.prazo)}<span class="tx"><span class="t">${esc(e.gom||e.comunidade||"Envio")}</span><span class="s">${av("com",e.comunidade,"xs")}${esc([e.comunidade,e.tipo].filter(Boolean).join(" · "))}</span></span></button></li>`).join("")}</ul></div>`}
 function envioSheet(id){const e=D.envios.get(id); if(!e)return ""; return `<div class="hero">${av("com",e.comunidade,"lg")}<div><div style="font-size:20px;font-weight:700">${esc(e.gom||e.comunidade||"Envio")}</div><div style="color:var(--ink2)">${esc([e.tipo,e.status].filter(Boolean).join(" · "))}</div></div></div>
   <dl class="kv">${[["Prazo",e.prazo&&fdd(e.prazo)],["Como pedir",e.comoPedir],["Rastreio",e.rastreio],["Itens",e.itens]].filter(x=>x[1]).map(([a,b])=>`<dt>${a}</dt><dd>${esc(b)}</dd>`).join("")}</dl>
   <div class="actions"><button class="btn pri" data-act="proto" type="button">${e.status==="Enviado"?"Recebi":"Pedi"}</button></div>`}
@@ -624,7 +627,7 @@ document.addEventListener("click",async e=>{
   if(ds.card){openSheet("Card",()=>cardSheet(ds.card));return}
   if(ds.ceg){const k=ds.ceg;openSheet("CEG",()=>cegSheet(k));return}
   if(ds.cegk!=null){const k=ds.cegk;if(cegs().some(r=>r.key===k)){$("#shT").textContent="CEG";sheetFn=()=>cegSheet(k);$("#shB").innerHTML=sheetFn();lazy();$("#shB").scrollTop=0}return}
-  if(ds.envio){openSheet("Envio",()=>envioSheet(ds.envio));return}
+  if(ds.envio){const id=ds.envio; if(sheetFn){$("#shT").textContent="Envio";sheetFn=()=>envioSheet(id);$("#shB").innerHTML=sheetFn();$("#shB").scrollTop=0}else openSheet("Envio",()=>envioSheet(id));return}
   if(ds.pix){const c=comInfo(ds.pix);try{await navigator.clipboard.writeText(c.pix);toast("Pix copiado")}catch(err){toast("Não deu pra copiar")}return}
   if(ds.ncceg){nc.ceg=ds.ncceg;nc.step=1;nc.q="";$("#shB").innerHTML=novaSheet();lazy();return}
   if(ds.ncm!=null){nc.m=ds.ncm;$("#shB").innerHTML=novaSheet();lazy();return}
@@ -634,6 +637,7 @@ document.addEventListener("click",async e=>{
   const a=ds.act;
   if(a==="fechar"){closeSheet();return}
   if(a==="proto"){proto();return}
+  if(a==="envios"){openSheet("Pedir envio",enviosSheet);return}
   if(a==="maiscol"){ui.cn+=240;render();return}
   if(a==="tema"){const tt=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",tt);try{localStorage.setItem("novo-theme",tt)}catch(err){}return}
   if(a==="nova"){Object.assign(nc,{step:0,ceg:"",sel:new Set(),q:"",m:"",valor:""});openSheet("Nova compra",novaSheet);return}
