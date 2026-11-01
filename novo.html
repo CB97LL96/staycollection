@@ -668,7 +668,7 @@ document.addEventListener("click",async e=>{
   if(ds.card){openSheet("Card",()=>cardSheet(ds.card));return}
   if(ds.ceg){const k=ds.ceg;openSheet("CEG",()=>cegSheet(k));return}
   if(ds.cegk!=null){const k=ds.cegk;if(cegs().some(r=>r.key===k)){$("#shT").textContent="CEG";sheetFn=()=>cegSheet(k);$("#shB").innerHTML=sheetFn();lazy();$("#shB").scrollTop=0}return}
-  if(ds.envio){const id=ds.envio; if(sheetFn){$("#shT").textContent="Envio";sheetFn=()=>envioSheet(id);$("#shB").innerHTML=sheetFn();$("#shB").scrollTop=0}else openSheet("Envio",()=>envioSheet(id));return}
+  if(ds.envio){const id=ds.envio; if(sheetFn){$("#shT").textContent="Envio";sheetFn=()=>envioSheet(id);$("#shB").innerHTML=sheetFn();lazy();$("#shB").scrollTop=0}else openSheet("Envio",()=>envioSheet(id));return}
   if(ds.pix){const c=comInfo(ds.pix);try{await navigator.clipboard.writeText(c.pix);toast("Pix copiado")}catch(err){toast("Não deu pra copiar")}return}
   if(ds.ncera!=null){nc.era="";$("#shB").innerHTML=novaSheet();lazy();return}
   if(ds.ncceg){nc.ceg=ds.ncceg;nc.step=1;nc.q="";nc.era=eraDaCeg(cegs().find(r=>r.key===nc.ceg));$("#shB").innerHTML=novaSheet();lazy();return}
