@@ -127,6 +127,8 @@ Escolhido pela dona entre 4 prévias (`.impeccable/sketches/previas.html`, fora 
 - DESIGN.md descreve este visual. A ficha da direção fica em `.impeccable/surfaces/index-html.md` (fora do Git).
 - O "Devo agora" só soma o que é certo. "A confirmar" e "sem valor" aparecem à parte.
 
+O resumo de tudo o que foi feito fica em [HISTORICO.md](HISTORICO.md).
+
 ### Próximos passos (em ordem)
 1. **Usar uns dias e testar a gravação de verdade.** Nenhum botão que grava foi clicado nos testes: Paguei, Pedi o envio, Recebi, Nova compra, Ligar ao catálogo, aceitar sugestão do robô, editar e apagar. Se algo der errado, usar "desfazer" e anotar.
 2. **Cobranças que faltam:** ler as mensagens dos grupos de CEG desde setembro e mandar o que achar como sugestão do robô (ver o backlog abaixo).
