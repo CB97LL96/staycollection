@@ -117,8 +117,25 @@ O `index.html` agora é um app novo, feito do zero. O antigo está em `/antigo.h
   - Pedi o envio e Recebi, mudando junto os itens da comunidade.
   - Ligar pedido ao catálogo e Criar card.
   - Nova compra: cria os pedidos e a conta "Item".
-- **Ainda só no antigo:** sugestões do robô, edição de campos, cadastro de comunidade e repasses.
+- **Trazido do antigo em 01/11:** sugestões do robô, edição e exclusão de qualquer registro, cadastros de comunidades, repasses, envios e CEGs. O antigo fica só como reserva.
 - **Fotos de grupo:** vieram do WhatsApp Web pela busca, 64 de 67, salvas em `fotos` como `icon-grp-<hash>`.
+
+### Visual "O encarte do álbum" (02/11/2026): concluído
+
+Escolhido pela dona entre 4 prévias (`.impeccable/sketches/previas.html`, fora do Git). Feito pelo fluxo do `/impeccable`: DESIGN.md, revisão (22/40), polish, prévias, construção e revisão final com correções. Está no ar no commit `5678386`, conferido no computador, no celular e no escuro.
+- Regra dela: nada de termos de encarte de álbum nos textos. No máximo o nome da era na Coleção.
+- DESIGN.md descreve este visual. A ficha da direção fica em `.impeccable/surfaces/index-html.md` (fora do Git).
+- O "Devo agora" só soma o que é certo. "A confirmar" e "sem valor" aparecem à parte.
+
+### Próximos passos (em ordem)
+1. **Usar uns dias e testar a gravação de verdade.** Nenhum botão que grava foi clicado nos testes: Paguei, Pedi o envio, Recebi, Nova compra, Ligar ao catálogo, aceitar sugestão do robô, editar e apagar. Se algo der errado, usar "desfazer" e anotar.
+2. **Cobranças que faltam:** ler as mensagens dos grupos de CEG desde setembro e mandar o que achar como sugestão do robô (ver o backlog abaixo).
+3. **Fotos dos cards borradas:** as folhas do catálogo são pequenas (10x10). Buscar imagens maiores para os cards da coleção dela.
+4. **Contas:** busca e filtro por comunidade.
+5. **CEGs sem grupo cadastrado** (MANIAC 4, Jojo Martie e Aninha 3, paboracha 2, Han'Minnie 1, HeyDay 1): preencher o campo "Grupo" para ganharem foto.
+6. **Um momento de animação** no visual do encarte (por exemplo, a entrada do valor devido). Opcional.
+7. **Aposentar `/antigo.html`** quando o app novo estiver confiável.
+8. **Login do Git expira com frequência:** o push às vezes pede login no terminal (`git push origin main`).
 
 ## Pendências abertas (30/10/2026)
 Nomes e valores ficam no app (Cobranças, filtro "A confirmar"), nunca aqui.
