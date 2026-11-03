@@ -582,9 +582,9 @@ const total=a=>{const v=a.reduce((s,c)=>s+(typeof c.valor==="number"?c.valor:0),
 const byPrazo=(a,b)=>{const x=pd(a.prazo),y=pd(b.prazo);if(x&&y)return x-y;if(x)return -1;if(y)return 1;return 0};
 
 // ---------- modelo: CEGs ----------
-const CSTEPS=["Comprando","Na proxy","A caminho","No Brasil","Liberado","Enviado","Comigo"];
-const CEG_ST={"Em andamento":0,"Aguardando cobrança":0,"Na proxy":1,"A caminho do Brasil":2,"Com a GOM no Brasil":3,"Com a Isa":3,"Envio liberado":4,"Enviado":5,"Recebido":6,"Concluída":6};
-const F2S={esp:0,cam:1,br:3,lib:4,ped:5,rec:6};
+const CSTEPS=["Comprando","Na proxy","A caminho","No Brasil","Liberado","Finalizado"];
+const CEG_ST={"Em andamento":0,"Aguardando cobrança":0,"Na proxy":1,"A caminho do Brasil":2,"Com a GOM no Brasil":3,"Com a Isa":3,"Envio liberado":4,"Enviado":4,"Recebido":5,"Concluída":5};
+const F2S={esp:0,cam:1,br:3,lib:4,ped:4,rec:5};
 let cegCache={v:-1,out:[]};
 function cegs(){
   if(cegCache.v===ver)return cegCache.out;
@@ -599,7 +599,7 @@ function cegs(){
     const step=st!=null?st:(fs.length?Math.min(...fs):0);
     const dv=r.contas.filter(devo), deve=dv.reduce((s,c)=>s+(c.valor||0),0), devN=dv.length;
     const ativos=r.itens.filter(d=>faseDe(d.status)!=="rec").length;
-    const aberta=ativos>0||r.contas.some(c=>ABERTA.includes(c.status))||(st!=null&&st<6);
+    const aberta=ativos>0||r.contas.some(c=>ABERTA.includes(c.status))||(st!=null&&st<5);
     return {...r,step,deve,devN,ativos,aberta,lbl:cegLbl({ceg:r.nome,comunidade:r.com})};
   });
   cegCache={v:ver,out}; return out;
