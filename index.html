@@ -165,6 +165,17 @@ h2 .r{margin-left:auto;font-size:14px;font-weight:700}
 .cat-env{color:#15803d;border-color:#22c55e;background:rgba(34,197,94,.14)}
 .cat-claim{color:#b45309;border-color:#f59e0b;background:rgba(245,158,11,.16)}
 .cat-comp{color:#be123c;border-color:#f43f5e;background:rgba(244,63,94,.14)}
+.gchips{display:flex;flex-wrap:wrap;gap:6px}
+.gcat{margin:14px 0 0}
+.gcat-l{font-size:12px;font-weight:700;color:var(--ink2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em}
+.gcat-l .n{font-weight:500;letter-spacing:0;text-transform:none;color:var(--ink3)}
+.gchip{font-size:12.5px;font-weight:600;padding:4px 10px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--ink);line-height:1.25;overflow-wrap:anywhere}
+.gchip.arq{opacity:.45;border-style:dashed}
+.sitsec{margin-top:22px}
+.sitsec>summary{list-style:none;cursor:pointer;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;padding-bottom:8px;border-bottom:2px solid var(--rule)}
+.sitsec>summary::-webkit-details-marker{display:none}
+.sitsec>summary .n{font-weight:500;letter-spacing:0;color:var(--ink3);margin-left:4px}
+.sitsec>.cegs{margin-top:12px}
 .ceg .s{font-size:13px;color:var(--ink2)}
 .strip{display:flex;gap:6px;min-height:0;overflow:hidden;align-items:center}
 .strip .ph{width:38px;flex:none;border-radius:6px}
@@ -751,18 +762,28 @@ const CATN={rep:"repasse",env:"envio",claim:"claim",comp:"comprovante",out:"outr
 const CATPILL={rep:"info",env:"ok",claim:"soon",comp:"late",out:""};
 const CATORD=["claim","comp","rep","env","out"];
 function gruposDe(com){return list("gruposwa").filter(g=>g.comunidade===com).sort((a,b)=>CATORD.indexOf(a.cat||"out")-CATORD.indexOf(b.cat||"out")||String(a.nome).localeCompare(String(b.nome),"pt-BR"))}
+const GCATS=[["rep","Repasse"],["claim","Claim"],["comp","Comprovante"],["env","Envio"],["out","Outros"]];
 function gruposSec(com){const gs=gruposDe(com); if(!gs.length)return "";
-  return `<h2>Grupos do WhatsApp <span class="n">${gs.length}</span></h2><div class="panel"><ul class="rows">${gs.map(g=>{const c=g.cat||"out"; return `<li><div class="row"><span class="tx"><span class="t"${g.arquivado?' style="color:var(--ink3)"':""}>${esc(g.nome)}</span>${g.arquivado?`<span class="s">arquivado</span>`:""}</span><span class="pill ${CATPILL[c]||""}">${CATN[c]||"outros"}</span></div></li>`}).join("")}</ul></div>`}
+  const chip=g=>`<span class="gchip cat-${g.cat||"out"}${g.arquivado?" arq":""}">${esc(g.nome)}</span>`;
+  const ativos=gs.filter(g=>!g.arquivado), arq=gs.filter(g=>g.arquivado);
+  const bloco=(label,xs)=>xs.length?`<div class="gcat"><div class="gcat-l">${label} <span class="n">${xs.length}</span></div><div class="gchips">${xs.map(chip).join("")}</div></div>`:"";
+  return `<h2>Grupos do WhatsApp <span class="n">${gs.length}</span></h2>${GCATS.map(([k,l])=>bloco(l,ativos.filter(g=>(g.cat||"out")===k))).join("")}${bloco("Arquivados",arq)}`}
 function comHero(com){const ci=comInfo(com), cs=cegs().filter(r=>r.com===com), deve=cs.reduce((s,r)=>s+r.deve,0);
   return `<div class="hero">${av("com",com,"xl")}<div><div style="font-size:22px;font-weight:800;line-height:1.2">${esc(com)}</div><div style="color:var(--ink2)">${esc([ci&&ci.goms,plural(cs.length,"CEG","CEGs")].filter(Boolean).join(" · "))}</div>${deve?`<div style="color:var(--late);font-weight:700">devo ${brl(deve)}</div>`:""}</div></div>`}
+const SITS=[["Ativa","Ativas",true],["Saindo","Saindo",true],["Sair","Sair",false],["Resolvida|Sem itens","Finalizadas",false]];
+function sitSecs(grupos){const conhecidas=new Set(SITS.flatMap(x=>x[0].split("|")));
+  return SITS.map(([keys,label,open])=>{const ks=keys.split("|");
+    const items=grupos.filter(([c])=>{const st=(comInfo(c)||{}).situacao||""; return ks.includes(st)||(label==="Ativas"&&!conhecidas.has(st))});
+    return items.length?`<details class="sitsec"${open?" open":""}><summary>${label} <span class="n">${items.length}</span></summary><div class="cegs">${items.map(([c,rs])=>comCard(c,rs)).join("")}</div></details>`:""}).join("")}
 function renderCegs(){
   let all=cegs();
   const coms=[...new Set(all.map(r=>r.com).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"pt-BR"));
-  let v=all.filter(r=>ui.gf==="todas"||r.aberta);
+  let v=all;
   if(ui.gc)v=v.filter(r=>r.com===ui.gc);
   const q=norm(ui.gq); if(q)v=v.filter(r=>norm([r.nome,r.com,r.doc&&r.doc.gom,r.itens.map(d=>d.item+" "+d.membro).join(" ")].join(" ")).includes(q));
   const m=new Map(); v.forEach(r=>{const k=r.com||"Sem comunidade"; if(!m.has(k))m.set(k,[]); m.get(k).push(r)});
   const grupos=[...m.entries()].sort((a,b)=>b[1].reduce((s,r)=>s+r.ativos,0)-a[1].reduce((s,r)=>s+r.ativos,0));
+  const closed=v.filter(r=>!r.aberta);
   const card=r=>{const t=itemThumbs(r,5), cc=catCeg(r); return `<button class="ceg" style="--e:${eraCor(eraDe(r))}" data-ceg="${esc(r.key)}" type="button">
     <span class="top">${grpAv(r.doc,r.com,"")}<span class="tx">${cc?`<span class="catp cat-${cc}">${CATL[cc]}</span>`:""}<span class="t">${esc(r.lbl||r.nome)}</span><span class="s">${esc([r.doc&&r.doc.gom,plural(r.itens.length,"item","itens")].filter(Boolean).join(" · "))}</span></span>${r.devN?`<span class="pill late">devo ${r.deve?brl(r.deve):"sem valor"}</span>`:""}</span>
     ${t.n||t.sem?`<span class="strip">${t.html}${t.n+t.sem>5&&t.n?`<span class="more-n">+${t.n+t.sem-Math.min(5,t.n)}</span>`:""}${!t.n?`<span class="more-n">${plural(t.sem,"item sem foto","itens sem foto")}</span>`:""}</span>`:""}
@@ -771,11 +792,10 @@ function renderCegs(){
   $("#main").innerHTML=`${head("CEGs",`${plural(all.filter(r=>r.aberta).length,"CEG aberta","CEGs abertas")} em ${plural(new Set(all.filter(r=>r.aberta).map(r=>r.com)).size,"comunidade","comunidades")}`)}
   <div class="hacts"><button class="btn sm" data-new="cegs" type="button">${ico("plus",16)}CEG</button><button class="btn sm" data-act="cad" data-k="comunidades" type="button">Comunidades</button><button class="btn sm" data-act="cad" data-k="envios" type="button">Envios</button></div>
   <div class="search">${ico("search")}<input id="gq" type="search" placeholder="Buscar CEG, GOM, item ou membro" value="${esc(ui.gq)}" aria-label="Buscar CEG"></div>
-  <div class="seg" role="group" aria-label="Quais"><button data-gf="abertas" aria-pressed="${ui.gf==="abertas"}" type="button">Abertas</button><button data-gf="todas" aria-pressed="${ui.gf==="todas"}" type="button">Todas</button></div>
   ${ui.gc?`<div class="hacts"><button class="btn sm" data-gc="" type="button">${ico("back",16)}Todas as comunidades</button></div>`:""}
   ${ui.gc?comHero(ui.gc)+gruposSec(ui.gc):""}
-  ${!ui.gc&&!q?(grupos.length?`<div class="cegs">${grupos.map(([c,rs])=>comCard(c,rs)).join("")}</div>`:`<p class="empty">Nenhuma CEG com esses filtros.</p>`):grupos.length?grupos.map(([c,rs])=>{const deve=rs.reduce((s,r)=>s+r.deve,0); const ci=comInfo(c);
-    return `<section class="cgroup">${ui.gc?"":`<div class="chead">${av("com",c,"lg")}<span class="tx"><b>${esc(c)}</b><small>${esc([ci&&ci.goms,plural(rs.length,"CEG","CEGs")].filter(Boolean).join(" · "))}</small></span>${deve?`<span class="r" style="color:var(--late)">devo ${brl(deve)}</span>`:""}</div>`}<div class="cegs">${rs.sort((a,b)=>b.ativos-a.ativos).map(card).join("")}</div></section>`}).join(""):`<p class="empty">Nenhuma CEG com esses filtros.</p>`}${ui.gc?comTodos(ui.gc):""}`;
+  ${!ui.gc&&!q?(grupos.length?sitSecs(grupos.concat(list("comunidades").map(c=>c.nome).filter(n=>n&&!m.has(n)).map(n=>[n,[]]))):`<p class="empty">Nenhuma CEG com esses filtros.</p>`):grupos.length?grupos.map(([c,rs])=>{const deve=rs.reduce((s,r)=>s+r.deve,0); const ci=comInfo(c);
+    return `<section class="cgroup">${ui.gc?"":`<div class="chead">${av("com",c,"lg")}<span class="tx"><b>${esc(c)}</b><small>${esc([ci&&ci.goms,plural(rs.length,"CEG","CEGs")].filter(Boolean).join(" · "))}</small></span>${deve?`<span class="r" style="color:var(--late)">devo ${brl(deve)}</span>`:""}</div>`}<div class="cegs">${rs.filter(r=>r.aberta||!ui.gc).sort((a,b)=>b.ativos-a.ativos).map(card).join("")}</div></section>`}).join(""):`<p class="empty">Nenhuma CEG com esses filtros.</p>`}${ui.gc&&closed.length?`<details class="sitsec"><summary>CEGs fechadas <span class="n">${closed.length}</span></summary><div class="cegs">${closed.map(card).join("")}</div></details>`:""}${ui.gc?comTodos(ui.gc):""}`;
 }
 
 // ---------- folha de detalhes ----------
