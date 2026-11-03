@@ -722,6 +722,16 @@ function comCard(c,rs){const ci=comInfo(c), deve=rs.reduce((s,r)=>s+r.deve,0), d
   const ts=[]; rs.forEach(r=>{const t=itemThumbs(r,5); if(t.html)ts.push(t.html)}); const fotos=ts.join("").split("</span>").filter(Boolean).slice(0,6).map(x=>x+"</span>").join("");
   return `<button class="ceg" data-gc="${esc(c)}" type="button"><span class="top">${av("com",c,"lg")}<span class="tx"><span class="t" style="font-size:17px;white-space:normal">${esc(c)}</span><span class="s">${esc([ci&&ci.goms,plural(rs.length,"CEG","CEGs")].filter(Boolean).join(" · "))}</span></span>${devN?`<span class="pill late">devo ${deve?brl(deve):"sem valor"}</span>`:""}</span>
     ${fotos?`<span class="strip">${fotos}</span>`:""}<span class="s" style="color:var(--ink2);font-size:13px">${por?plural(por,"item por chegar","itens por chegar"):"tudo comigo"}</span></button>`}
+// miniatura de um item (usada na folha da CEG e na lista de todos os itens da comunidade)
+function itemTile(dd,cap){const cs=Array.isArray(dd.cards)?dd.cards:[]; const c=cs.length&&COL?CIDX.get(cs[0]):null; const bg=c?cardBg(c):itemBg(dd);
+  return `<button class="tile" data-card="${esc(cs.length&&COL&&CIDX.get(cs[0])?cs[0]:"i-"+dd.id)}" type="button">${ph(bg,"",bg?`<span class="pill ${FTONE[faseDe(dd.status)]} bdg">${FLBL[faseDe(dd.status)]}</span>`:esc(dd.item||""))}<span class="cap">${esc(dd.item||"")}<small>${esc(cap!=null?cap:(dd.membro||""))}</small></span></button>`}
+// todos os itens de uma comunidade, de todas as CEGs (inclui os sem CEG; deixa de fora os "fora")
+function comTodos(com){
+  const its=list("itens").filter(d=>d.comunidade===com && faseDe(d.status)!=="fora");
+  const lbl=d=>d.ceg?(cegLbl(d)||d.ceg):"sem CEG";
+  its.sort((a,b)=>lbl(a).localeCompare(lbl(b),"pt-BR")||String(a.item||"").localeCompare(String(b.item||""),"pt-BR"));
+  return `<h2>Todos os itens <span class="n">${its.length}</span></h2>${its.length?`<div class="mini">${its.map(d=>itemTile(d,[d.membro,lbl(d)].filter(Boolean).join(" · "))).join("")}</div>`:`<p class="note">Nenhum item ativo nesta comunidade.</p>`}`;
+}
 function renderCegs(){
   let all=cegs();
   const coms=[...new Set(all.map(r=>r.com).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"pt-BR"));
@@ -740,6 +750,7 @@ function renderCegs(){
   <div class="search">${ico("search")}<input id="gq" type="search" placeholder="Buscar CEG, GOM, item ou membro" value="${esc(ui.gq)}" aria-label="Buscar CEG"></div>
   <div class="seg" role="group" aria-label="Quais"><button data-gf="abertas" aria-pressed="${ui.gf==="abertas"}" type="button">Abertas</button><button data-gf="todas" aria-pressed="${ui.gf==="todas"}" type="button">Todas</button></div>
   ${ui.gc?`<div class="hacts"><button class="btn sm" data-gc="" type="button">${ico("back",16)}Todas as comunidades</button></div>`:""}
+  ${ui.gc?comTodos(ui.gc):""}
   ${!ui.gc&&!q?(grupos.length?`<div class="cegs">${grupos.map(([c,rs])=>comCard(c,rs)).join("")}</div>`:`<p class="empty">Nenhuma CEG com esses filtros.</p>`):grupos.length?grupos.map(([c,rs])=>{const deve=rs.reduce((s,r)=>s+r.deve,0); const ci=comInfo(c);
     return `<section class="cgroup"><div class="chead">${av("com",c,"lg")}<span class="tx"><b>${esc(c)}</b><small>${esc([ci&&ci.goms,plural(rs.length,"CEG","CEGs")].filter(Boolean).join(" · "))}</small></span>${deve?`<span class="r" style="color:var(--late)">devo ${brl(deve)}</span>`:""}</div><div class="cegs">${rs.sort((a,b)=>b.ativos-a.ativos).map(card).join("")}</div></section>`}).join(""):`<p class="empty">Nenhuma CEG com esses filtros.</p>`}`;
 }
@@ -767,8 +778,7 @@ function cardSheet(key){const e=colecao().find(x=>x.key===key); if(!e)return "<p
 const cegIdOf=doc=>{for(const [id,g] of D.cegs)if(g===doc)return id;return ""};
 function cegSheet(key){const r=cegs().find(x=>x.key===key); if(!r)return "<p class='empty'>CEG não encontrada.</p>"; const d=r.doc||{};
   const deve=r.contas.filter(devo), pagas=r.contas.filter(c=>c.status==="Paga"), sum=a=>a.reduce((s,c)=>s+(c.valor||0),0);
-  const its=r.itens.map(dd=>{const cs=Array.isArray(dd.cards)?dd.cards:[]; const c=cs.length&&COL?CIDX.get(cs[0]):null; const bg=c?cardBg(c):itemBg(dd);
-    return `<button class="tile" data-card="${esc(cs.length&&COL&&CIDX.get(cs[0])?cs[0]:"i-"+dd.id)}" type="button">${ph(bg,"",bg?`<span class="pill ${FTONE[faseDe(dd.status)]} bdg">${FLBL[faseDe(dd.status)]}</span>`:esc(dd.item||""))}<span class="cap">${esc(dd.item||"")}<small>${esc(dd.membro||"")}</small></span></button>`}).join("");
+  const its=r.itens.map(dd=>itemTile(dd)).join("");
   return `<div class="hero">${grpAv(r.doc,r.com,"xl")}<div><div style="font-size:20px;font-weight:700">${esc(r.lbl||r.nome)}</div><div style="color:var(--ink2);display:flex;gap:6px;align-items:center">${av("com",r.com,"xs")}${esc(r.com)}</div></div></div>
   <ul class="bigsteps">${CSTEPS.map((s,i)=>`<li class="${i<r.step?"on":i===r.step?"on now":""}"><span class="d"></span>${s}</li>`).join("")}</ul>
   <dl class="kv">${[["GOM",d.gom],["Situação",d.status],["Grupo",d.grupo],["Devo",deve.length?total(deve):""],["Já paguei",pagas.length?brl(sum(pagas)):""]].filter(x=>x[1]).map(([a,b])=>`<dt>${a}</dt><dd>${esc(b)}</dd>`).join("")}</dl>
