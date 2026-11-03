@@ -740,8 +740,8 @@ function itemThumbs(r,max){
 }
 // visão geral: um cartão por comunidade; tocar abre as CEGs dela
 function comCard(c,rs){const ci=comInfo(c), ab=rs.filter(r=>r.aberta).length, deve=rs.reduce((s,r)=>s+r.deve,0), devN=rs.reduce((s,r)=>s+r.devN,0), por=rs.reduce((s,r)=>s+r.ativos,0);
-  const gr=gruposDe(c).filter(g=>!g.arquivado).length, env=list("envios").filter(e=>e.comunidade===c&&["A pedir","A confirmar","Aguardando liberação"].includes(e.status)).length;
-  const extra=[gr?plural(gr,"grupo","grupos"):"", env?plural(env,"envio a pedir","envios a pedir"):"", devN?plural(devN,"conta vencida","contas vencidas"):""].filter(Boolean).join(" · ");
+  const gr=gruposDe(c).filter(g=>!g.arquivado).length;
+  const extra=[gr?plural(gr,"grupo","grupos"):"", devN?plural(devN,"conta vencida","contas vencidas"):""].filter(Boolean).join(" · ");
   return `<button class="ceg" data-gc="${esc(c)}" type="button"><span class="top">${av("com",c,"lg")}<span class="tx"><span class="t" style="font-size:17px;white-space:normal">${esc(nomeCom(c))}</span><span class="s">${esc(ci&&ci.goms||"")}</span></span></span>
     <span class="cstats"><span class="cstat"><b>${ab}</b><span>CEGs abertas</span></span><span class="cstat"><b>${por}</b><span>por chegar</span></span><span class="cstat"><b${deve?' style="color:var(--late)"':""}>${deve?brl(deve):"—"}</b><span>devo</span></span></span>
     ${extra?`<span class="s" style="color:var(--ink2);font-size:13px">${esc(extra)}</span>`:""}</button>`}
@@ -798,7 +798,7 @@ function renderCegs(){
     <span>${steps(r.step)}<span class="stepl"><span><b>${CSTEPS[r.step]}</b></span><span>${r.ativos?r.ativos+" por chegar":r.itens.length?"tudo comigo":""}</span></span></span>
   </button>`};
   $("#main").innerHTML=`${head("CEGs",`${plural(all.filter(r=>r.aberta).length,"CEG aberta","CEGs abertas")} em ${plural(new Set(all.filter(r=>r.aberta).map(r=>r.com)).size,"comunidade","comunidades")}`)}
-  <div class="hacts"><button class="btn sm" data-new="cegs" type="button">${ico("plus",16)}CEG</button><button class="btn sm" data-act="cad" data-k="comunidades" type="button">Comunidades</button><button class="btn sm" data-act="cad" data-k="envios" type="button">Envios</button></div>
+  <div class="hacts"><button class="btn sm" data-new="cegs" type="button">${ico("plus",16)}CEG</button><button class="btn sm" data-act="cad" data-k="comunidades" type="button">Comunidades</button></div>
   <div class="search">${ico("search")}<input id="gq" type="search" placeholder="Buscar CEG, GOM, item ou membro" value="${esc(ui.gq)}" aria-label="Buscar CEG"></div>
   ${ui.gc?`<div class="hacts"><button class="btn sm" data-gc="" type="button">${ico("back",16)}Todas as comunidades</button></div>`:""}
   ${ui.gc?comHero(ui.gc)+gruposSec(ui.gc):""}
