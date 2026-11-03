@@ -176,6 +176,10 @@ h2 .r{margin-left:auto;font-size:14px;font-weight:700}
 .sitsec>summary::-webkit-details-marker{display:none}
 .sitsec>summary .n{font-weight:500;letter-spacing:0;color:var(--ink3);margin-left:4px}
 .sitsec>.cegs{margin-top:12px}
+.cstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:2px}
+.cstat{display:grid;gap:2px}
+.cstat b{font-size:20px;font-weight:800;line-height:1.1}
+.cstat span{font-size:11.5px;color:var(--ink2)}
 .ceg .s{font-size:13px;color:var(--ink2)}
 .strip{display:flex;gap:6px;min-height:0;overflow:hidden;align-items:center}
 .strip .ph{width:38px;flex:none;border-radius:6px}
@@ -735,10 +739,12 @@ function itemThumbs(r,max){
   const com=ts.filter(Boolean); return {html:com.slice(0,max).map(bg=>ph(bg,"","")).join(""),n:com.length,sem:ts.length-com.length};
 }
 // visão geral: um cartão por comunidade; tocar abre as CEGs dela
-function comCard(c,rs){const ci=comInfo(c), deve=rs.reduce((s,r)=>s+r.deve,0), devN=rs.reduce((s,r)=>s+r.devN,0), por=rs.reduce((s,r)=>s+r.ativos,0);
-  const ts=[]; rs.forEach(r=>{const t=itemThumbs(r,5); if(t.html)ts.push(t.html)}); const fotos=ts.join("").split("</span>").filter(Boolean).slice(0,6).map(x=>x+"</span>").join("");
-  return `<button class="ceg" data-gc="${esc(c)}" type="button"><span class="top">${av("com",c,"lg")}<span class="tx"><span class="t" style="font-size:17px;white-space:normal">${esc(nomeCom(c))}</span><span class="s">${esc([ci&&ci.goms,plural(rs.length,"CEG","CEGs")].filter(Boolean).join(" · "))}</span></span>${devN?`<span class="pill late">devo ${deve?brl(deve):"sem valor"}</span>`:""}</span>
-    ${fotos?`<span class="strip">${fotos}</span>`:""}<span class="s" style="color:var(--ink2);font-size:13px">${por?plural(por,"item por chegar","itens por chegar"):"tudo comigo"}</span></button>`}
+function comCard(c,rs){const ci=comInfo(c), ab=rs.filter(r=>r.aberta).length, deve=rs.reduce((s,r)=>s+r.deve,0), devN=rs.reduce((s,r)=>s+r.devN,0), por=rs.reduce((s,r)=>s+r.ativos,0);
+  const gr=gruposDe(c).filter(g=>!g.arquivado).length, env=list("envios").filter(e=>e.comunidade===c&&["A pedir","A confirmar","Aguardando liberação"].includes(e.status)).length;
+  const extra=[gr?plural(gr,"grupo","grupos"):"", env?plural(env,"envio a pedir","envios a pedir"):"", devN?plural(devN,"conta vencida","contas vencidas"):""].filter(Boolean).join(" · ");
+  return `<button class="ceg" data-gc="${esc(c)}" type="button"><span class="top">${av("com",c,"lg")}<span class="tx"><span class="t" style="font-size:17px;white-space:normal">${esc(nomeCom(c))}</span><span class="s">${esc(ci&&ci.goms||"")}</span></span></span>
+    <span class="cstats"><span class="cstat"><b>${ab}</b><span>CEGs abertas</span></span><span class="cstat"><b>${por}</b><span>por chegar</span></span><span class="cstat"><b${deve?' style="color:var(--late)"':""}>${deve?brl(deve):"—"}</b><span>devo</span></span></span>
+    ${extra?`<span class="s" style="color:var(--ink2);font-size:13px">${esc(extra)}</span>`:""}</button>`}
 // miniatura de um item (usada na folha da CEG e na lista de todos os itens da comunidade)
 function itemTile(dd,cap){const cs=Array.isArray(dd.cards)?dd.cards:[]; const c=cs.length&&COL?CIDX.get(cs[0]):null; const bg=c?cardBg(c):itemBg(dd);
   return `<button class="tile" data-card="${esc(cs.length&&COL&&CIDX.get(cs[0])?cs[0]:"i-"+dd.id)}" type="button">${ph(bg,"",bg?`<span class="pill ${FTONE[faseDe(dd.status)]} bdg">${FLBL[faseDe(dd.status)]}</span>`:esc(dd.item||""))}<span class="cap">${esc(dd.item||"")}<small>${esc(cap!=null?cap:(dd.membro||""))}</small></span></button>`}
