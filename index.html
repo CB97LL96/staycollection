@@ -778,7 +778,7 @@ function comHero(com){const ci=comInfo(com), cs=cegs().filter(r=>r.com===com), d
   return `<div class="hero">${av("com",com,"xl")}<div><div style="font-size:22px;font-weight:800;line-height:1.2">${esc(nomeCom(com))}</div><div style="color:var(--ink2)">${esc([ci&&ci.goms,plural(cs.length,"CEG","CEGs")].filter(Boolean).join(" · "))}</div>${deve?`<div style="color:var(--late);font-weight:700">devo ${brl(deve)}</div>`:""}</div></div>`}
 // nome que aparece no app: o apelido, se houver; o nome do WhatsApp segue sendo a chave
 const nomeCom=c=>{const ci=comInfo(c); return (ci&&ci.apelido)||c};
-const SITS=[["Ativa","Ativas",true],["Saindo","Saindo",true],["Sair","Sair",false],["Resolvida|Sem itens","Finalizadas",false]];
+const SITS=[["Ativa","Ativas",true],["Saindo","Saindo",true],["Sair","Últimas etapas",false],["Resolvida|Sem itens","Finalizadas",false]];
 function sitSecs(grupos){const conhecidas=new Set(SITS.flatMap(x=>x[0].split("|")));
   return SITS.map(([keys,label,open])=>{const ks=keys.split("|");
     const items=grupos.filter(([c])=>{const st=(comInfo(c)||{}).situacao||""; return ks.includes(st)||(label==="Ativas"&&!conhecidas.has(st))});
