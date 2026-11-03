@@ -653,8 +653,6 @@ function renderInicio(){
   const k=contas(), col=colecao();
   const n=f=>col.filter(e=>GRUPO_F[f].includes(e.fase)).length;
   const semana=k.devoL.filter(c=>{const d=daysTo(c.prazo);return d!=null&&d>=0&&d<=7});
-  const aPedir=list("envios").filter(e=>e.status==="A pedir");
-  const chegando=list("envios").filter(e=>e.status==="Enviado");
   const semCard=list("itens").filter(d=>tipoDe(d)==="Photocard / set"&&faseDe(d.status)!=="fora"&&!(Array.isArray(d.cards)&&d.cards.length)).length;
   const robo=nSug();
   const dt=new Date().toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"});
@@ -664,7 +662,6 @@ function renderInicio(){
   if(k.venc.length)tasks.push(item("late",`${plural(k.venc.length,"conta vencida","contas vencidas")}: ${total(k.venc)}`,`${eraDot(k.venc)}a mais antiga venceu há ${plural(Math.max(...k.venc.map(c=>-daysTo(c.prazo))),"dia","dias")}`,'data-go="contas"',"venceu"));
   if(semana.length){const first=[...semana].sort(byPrazo)[0]; tasks.push(item("soon",semana.length===1?esc(first.referente||"Conta"):`${semana.length} contas vencem em até 7 dias`,`${eraDot(semana)}${esc(first.comunidade||"")} · ${total(semana)}`,semana.length===1?`data-conta="${esc(first.id)}"`:'data-go="contas"',fdd(first.prazo)))}
   if(k.confVenc.length)tasks.push(item("guess",`${plural(k.confVenc.length,"conta a confirmar já venceu","contas a confirmar já venceram")}`,`${eraDot(k.confVenc)}ainda são palpites; confirme o valor com a GOM`,'data-go="contas"',"confirmar"));
-  chegando.forEach(e=>tasks.push(item("",`Chegou? ${esc(e.gom||e.comunidade||"envio")}`,`${av("com",e.comunidade,"xs")}enviado; confirme quando receber`,`data-envio="${esc(e.id)}"`,"conferir")));
   if(robo)tasks.push(item("",`${plural(robo,"sugestão do robô","sugestões do robô")}`,"ele só sugere; você decide",'data-act="robo"',"conferir"));
   if(semCard)tasks.push(item("",`${plural(semCard,"pedido sem card ligado","pedidos sem card ligado")}`,"ligar ao catálogo dá foto e conta repetidos",'data-go="colecao" data-cf="semcard"',"ligar"));
   const vindo=col.filter(e=>GRUPO_F.vindo.includes(e.fase)&&bgOf(e)).sort((a,b)=>FORD[b.fase]-FORD[a.fase]).slice(0,12);
@@ -1075,7 +1072,6 @@ document.addEventListener("click",async e=>{
     const adds=cs.map(c=>["itens",{item:c.v||"",membro:c.m||"",comunidade:r.com,ceg:r.nome,valor:val,cards:[c.i],status:"Garantido",origem:"Claim",tipo:"Photocard / set",pago,criadoEm:isoToday()}]);
     if(val)adds.push(["cobrancas",{referente:`${cs.length>1?cs.length+" cards":"card"}: ${cs.map(c=>[c.m,c.v].filter(Boolean).join(" ")).join(", ")}`.slice(0,140),comunidade:r.com,ceg:r.nome,tipo:"Item",valor:Math.round(val*cs.length*100)/100,prazo:nc.prazo||"",status:nc.pago?"Paga":"Pendente",...(nc.pago?{pagoEm:isoToday()}:{}),origem:"app novo"}]);
     b.disabled=true; if(await addMany(adds,`Compra salva: ${plural(cs.length,"card","cards")}`))closeSheet(); else b.disabled=false; return}
-  if(a==="envios"){openSheet("Pedir envio",enviosSheet);return}
   if(a==="robo"){openSheet("Sugestões do robô",roboSheet);return}
   if(a==="cxall"){await caixaTodas(b);return}
   if(a==="cad"){const k=ds.k;openSheet({comunidades:"Comunidades",repasses:"Repasses",envios:"Envios"}[k],()=>cadSheet(k));return}
