@@ -664,7 +664,6 @@ function renderInicio(){
   if(k.venc.length)tasks.push(item("late",`${plural(k.venc.length,"conta vencida","contas vencidas")}: ${total(k.venc)}`,`${eraDot(k.venc)}a mais antiga venceu há ${plural(Math.max(...k.venc.map(c=>-daysTo(c.prazo))),"dia","dias")}`,'data-go="contas"',"venceu"));
   if(semana.length){const first=[...semana].sort(byPrazo)[0]; tasks.push(item("soon",semana.length===1?esc(first.referente||"Conta"):`${semana.length} contas vencem em até 7 dias`,`${eraDot(semana)}${esc(first.comunidade||"")} · ${total(semana)}`,semana.length===1?`data-conta="${esc(first.id)}"`:'data-go="contas"',fdd(first.prazo)))}
   if(k.confVenc.length)tasks.push(item("guess",`${plural(k.confVenc.length,"conta a confirmar já venceu","contas a confirmar já venceram")}`,`${eraDot(k.confVenc)}ainda são palpites; confirme o valor com a GOM`,'data-go="contas"',"confirmar"));
-  if(aPedir.length)tasks.push(item("",`Pedir envio em ${plural(aPedir.length,"lugar","lugares")}`,`<span class="avs">${aPedir.slice(0,6).map(e=>av("com",e.comunidade,"xs")).join("")}</span>${esc(aPedir.map(e=>e.gom||e.comunidade).slice(0,3).join(", "))}${aPedir.length>3?"…":""}`,'data-act="envios"',"pedir"));
   chegando.forEach(e=>tasks.push(item("",`Chegou? ${esc(e.gom||e.comunidade||"envio")}`,`${av("com",e.comunidade,"xs")}enviado; confirme quando receber`,`data-envio="${esc(e.id)}"`,"conferir")));
   if(robo)tasks.push(item("",`${plural(robo,"sugestão do robô","sugestões do robô")}`,"ele só sugere; você decide",'data-act="robo"',"conferir"));
   if(semCard)tasks.push(item("",`${plural(semCard,"pedido sem card ligado","pedidos sem card ligado")}`,"ligar ao catálogo dá foto e conta repetidos",'data-go="colecao" data-cf="semcard"',"ligar"));
@@ -775,7 +774,7 @@ function gruposSec(com){const gs=gruposDe(com); if(!gs.length)return "";
   const bloco=(label,xs)=>xs.length?`<div class="gcat"><div class="gcat-l">${label} <span class="n">${xs.length}</span></div><div class="gchips">${xs.map(chip).join("")}</div></div>`:"";
   return `<h2>Grupos do WhatsApp <span class="n">${gs.length}</span></h2>${bloco("CEGs",ativos.filter(g=>/ceg/.test(normK(g.nome))))}${bloco("Outros",ativos.filter(g=>!/ceg/.test(normK(g.nome))))}${bloco("Arquivados",arq)}`}
 function comHero(com){const ci=comInfo(com), cs=cegs().filter(r=>r.com===com), deve=cs.reduce((s,r)=>s+r.deve,0);
-  return `<div class="hero">${av("com",com,"xl")}<div><div style="font-size:22px;font-weight:800;line-height:1.2">${esc(nomeCom(com))}</div><div style="color:var(--ink2)">${esc([ci&&ci.goms,plural(cs.length,"CEG","CEGs")].filter(Boolean).join(" · "))}</div>${deve?`<div style="color:var(--late);font-weight:700">devo ${brl(deve)}</div>`:""}</div></div>`}
+  return `<div class="hero">${av("com",com,"xl")}<div><div style="font-size:22px;font-weight:800;line-height:1.2">${esc(nomeCom(com))}</div><div style="color:var(--ink2)">${esc([ci&&ci.goms,plural(cs.length,"CEG","CEGs")].filter(Boolean).join(" · "))}</div>${deve?`<div style="color:var(--late);font-weight:700">devo ${brl(deve)}</div>`:""}${(()=>{const cid=[...D.comunidades].find(([,d])=>d.nome===com);return cid?`<div style="margin-top:8px">${editBtn("comunidades",cid[0],"editar comunidade")}</div>`:""})()}</div></div>`}
 // nome que aparece no app: o apelido, se houver; o nome do WhatsApp segue sendo a chave
 const nomeCom=c=>{const ci=comInfo(c); return (ci&&ci.apelido)||c};
 const SITS=[["Ativa","Ativas",true],["Saindo","Saindo",true],["Sair","Últimas etapas",false],["Resolvida|Sem itens","Finalizadas",false]];
@@ -798,7 +797,7 @@ function renderCegs(){
     <span>${steps(r.step)}<span class="stepl"><span><b>${CSTEPS[r.step]}</b></span><span>${r.ativos?r.ativos+" por chegar":r.itens.length?"tudo comigo":""}</span></span></span>
   </button>`};
   $("#main").innerHTML=`${head("CEGs",`${plural(all.filter(r=>r.aberta).length,"CEG aberta","CEGs abertas")} em ${plural(new Set(all.filter(r=>r.aberta).map(r=>r.com)).size,"comunidade","comunidades")}`)}
-  <div class="hacts"><button class="btn sm" data-new="cegs" type="button">${ico("plus",16)}CEG</button><button class="btn sm" data-act="cad" data-k="comunidades" type="button">Comunidades</button></div>
+  <div class="hacts"><button class="btn sm" data-new="cegs" type="button">${ico("plus",16)}CEG</button></div>
   <div class="search">${ico("search")}<input id="gq" type="search" placeholder="Buscar CEG, GOM, item ou membro" value="${esc(ui.gq)}" aria-label="Buscar CEG"></div>
   ${ui.gc?`<div class="hacts"><button class="btn sm" data-gc="" type="button">${ico("back",16)}Todas as comunidades</button></div>`:""}
   ${ui.gc?comHero(ui.gc)+gruposSec(ui.gc):""}
