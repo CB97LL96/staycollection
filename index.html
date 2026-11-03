@@ -822,19 +822,43 @@ function campo(k,f,v){const [n,l,t,x]=f, id="f_"+n, wide=x==="wide"||t==="area";
   else inp=`<input id="${id}" name="${n}" ${t==="url"?'type="url"':""} value="${esc(val)}">`;
   return `<div class="field ${wide?"wide":""}"><label for="${id}">${esc(l)}</label>${inp}</div>`}
 function formSheet(){const {k,id}=fm; const d=id?D[k].get(id):fm.pre; if(id&&!d)return "<p class='empty'>Não encontrei esse registro.</p>";
-  const fs=CAMPOS[k].fields, pri=PRINCIPAIS[k]||[], a=fs.filter(f=>pri.includes(f[0])), b=fs.filter(f=>!pri.includes(f[0]));
+  const fs=CAMPOS[k].fields, a=fs, b=[]; // todos os campos à vista, sem "Mais campos" escondido
   const dl=`<datalist id="dl_cegs">${[...new Set(list("cegs").map(c=>c.nome).filter(Boolean))].map(n=>`<option value="${esc(n)}">`).join("")}</datalist>`;
   return `<form class="form" id="fmf">${a.map(f=>campo(k,f,d[f[0]])).join("")}${b.length?`<details><summary>Mais campos</summary><div class="inner">${b.map(f=>campo(k,f,d[f[0]])).join("")}</div></details>`:""}${dl}</form>
+  ${k==="comunidades"&&id?nestaComunidade(d):""}
   <div class="actions"><button class="btn pri" data-act="fmsalvar" type="button">${id?"Salvar":"Adicionar"}</button>${id?`<button class="btn" data-act="fmapagar" type="button">Apagar</button>`:""}</div>`}
 function openForm(k,id,pre){Object.assign(fm,{k,id:id||"",pre:pre||{}}); const t=(id?"Editar ":"Nova ")+NOME[k]; if(sheetFn){$("#shT").textContent=t;sheetFn=formSheet;$("#shB").innerHTML=formSheet();$("#shB").scrollTop=0}else openSheet(t,formSheet)}
 function lerForm(){const {k}=fm, out={}; CAMPOS[k].fields.forEach(([n,,t])=>{const el=document.getElementById("f_"+n); if(!el)return; let v=el.value;
   if(t==="num"){v=v.trim()===""?null:parseFloat(v.replace(/\./g,"").replace(",","."));if(v!=null&&!isFinite(v))v=null} out[n]=v}); return out}
+// CEGs da comunidade, dentro da folha de edição da comunidade
+function nestaComunidade(d){const cs=cegs().filter(r=>r.com===d.nome); const n=cs.reduce((s,r)=>s+r.itens.length,0);
+  return `<h2>Nesta comunidade <span class="n">${cs.length}</span></h2>${cs.length?`<p class="lede" style="margin:0 0 10px">${plural(n,"item","itens")} no total. Toque numa CEG pra ver os itens.</p><div class="panel"><ul class="rows">${cs.map(r=>`<li><button class="row" data-cegk="${esc(r.key)}" type="button"><span class="tx"><span class="t">${esc(r.lbl||r.nome)}</span><span class="s">${esc([r.doc&&r.doc.gom,plural(r.itens.length,"item","itens")].filter(Boolean).join(" · "))}</span></span></button></li>`).join("")}</ul></div>`:`<p class="empty">Nenhuma CEG nesta comunidade ainda.</p>`}`}
+// ao renomear comunidade ou CEG, os registros que apontam pro nome antigo vão junto (senão somem dos grupos)
+function vinculosDe(k,prev,v,patch){
+  const out=[];
+  if(k==="comunidades"&&patch.nome!==undefined&&prev.nome){
+    ["cegs","itens","cobrancas","envios","repasses"].forEach(col=>list(col).forEach(d=>{if(d.comunidade===prev.nome)out.push([col,d.id,{comunidade:v.nome}])}));
+  }
+  if(k==="cegs"&&(patch.nome!==undefined||patch.comunidade!==undefined)){
+    const oc=prev.comunidade||"", on=prev.nome||"", nc=v.comunidade||"", nn=v.nome||"";
+    ["itens","cobrancas"].forEach(col=>list(col).forEach(d=>{if((d.comunidade||"")===oc&&d.ceg===on)out.push([col,d.id,{comunidade:nc,ceg:nn}])}));
+  }
+  return out;
+}
+// a foto da comunidade é guardada pelo nome; ao renomear, a mesma foto passa a valer pro nome novo
+async function moverFoto(nomeAntigo,nomeNovo){
+  const a=iconKey("com",nomeAntigo), b=iconKey("com",nomeNovo), f=fotos[a];
+  if(!f||a===b||fotos[b]||!canWrite)return;
+  try{await db.doc("fotos/"+b).set({...f})}catch(e){toast("A foto não foi para o nome novo; reenvie a foto")}
+}
 async function salvarForm(b){const {k,id}=fm, v=lerForm(); const titulo=CAMPOS[k].fields[0][0]; if(!String(v[titulo]||"").trim()&&k!=="envios"){toast("Preencha "+CAMPOS[k].fields[0][1].toLowerCase());return}
   b.disabled=true;
   if(id){const prev=D[k].get(id)||{}, patch={}; Object.keys(v).forEach(f=>{const a=prev[f]==null?"":prev[f], c=v[f]==null?"":v[f]; if(String(a)!==String(c))patch[f]=v[f]});
     if(k==="cobrancas"&&patch.status==="Paga"&&!v.pagoEm)patch.pagoEm=isoToday();
     if(!Object.keys(patch).length){toast("Nada mudou");b.disabled=false;return}
-    if(await setMany([[k,id,patch]],"Salvo"))closeSheet(); else b.disabled=false}
+    const extra=vinculosDe(k,prev,v,patch), n=extra.length;
+    const msg="Salvo"+(n?` (${n} ${n>1?"registros ligados":"registro ligado"} atualizado${n>1?"s":""})`:"");
+    if(await setMany([[k,id,patch],...extra],msg)){ if(k==="comunidades"&&patch.nome!==undefined&&prev.nome)await moverFoto(prev.nome,patch.nome); closeSheet() } else b.disabled=false}
   else{Object.keys(v).forEach(f=>{if(v[f]==="")delete v[f]}); if(await addMany([[k,v]],NOME[k].charAt(0).toUpperCase()+NOME[k].slice(1)+" adicionada".replace("adicionada",["pedido","envio","repasse"].includes(NOME[k])?"adicionado":"adicionada")))closeSheet(); else b.disabled=false}}
 async function apagarForm(b){const {k,id}=fm, prev=D[k].get(id); if(!prev)return;
   if(!b.dataset.sure){b.dataset.sure="1";b.textContent="Toque de novo pra apagar";setTimeout(()=>{if(b.isConnected){delete b.dataset.sure;b.textContent="Apagar"}},4000);return}
