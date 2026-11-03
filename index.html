@@ -752,7 +752,9 @@ function comTodos(com){
   const its=list("itens").filter(d=>d.comunidade===com && faseDe(d.status)!=="fora");
   const lbl=d=>d.ceg?(cegLbl(d)||d.ceg):"sem CEG";
   its.sort((a,b)=>lbl(a).localeCompare(lbl(b),"pt-BR")||String(a.item||"").localeCompare(String(b.item||""),"pt-BR"));
-  return `<h2>Todos os itens <span class="n">${its.length}</span></h2>${its.length?`<div class="mini">${its.map(d=>itemTile(d,[d.membro,lbl(d)].filter(Boolean).join(" · "))).join("")}</div>`:`<p class="note">Nenhum item ativo nesta comunidade.</p>`}`;
+  const FX=["esp","cam","br","lib","ped","rec"];
+  const grupos=FX.map(f=>[f,its.filter(d=>faseDe(d.status)===f)]).filter(([,xs])=>xs.length);
+  return `<h2>Todos os itens <span class="n">${its.length}</span></h2>${its.length?grupos.map(([f,xs])=>`<div class="gcat"><div class="gcat-l">${FLBL[f]} <span class="n">${xs.length}</span></div><div class="mini">${xs.map(d=>itemTile(d,[d.membro,lbl(d)].filter(Boolean).join(" · "))).join("")}</div></div>`).join(""):`<p class="note">Nenhum item ativo nesta comunidade.</p>`}`;
 }
 // categoria da CEG: o nome de um grupo do artefato aparece no texto do grupo da CEG (mesma comunidade)
 const CATL={rep:"repasse",env:"envio",claim:"claim",comp:"comprovante"};
