@@ -181,6 +181,15 @@ h2 .r{margin-left:auto;font-size:14px;font-weight:700}
 .csub{color:var(--ink2);font-size:13.5px;margin-top:3px;overflow-wrap:anywhere}
 .cmeta{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-top:8px;font-size:13px;color:var(--ink2)}
 .cedit{align-self:start}
+.srow{display:flex;gap:8px;align-items:center}
+.srow .search{flex:1;margin:0;min-width:0}
+.srow .btn{flex:none}
+.chero{background:var(--ink);color:var(--bg);box-shadow:none}
+.chero .cname{color:var(--bg)}
+.chero .csub,.chero .cmeta{color:var(--bg);opacity:.75}
+.chero .pill{color:var(--bg);border-color:var(--bg);background:transparent}
+.chero .pill.late{color:var(--bg);opacity:1}
+.chero .btn{background:var(--bg);color:var(--ink);border-color:var(--bg)}
 .cstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:2px}
 .cstat{display:grid;gap:2px}
 .cstat b{font-size:20px;font-weight:800;line-height:1.1}
@@ -669,15 +678,15 @@ function renderInicio(){
   if(k.confVenc.length)tasks.push(item("guess",`${plural(k.confVenc.length,"conta a confirmar já venceu","contas a confirmar já venceram")}`,`${eraDot(k.confVenc)}ainda são palpites; confirme o valor com a GOM`,'data-go="contas"',"confirmar"));
   if(robo)tasks.push(item("",`${plural(robo,"sugestão do robô","sugestões do robô")}`,"ele só sugere; você decide",'data-act="robo"',"conferir"));
   if(semCard)tasks.push(item("",`${plural(semCard,"pedido sem card ligado","pedidos sem card ligado")}`,"ligar ao catálogo dá foto e conta repetidos",'data-go="colecao" data-cf="semcard"',"ligar"));
-  const vindo=col.filter(e=>GRUPO_F.vindo.includes(e.fase)&&bgOf(e)).sort((a,b)=>FORD[b.fase]-FORD[a.fase]).slice(0,12);
+  const pedir=col.filter(e=>["lib","br"].includes(e.fase)&&bgOf(e)).sort((a,b)=>FORD[b.fase]-FORD[a.fase]), nPedir=f=>col.filter(e=>e.fase===f).length, MAXT=11;
   const recent=k.pagas.slice(0,4), sv=semValor(k.devoL);
   $("#main").innerHTML=`<div class="topline"><span>Coleção SKZ</span><span>${esc(dt)}</span></div>
   <button class="cover" data-go="contas" type="button"><small>Devo hoje</small><b>${brl(k.soma(k.devoL))}</b>
     <span class="stks"><span class="stk">${plural(k.devoL.length,"conta","contas")}</span>${sv?`<span class="stk g">${sv} sem valor</span>`:""}${k.conf.length?`<span class="stk g">${k.conf.length} a confirmar, fora da soma</span>`:""}${k.venc.length?`<span class="stk r">${k.venc.length} vencida${k.venc.length>1?"s":""}</span>`:""}</span></button>
   <h2>Pra fazer hoje <span class="n">${tasks.length?plural(tasks.length,"item","itens"):""}</span></h2>
   ${tasks.length?`<ol class="trks">${tasks.join("")}</ol>`:`<div class="calm">Nada pra fazer hoje.</div>`}
-  <button class="tray" data-go="colecao" data-cf="vindo" type="button"><span class="lab"><b>Vindo pra mim</b><span>${n("vindo")} a caminho · ${n("esperando")} esperando a CEG · ${n("comigo")} comigo</span></span>
-    ${vindo.length?`<span class="slots">${vindo.map(e=>`<span class="slot">${ph(bgOf(e),"","")}</span>`).join("")}</span>`:""}</button>
+  <button class="tray" data-go="colecao" data-cf="vindo" type="button"><span class="lab"><b>Pra pedir envio</b><span>${nPedir("lib")} liberado · ${nPedir("br")} no Brasil</span></span>
+    ${pedir.length?`<span class="slots">${pedir.slice(0,MAXT).map(e=>`<span class="slot">${ph(bgOf(e),"","")}</span>`).join("")}${pedir.length>MAXT?`<span class="slot" style="display:grid;place-items:center;font-weight:800;font-size:15px;background:rgba(255,255,255,.12)">+${pedir.length-MAXT}</span>`:""}</span>`:""}</button>
   ${recent.length?`<h2>Pagas por último</h2><div class="panel"><ul class="rows">${recent.map(contaRow).join("")}</ul></div>`:""}`;
 }
 
@@ -693,12 +702,12 @@ function renderColecao(){
   const semN=ui.cf==="semcard"?0:v.filter(e=>e.semCard).length; if(ui.cf!=="semcard")v=v.filter(e=>!e.semCard);
   const gk=e=>e.era||"Sem era", mo=m=>{const i=MEMBROS.indexOf(m);return i<0?99:i}, eo=e=>ERA_ORD.has(gk(e))?ERA_ORD.get(gk(e)):-1;
   const temF=e=>bgOf(e)?0:1; v.sort((a,b)=>eo(b)-eo(a)||gk(a).localeCompare(gk(b),"pt-BR")||temF(a)-temF(b)||mo(a.membro)-mo(b.membro)||String(a.nome).localeCompare(String(b.nome),"pt-BR"));
-  const F=[["todos","Tudo"],["comigo","Comigo"],["vindo","Vindo"],["esperando","Esperando CEG"],["quero","Quero"],["repetidos","Repetidos"],["semcard","Sem card"]];
+  const F=[["todos","Tudo"],["comigo","Meus"],["vindo","Vindo"],["esperando","Esperando CEG"],["quero","Quero"],["repetidos","Repetidos"],["semcard","Sem card"]];
   const shown=v.slice(0,ui.cn);
   const groups=[]; shown.forEach(e=>{const g=gk(e); if(!groups.length||groups[groups.length-1][0]!==g)groups.push([g,[]]); groups[groups.length-1][1].push(e)});
   const tile=e=>{const b=e.fase==="rec"?"":`<span class="pill ${FTONE[e.fase]} bdg">${FLBL[e.fase]}</span>`;
     return `<button class="tile ${e.fase==="quero"?"dim":""}" data-card="${esc(e.key)}" type="button">${ph(bgOf(e),e.tipo==="Photocard / set"?"":"wide",(e.card||bgOf(e)?"":esc(e.nome))+b+(e.copias>1?`<span class="cp">×${e.copias}</span>`:""))}<span class="cap">${esc(e.nome)}<small>${esc(e.membro||e.era)}${e.semCard?" · sem card":""}</small></span></button>`};
-  $("#main").innerHTML=`${head("Coleção",(()=>{const t=f=>all.filter(e=>GRUPO_F[f].includes(e.fase)).length; return `${t("comigo")} comigo · ${t("vindo")} vindo · ${t("esperando")} esperando a CEG · ${t("quero")} quero`})())}
+  $("#main").innerHTML=`${head("Coleção",(()=>{const t=f=>all.filter(e=>GRUPO_F[f].includes(e.fase)).length; return `${t("comigo")} meus · ${t("vindo")} vindo · ${t("esperando")} esperando a CEG · ${t("quero")} quero`})())}
   <div class="search">${ico("search")}<input id="cq" type="search" placeholder="Buscar card, era, membro ou CEG" value="${esc(ui.cq)}" aria-label="Buscar na coleção"></div>
   <div class="chips scroll" role="group" aria-label="Onde está">${F.map(([k,l])=>`<button class="chip" data-cf="${k}" aria-pressed="${ui.cf===k}" type="button">${l}<span class="c">${cnt(k)}</span></button>`).join("")}</div>
   <details class="filt" ${ui.cm||ui.ct?"open":""}><summary>Filtrar por membro e tipo${ui.cm||ui.ct?`: ${esc([ui.cm,ui.ct==="Photocard / set"?"Photocards":ui.ct].filter(Boolean).join(", "))}`:""}</summary>
@@ -802,8 +811,8 @@ function renderCegs(){
     <span>${steps(r.step)}<span class="stepl"><span><b>${CSTEPS[r.step]}</b></span><span>${r.ativos?r.ativos+" por chegar":r.itens.length?"tudo comigo":""}</span></span></span>
   </button>`};
   $("#main").innerHTML=`${head("CEGs",`${plural(all.filter(r=>r.aberta).length,"CEG aberta","CEGs abertas")} em ${plural(new Set(all.filter(r=>r.aberta).map(r=>r.com)).size,"comunidade","comunidades")}`)}
-  <div class="hacts"><button class="btn sm" data-new="cegs" type="button">${ico("plus",16)}CEG</button></div>
-  ${ui.gc?"":`<div class="search">${ico("search")}<input id="gq" type="search" placeholder="Buscar CEG, GOM, item ou membro" value="${esc(ui.gq)}" aria-label="Buscar CEG"></div>`}
+  ${ui.gc?`<div class="hacts"><button class="btn sm" data-new="cegs" type="button">${ico("plus",16)}CEG</button></div>`:""}
+  ${ui.gc?"":`<div class="srow"><div class="search">${ico("search")}<input id="gq" type="search" placeholder="Buscar CEG, GOM, item ou membro" value="${esc(ui.gq)}" aria-label="Buscar CEG"></div><button class="btn sm" data-new="cegs" type="button">${ico("plus",16)}CEG</button></div>`}
   ${ui.gc?`<div class="hacts"><button class="btn sm" data-gc="" type="button">${ico("back",16)}Todas as comunidades</button></div>`:""}
   ${ui.gc?comHero(ui.gc)+gruposSec(ui.gc):""}
   ${!ui.gc&&!q?(grupos.length?sitSecs(grupos.concat(list("comunidades").map(c=>c.nome).filter(n=>n&&!m.has(n)).map(n=>[n,[]]))):`<p class="empty">Nenhuma CEG com esses filtros.</p>`):grupos.length?grupos.map(([c,rs])=>{const deve=rs.reduce((s,r)=>s+r.deve,0); const ci=comInfo(c);
