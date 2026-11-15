@@ -12,6 +12,7 @@
     "melhorar-fotos": "node scripts/melhorar-fotos.mjs"
   },
   "dependencies": {
-    "@google/genai": "^2.31.0"
+    "@google/genai": "^2.31.0",
+    "whatsapp-web.js": "^1.34.7"
   }
 }
