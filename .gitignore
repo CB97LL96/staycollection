@@ -8,3 +8,5 @@ backup/
 node_modules/
 # conversas exportadas do WhatsApp: dados pessoais, nunca no repositório público
 _whatsapp/
+# arquivos soltos de trabalho (exports, zips): dados pessoais
+temporario/
