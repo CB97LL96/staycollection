@@ -832,7 +832,7 @@ let sheetFn=null, lastFocus=null;
 function openSheet(title,fn){sheetFn=fn;lastFocus=document.activeElement;$("#shT").textContent=title;$("#shB").innerHTML=fn();$("#shB").scrollTop=0;$("#sheet").inert=false;document.querySelectorAll(".app,.tabbar,.btn.fab").forEach(x=>x.inert=true);$("#sheet").classList.add("on");$("#sheet").setAttribute("aria-hidden","false");$("#scrim").classList.add("on");lazy();setTimeout(()=>$("#sheet .x").focus(),30)}
 function closeSheet(){sheetFn=null;$("#sheet").inert=true;document.querySelectorAll(".app,.tabbar,.btn.fab").forEach(x=>x.inert=false);$("#sheet").classList.remove("on");$("#sheet").setAttribute("aria-hidden","true");$("#scrim").classList.remove("on");if(lastFocus&&lastFocus.focus)lastFocus.focus()}
 
-function contaSheet(id){const c=D.cobrancas.get(id); if(!c)return "<p class='empty'>Conta não encontrada.</p>"; const ci=comInfo(c.comunidade); const g=cegDoc(c.ceg,c.comunidade);
+function contaSheet(id){const c0=D.cobrancas.get(id); if(!c0)return "<p class='empty'>Conta não encontrada.</p>"; const c={...c0,id}; const ci=comInfo(c.comunidade); const g=cegDoc(c.ceg,c.comunidade);
   const kv=[["De onde veio",c.prova||c.grupo],["Status",c.status],["Tipo",c.tipo],["Prazo",c.prazo?fdd(c.prazo)+(daysTo(c.prazo)<0?" (venceu)":""):c.prazoNota||"sem prazo"],["Avisado em",c.aviso&&fdd(c.aviso)],["Pago em",c.pagoEm&&fdd(c.pagoEm)],["Como pagar",c.pagarComo],["Comprovante",ci&&ci.comprovante]].filter(x=>x[1]);
   return `<div class="origem">${av("com",c.comunidade,"lg")}<span><b>${esc(c.comunidade||"Sem comunidade")}</b><small>${esc([g&&g.gom||ci&&ci.goms,cegLbl(c)||c.ceg].filter(Boolean).join(" · "))}</small></span></div>
   <p class="ref">${esc(c.referente||c.tipo||"Cobrança")}</p>
@@ -863,7 +863,7 @@ function cegSheet(key){const r=cegs().find(x=>x.key===key); if(!r)return "<p cla
 function enviosSheet(){const es=list("envios").filter(e=>e.status==="A pedir").sort(byPrazo);
   if(!es.length)return cadSheet("envios");
   return `<p class="lede" style="margin:0 0 12px">Já liberados. Peça o envio com cada GOM.</p><div class="panel"><ul class="rows">${es.map(e=>`<li><button class="row" data-envio="${esc(e.id)}" type="button">${dateBlk(e.prazo)}<span class="tx"><span class="t">${esc(e.gom||e.comunidade||"Envio")}</span><span class="s">${av("com",e.comunidade,"xs")}${esc([e.comunidade,e.tipo].filter(Boolean).join(" · "))}</span></span></button></li>`).join("")}</ul></div>`}
-function envioSheet(id){const e=D.envios.get(id); if(!e)return ""; return `<div class="hero">${av("com",e.comunidade,"lg")}<div><div style="font-size:20px;font-weight:700">${esc(e.gom||e.comunidade||"Envio")}</div><div style="color:var(--ink2)">${esc([e.tipo,e.status].filter(Boolean).join(" · "))}</div></div></div>
+function envioSheet(id){const e0=D.envios.get(id); if(!e0)return ""; const e={...e0,id}; return `<div class="hero">${av("com",e.comunidade,"lg")}<div><div style="font-size:20px;font-weight:700">${esc(e.gom||e.comunidade||"Envio")}</div><div style="color:var(--ink2)">${esc([e.tipo,e.status].filter(Boolean).join(" · "))}</div></div></div>
   <dl class="kv">${[["Prazo",e.prazo&&fdd(e.prazo)],["Como pedir",e.comoPedir],["Rastreio",e.rastreio],["Itens",e.itens]].filter(x=>x[1]).map(([a,b])=>`<dt>${a}</dt><dd>${esc(b)}</dd>`).join("")}</dl>
   ${envioItens(e)}<div class="actions">${editBtn("envios",e.id,"editar envio")}</div>`}
 // ao pedir ou receber, oferece mudar junto os itens daquela comunidade que estão na fase certa
