@@ -949,7 +949,7 @@ function cadSheet(k){const rows=list(k).sort((a,b)=>{const t=x=>String(x.nome||x
 
 // ---------- sugestões do robô (caixa) ----------
 // Cada mensagem mandada ao bot vira um item em "caixa" com registros sugeridos. Nada muda sem ela aceitar.
-const ACAO={paga:"marcar como paga",cancelada:"marcar como cancelada",valor:"valor novo",prazo:"prazo novo",ligar:"é a mesma?"};
+const ACAO={paga:"marcar como paga",cancelada:"marcar como cancelada",valor:"valor novo",prazo:"prazo novo",ligar:"é a mesma?",status:"status novo"};
 const DESTINO={cobrancas:"conta",itens:"pedido",envios:"envio",repasses:"repasse"};
 function caixaPendentes(){return list("caixa").filter(c=>c.estado==="erro"||c.estado==="lendo"||(c.registros||[]).some(r=>r.estado==="pendente")).sort((a,b)=>String(b.recebidoEm).localeCompare(String(a.recebidoEm)))}
 const nSug=()=>caixaPendentes().reduce((n,c)=>n+(c.registros||[]).filter(r=>r.estado==="pendente").length,0);
@@ -964,11 +964,11 @@ function roboSheet(){const cs=caixaPendentes(); if(!cs.length)return `<div class
   const quando=t=>{try{return new Date(t).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}catch(e){return ""}};
   const alta=cs.reduce((n,c)=>n+(c.registros||[]).filter(r=>r.estado==="pendente"&&r.confianca==="alta"&&(!r.acao||r.acao==="nova")).length,0);
   const reg=(c,r,i)=>r.estado!=="pendente"?"":`<div class="reg"><div class="l1"><b>${esc(r.referente||"(sem título)")}</b><span style="font-weight:700;white-space:nowrap">${typeof r.valor==="number"?brl(r.valor):"sem valor"}</span></div>
-    <div class="meta"><span class="pill info">${esc(ACAO[r.acao]||DESTINO[r.destino]||r.destino||"")}</span> ${r.confianca!=="alta"?`<span class="pill guess">confiança ${esc(r.confianca||"?")}</span> `:""}${esc([r.comunidade,r.ceg&&"CEG: "+r.ceg,r.prazo&&"prazo "+fdd(r.prazo)].filter(Boolean).join(" · "))}</div>
+    <div class="meta"><span class="pill info">${esc(ACAO[r.acao]||DESTINO[r.destino]||r.destino||"")}</span>${r.acao==="status"&&r.status?` <span class="pill">${esc(r.status)}</span>`:""} ${r.confianca!=="alta"?`<span class="pill guess">confiança ${esc(r.confianca||"?")}</span> `:""}${esc([r.comunidade,r.ceg&&"CEG: "+r.ceg,r.prazo&&"prazo "+fdd(r.prazo)].filter(Boolean).join(" · "))}</div>
     ${r.trecho?`<div class="quote">“${esc(r.trecho)}”</div>`:""}${r.duvidas?`<div class="quote warn">Conferir: ${esc(r.duvidas)}</div>`:""}
     <div class="actions" style="margin:4px 0"><button class="btn sm" data-cx="${esc(c.id)}" data-cxi="${i}" data-cxa="aceitar" type="button">aceitar</button><button class="btn sm" data-cx="${esc(c.id)}" data-cxi="${i}" data-cxa="descartar" type="button">descartar</button></div></div>`;
   return `<p class="lede" style="margin:0 0 12px">O robô só sugere. Nada muda até você aceitar.</p>${alta?`<div class="actions" style="margin-top:0"><button class="btn" data-act="cxall" type="button">Aceitar as ${alta} de alta confiança</button></div>`:""}
-  ${cs.map(c=>`<article class="sug"><div class="hd"><span><b>${esc(({paboracha:"Paboracha",whatsapp:"WhatsApp"}[c.origem]||"Telegram"))}</b> <small>${esc(quando(c.recebidoEm))}</small></span>${c.estado!=="lida"?`<button class="btn sm" data-cx="${esc(c.id)}" data-cxa="arquivar" type="button">arquivar</button>`:""}</div>
+  ${cs.map(c=>`<article class="sug"><div class="hd"><span><b>${esc(({paboracha:"Paboracha",whatsapp:"WhatsApp",planilha:"Planilha"}[c.origem]||"Telegram"))}</b> <small>${esc(quando(c.recebidoEm))}</small>${c.ceg&&c.ceg.nome?` <small>· CEG ${esc(c.ceg.nome)}${typeof c.totalDevido==="number"?` · devo ${brl(c.totalDevido)}`:""}</small>`:""}</span>${c.estado!=="lida"?`<button class="btn sm" data-cx="${esc(c.id)}" data-cxa="arquivar" type="button">arquivar</button>`:""}</div>
     ${c.estado==="erro"?`<div class="quote warn">Não consegui ler: ${esc(c.erro||"")}</div>`:c.estado==="lendo"?`<div class="meta">lendo…</div>`:c.resumo&&c.origem!=="paboracha"?`<div class="meta">${esc(c.resumo)}</div>`:""}
     ${c.texto?`<details><summary style="cursor:pointer;font-size:13px;color:var(--ink2)">mensagem original</summary><div class="quote" style="white-space:pre-wrap;margin-top:6px">${esc(c.texto)}</div></details>`:""}
     ${(c.registros||[]).map((r,i)=>reg(c,r,i)).join("")}</article>`).join("")}`}
@@ -976,7 +976,10 @@ async function caixaAcao(b){const id=b.dataset.cx, c=D.caixa.get(id); if(!c||!db
   try{
     if(acao==="arquivar"){await db.doc("caixa/"+id).update({estado:"arquivada"});toast("Arquivada");return}
     const i=Number(b.dataset.cxi), regs=(c.registros||[]).map(r=>({...r})), r=regs[i]; if(!r)return;
-    if(acao==="aceitar"&&r.acao&&r.acao!=="nova"){
+    if(acao==="aceitar"&&r.acao==="status"){
+      if(!r.alvo||!D.itens.has(r.alvo)){b.disabled=false;toast("Esse item não existe mais; descarte a sugestão");return}
+      await db.doc("itens/"+r.alvo).update({status:r.status}); r.estado="aceito"; toast("Item: "+r.status)}
+    else if(acao==="aceitar"&&r.acao&&r.acao!=="nova"){
       if(!r.alvo||!D.cobrancas.has(r.alvo)){b.disabled=false;toast("Essa conta não existe mais; descarte a sugestão");return}
       const patch=r.acao==="paga"?{status:"Paga",pagoEm:r.pagoEm||isoToday()}:r.acao==="cancelada"?{status:"Cancelada"}:r.acao==="valor"?{valor:r.valor}:r.acao==="prazo"?{prazo:r.prazo}:{paboId:r.novo&&r.novo.paboId,valor:r.valor,...(r.prazo?{prazo:r.prazo}:{})};
       await db.doc("cobrancas/"+r.alvo).update({...patch,conferidoEm:isoToday()}); r.estado="aceito"; toast("Conta atualizada")}

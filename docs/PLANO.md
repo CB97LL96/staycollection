@@ -145,13 +145,29 @@ Na dúvida sobre um termo, usar o que aparece nas mensagens das GOMs e perguntar
    - `supabase/v2.sql`: tabelas novas ao lado de `docs` (o app atual não muda).
    - `scripts/v2/mapear.mjs` + `scripts/migrar-v2.mjs` (`npm run migrar-v2`, relatório sem
      gravar; `-- --apply` grava; rodar de novo não duplica nem sobrescreve).
-   - Testes: `npm run test-v2` (dados inventados). O esquema e a gravação foram testados
+   - Testes: `npm test` (dados inventados). O esquema e a gravação foram testados
      num Postgres local, duas vezes seguidas.
    - Falta: ela rodar `v2.sql` no SQL Editor, depois `npm run migrar-v2` e conferir o
      relatório (CEGs criadas por citação, CEGs ambíguas, valores ilegíveis) antes do
      `--apply`.
-1. **Bot que investiga** (agente com ferramentas; resposta com total e botões; cron cria
-   cobrança que está na planilha e falta no app).
+1. **Bot que investiga** (código pronto em 24/11/2026, falta deploy):
+   - `scripts/investigar.mjs`: acha a CEG por código (nome do grupo no .txt, nome da
+     CEG/grupo/GOM/comunidade no texto), monta o dossiê (cobranças, claims, notas dela,
+     linhas da planilha com o nome dela, planilha citada na mensagem), a IA diz só o que
+     muda, e o total devido na CEG é calculado por código. Alvo inventado pela IA é
+     descartado.
+   - `api/telegram.js`: responde com CEG, mudanças, total, onde olhar e planilha
+     conferida, com botões Aceitar / Não é minha / Ver no app. CEG em dúvida: botões com
+     as candidatas, e ele lê de novo com a escolhida.
+   - `scripts/aceitar.mjs`: o "Aceitar" do Telegram grava igual ao botão do app, sem pix.
+   - App atual: aceita "status novo" de item e mostra CEG e total na sugestão.
+   - Cron (`conferir-cobrancas.mjs`): passa por toda CEG com planilha que não acabou,
+     sugere cobrança que está na planilha e falta no app (id fixo, não repete), 4 CEGs
+     por vez por causa da cota da IA.
+   - Testes: `npm test` (24, com IA, Supabase, Telegram e planilha simulados). Não foi
+     testado com o Gemini de verdade nem com o banco dela.
+   - Deploy: nada de variável nova. Opcional `APP_URL` (padrão
+     staycollection.vercel.app). O webhook atual já recebe os toques nos botões.
 2. **Mural e colar print.**
 3. **Agora e pagamento** (o app novo substitui o atual aqui).
 4. **Binder, faltantes e caça de fotos.**

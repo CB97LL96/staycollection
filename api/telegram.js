@@ -10,16 +10,28 @@
 //   TELEGRAM_CHAT_ID    o código do seu chat com o bot. Se faltar, o bot responde
 //                       dizendo qual é, pra você colar aqui.
 //   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, OWNER_ID, GEMINI_API_KEY, MEUS_NOMES
-import { lerFonte, IMAGENS } from "../scripts/ler-core.mjs";
+import { IMAGENS } from "../scripts/ler-core.mjs";
+import { investigar, respostaTelegram } from "../scripts/investigar.mjs";
+import { aceitarTodas, descartarTodas } from "../scripts/aceitar.mjs";
 
 const TG = (m) => `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/${m}`;
 const LIMITE_TEXTO = 60000;
 
-async function responder(chatId, texto) {
-  await fetch(TG("sendMessage"), {
-    method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ chat_id: chatId, text: texto, disable_web_page_preview: true }),
-  }).catch(() => {});
+const APP = process.env.APP_URL || "https://staycollection.vercel.app/";
+async function tg(metodo, corpo) {
+  await fetch(TG(metodo), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(corpo) }).catch(() => {});
+}
+async function responder(chatId, texto, botoes) {
+  await tg("sendMessage", { chat_id: chatId, text: texto, disable_web_page_preview: true, ...(botoes ? { reply_markup: { inline_keyboard: botoes } } : {}) });
+}
+// Botões da resposta. callback_data tem no máximo 64 bytes.
+function botoesDe(id, r) {
+  if (!r.ceg && r.candidatas.length > 1) return r.candidatas.slice(0, 3).map((c, i) => [{ text: c.nome.slice(0, 40), callback_data: `ceg:${id}:${i}` }]).concat([[{ text: "Não é minha", callback_data: `no:${id}` }]]);
+  const pend = r.registros.length;
+  return [
+    ...(pend ? [[{ text: pend === 1 ? "Aceitar" : `Aceitar as ${pend}`, callback_data: `ok:${id}` }, { text: "Não é minha", callback_data: `no:${id}` }]] : []),
+    [{ text: "Ver no app", url: APP }],
+  ];
 }
 
 async function baixarArquivo(fileId) {
@@ -73,16 +85,47 @@ const norm = (t) => String(t || "").toLowerCase().normalize("NFD").replace(/[\u0
 // Trecho vazio ou curto demais não serve de chave (acusaria duplicata à toa).
 const chaveRegistro = (r) => { const t = norm(r.trecho); return t.length < 15 ? null : `${r.destino}|${r.valor ?? ""}|${t}`; };
 
-async function contexto() {
-  const docs = await rest(`docs?owner=eq.${owner()}&col=in.(comunidades,cegs)&select=col,data&limit=2000`);
-  const nomes = (col) => [...new Set(docs.filter((d) => d.col === col).map((d) => d.data && d.data.nome).filter(Boolean))];
-  return { hoje: new Date(Date.now() - 3 * 3600 * 1000).toISOString().slice(0, 10), comunidades: nomes("comunidades"), cegs: nomes("cegs") };
+const hojeBR = () => new Date(Date.now() - 3 * 3600 * 1000).toISOString().slice(0, 10);
+// O que o bot precisa pra investigar: comunidades, CEGs, grupos, cobranças, itens.
+const docsDoApp = () => rest(`docs?owner=eq.${owner()}&col=in.(comunidades,cegs,gruposwa,cobrancas,itens,envios,repasses)&select=col,id,data&limit=10000`);
+
+// Lê de novo uma mensagem já guardada, agora com a CEG que ela escolheu.
+async function reinvestigar(chatId, caixaId, idx) {
+  const [cx] = await rest(`docs?owner=eq.${owner()}&col=eq.caixa&id=eq.${encodeURIComponent(caixaId)}&select=data`);
+  if (!cx) return responder(chatId, "Não achei mais essa mensagem.");
+  const c = cx.data, escolhida = (c.candidatas || [])[idx];
+  if (!escolhida) return responder(chatId, "Essa opção não existe mais.");
+  const nomes = (process.env.MEUS_NOMES || "").split(",").map((x) => x.trim()).filter(Boolean);
+  const r = await investigar({ texto: c.fonte || c.texto || "", nomeArquivo: c.arquivo || "" }, await docsDoApp(), { nomes, hoje: hojeBR(), cegForcada: escolhida.id });
+  const registros = r.registros.map((x) => ({ ...x, estado: "pendente" }));
+  await salvar(caixaId, { ...c, resumo: r.resumo, registros, ceg: r.ceg, totalDevido: r.totalDevido, semValor: r.semValor, pergunta: r.pergunta });
+  await responder(chatId, respostaTelegram({ ...r, registros }), botoesDe(caixaId, { ...r, registros }));
+}
+
+async function botao(q) {
+  const chatId = String(q.message && q.message.chat && q.message.chat.id);
+  if (chatId !== String(process.env.TELEGRAM_CHAT_ID || "")) return;
+  const [tipo, caixaId, extra] = String(q.data || "").split(":");
+  await tg("answerCallbackQuery", { callback_query_id: q.id, text: tipo === "ok" ? "Gravando…" : tipo === "ceg" ? "Lendo de novo…" : "Ok" });
+  // tira os botões da mensagem, pra não tocar duas vezes
+  await tg("editMessageReplyMarkup", { chat_id: chatId, message_id: q.message.message_id, reply_markup: { inline_keyboard: [[{ text: "Ver no app", url: APP }]] } });
+  const restOwner = (path, opts) => rest(path, opts);
+  if (tipo === "ok") {
+    const { ok, falhas, sumiu } = await aceitarTodas(restOwner, owner(), caixaId);
+    await responder(chatId, sumiu ? "Não achei mais essa sugestão." : `Gravado no app: ${ok}${falhas ? `. ${falhas} não deram (o registro mudou ou sumiu); confira na aba de sugestões.` : "."}`);
+  } else if (tipo === "no") {
+    await descartarTodas(restOwner, owner(), caixaId);
+    await responder(chatId, "Descartado. Nada mudou no app.");
+  } else if (tipo === "ceg") {
+    try { await reinvestigar(chatId, caixaId, Number(extra)); } catch (e) { await responder(chatId, `Não consegui ler de novo: ${e.message}`); }
+  }
 }
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end();
   if (!process.env.TELEGRAM_SECRET || req.headers["x-telegram-bot-api-secret-token"] !== process.env.TELEGRAM_SECRET) return res.status(401).end();
   const up = req.body || {};
+  if (up.callback_query) { await botao(up.callback_query).catch((e) => console.error(e)); return res.status(200).end(); }
   const msg = up.message;
   if (!msg) return res.status(200).end();
   const chatId = String(msg.chat.id);
@@ -132,25 +175,24 @@ export default async function handler(req, res) {
       return res.status(200).end();
     }
 
-    const r = await lerFonte({ fonte, imagens, contexto: await contexto() });
+    const r = await investigar({ texto: fonte, nomeArquivo: (msg.document && msg.document.file_name) || "", imagens }, await docsDoApp(), { nomes, hoje: hojeBR() });
     const antigas = await rest(`docs?owner=eq.${owner()}&col=eq.caixa&id=neq.${id}&select=data&limit=2000`);
     const jaTem = new Set(antigas.flatMap((d) => ((d.data && d.data.registros) || []).map(chaveRegistro)).filter(Boolean));
     const todos = (r.registros || []).map((x) => ({ ...x, estado: "pendente" }));
     const registros = todos.filter((x) => { const k = chaveRegistro(x); if (!k) return true; if (jaTem.has(k)) return false; jaTem.add(k); return true; });
     const repetidos = todos.length - registros.length;
-    await salvar(id, { ...base, hash, estado: "lida", resumo: r.resumo, registros, ...(repetidos ? { repetidos } : {}) });
+    await salvar(id, { ...base, hash, estado: "lida", resumo: r.resumo, registros, ceg: r.ceg, totalDevido: r.totalDevido, semValor: r.semValor, candidatas: r.candidatas, pergunta: r.pergunta,
+      // guardado pra ler de novo se ela escolher outra CEG (só texto; imagem não é guardada)
+      fonte: imagens.length ? "" : fonte.slice(0, 60000), arquivo: (msg.document && msg.document.file_name) || "", ...(repetidos ? { repetidos } : {}) });
     await marcarFonte(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, owner(), "bot", { nota: `${registros.length} sugestão(ões)` });
     if (ultimaMsg) await marcarFonte(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, owner(), "whatsapp", { nota: "conversa enviada ao bot", ate: ultimaMsg });
-    const cob = registros.filter((x) => x.destino === "cobrancas");
-    const total = cob.reduce((s, x) => s + (typeof x.valor === "number" ? x.valor : 0), 0);
     if (repetidos && !registros.length) {
       await rest(`docs?owner=eq.${owner()}&col=eq.caixa&id=eq.${id}`, { method: "DELETE", headers: { Prefer: "return=minimal" } }).catch(() => {});
-      await responder(chatId, `Li, mas as ${repetidos} sugestões já estavam na aba "O que devo" (ou já foram aceitas/descartadas). Não criei nada repetido.`);
+      await responder(chatId, `Li, mas as ${repetidos} sugestões já estavam na aba de sugestões (ou já foram aceitas ou descartadas). Não criei nada repetido.`);
       return res.status(200).end();
     }
-    await responder(chatId, registros.length
-      ? `Li! ${registros.length} sugest${registros.length === 1 ? "ão" : "ões"}${cob.length ? ` (${cob.length} cobrança${cob.length === 1 ? "" : "s"}, R$ ${total.toFixed(2).replace(".", ",")})` : ""}${repetidos ? `; ${repetidos} já existia${repetidos === 1 ? "" : "m"} e foi${repetidos === 1 ? "" : "ram"} ignorada${repetidos === 1 ? "" : "s"}` : ""}. Confira e aceite na aba "O que devo" do app.`
-      : `Li, mas não achei nada seu: ${r.resumo}`);
+    const resp = { ...r, registros };
+    await responder(chatId, respostaTelegram(resp) + (repetidos ? `\n(${repetidos} já tinham sido sugeridas antes e ficaram de fora)` : ""), botoesDe(id, resp));
   } catch (e) {
     console.error(e);
     await salvar(id, { ...base, estado: "erro", erro: e.message }).catch(() => {});

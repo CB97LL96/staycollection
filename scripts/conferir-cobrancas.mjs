@@ -15,6 +15,7 @@
 // Roda dentro do cron diário (api/cron/sync-catalogo.js). Variáveis de ambiente:
 //   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, GEMINI_API_KEY, MEUS_NOMES
 //   OWNER_ID  uuid da sua conta: Supabase > Authentication > Users > User UID
+import { createHash } from "node:crypto";
 import { gerarJson } from "./ia.mjs";
 
 const ABERTAS = ["Pendente", "A confirmar", "Aguardando a GOM", "Não liberado"];
@@ -23,8 +24,24 @@ const MAX_CHARS = 120000;
 const SCHEMA = {
   type: "object",
   additionalProperties: false,
-  required: ["resultados"],
+  required: ["resultados", "faltando"],
   properties: {
+    faltando: {
+      type: "array",
+      description: "cobranças dela que a planilha mostra (a pagar, ainda não pagas) e que não estão em nenhuma das cobranças anotadas",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["referente", "tipo", "valor", "prazo", "trecho"],
+        properties: {
+          referente: { type: "string", description: "curto, nos termos da comunidade (frete inter, taxa, item)" },
+          tipo: { type: "string", description: "Item, Frete internacional, Frete nacional, Taxa RF, Armazenamento, Multa ou Outro" },
+          valor: { type: ["number", "null"], description: "em reais, como está na linha dela" },
+          prazo: { type: "string", description: "AAAA-MM-DD ou vazio" },
+          trecho: { type: "string", description: "a linha da planilha, literal" },
+        },
+      },
+    },
     resultados: {
       type: "array",
       items: {
@@ -47,7 +64,9 @@ Para cada cobrança diga:
 - "igual": a planilha mostra essa cobrança com o mesmo valor e a mesma situação (pendente de pagamento, não liberada etc.).
 - "diferente": a planilha mostra algo diferente do anotado (já consta como pago, valor outro, prazo outro, cobrança que não existe mais). Explique em "nota", curto, com os números.
 - "nao_encontrada": nada na planilha diz respeito a essa cobrança.
-Não invente. Na dúvida, use "nao_encontrada".`;
+Não invente. Na dúvida, use "nao_encontrada".
+Resultados só para as cobranças marcadas como ABERTA.
+Em "faltando", liste o que a planilha mostra que ela ainda deve e que não corresponde a nenhuma cobrança anotada (aberta ou não). A GOM usa apelidos e números: se uma linha for a mesma coisa que uma cobrança anotada com outro nome, não é faltante. Na dúvida, não liste.`;
 
 const brl = (n) => (typeof n === "number" ? `R$ ${n.toFixed(2).replace(".", ",")}` : "valor não informado");
 const ddmm = (iso) => iso.slice(8, 10) + "/" + iso.slice(5, 7);
@@ -112,8 +131,9 @@ async function rest(url, key, path, opts = {}) {
 
 async function conferirCeg({ nomeCeg, planilha, cobs, nomes }) {
   const abas = linhasDela(await baixarPlanilha(planilha), nomes);
-  if (!abas.length) return { resultados: cobs.map((c) => ({ id: c.id, resultado: "nao_encontrada", nota: "" })), semNome: true };
-  const lista = cobs.map((c) => `- id ${c.id}: ${c.data.referente || "(sem título)"} | ${c.data.tipo || ""} | ${brl(c.data.valor)} | status ${c.data.status} | prazo ${c.data.prazo || "—"}`).join("\n");
+  const abertas = cobs.filter((c) => ABERTAS.includes(c.data.status));
+  if (!abas.length) return { resultados: abertas.map((c) => ({ id: c.id, resultado: "nao_encontrada", nota: "" })), faltando: [], semNome: true };
+  const lista = cobs.map((c) => `- ${ABERTAS.includes(c.data.status) ? "ABERTA " : ""}id ${c.id}: ${c.data.referente || "(sem título)"} | ${c.data.tipo || ""} | ${brl(c.data.valor)} | status ${c.data.status} | prazo ${c.data.prazo || "—"}`).join("\n") || "(nenhuma)";
   const { json } = await gerarJson({
     system: SYSTEM,
     schema: SCHEMA,
@@ -123,34 +143,47 @@ async function conferirCeg({ nomeCeg, planilha, cobs, nomes }) {
   return json;
 }
 
+// Linha da planilha que falta no app -> sugestão "cobrança nova" na caixa.
+export function sugestoesDaPlanilha(lista) {
+  return lista.map((f) => ({
+    id: "pl-" + createHash("sha1").update(`${f.ceg}|${String(f.trecho || "").trim()}|${f.valor ?? ""}`).digest("hex").slice(0, 16),
+    registro: { destino: "cobrancas", acao: "nova", referente: f.referente, tipo: f.tipo, valor: f.valor, prazo: f.prazo, comunidade: f.comunidade, ceg: f.ceg, trecho: f.trecho, confianca: typeof f.valor === "number" ? "alta" : "media", duvidas: "veio da planilha da GOM; confira se não é repetida", estado: "pendente" },
+  }));
+}
+
 export async function conferirCobrancas(url, key, ownerId, { nomes, hoje = hojeBR() } = {}) {
   if (!ownerId) throw new Error("Falta OWNER_ID (uuid da sua conta no Supabase).");
   if (!nomes?.length) throw new Error("Falta MEUS_NOMES.");
   if (!process.env.GEMINI_API_KEY) throw new Error("Falta GEMINI_API_KEY.");
-  const docs = await rest(url, key, `docs?owner=eq.${ownerId}&col=in.(cobrancas,cegs)&select=col,id,data&limit=5000`);
-  const planilhas = new Map(docs.filter((d) => d.col === "cegs" && d.data.planilha).map((d) => [d.data.nome, d.data.planilha]));
-  const abertas = docs.filter((d) => d.col === "cobrancas" && ABERTAS.includes(d.data.status));
+  const docs = await rest(url, key, `docs?owner=eq.${ownerId}&col=in.(cobrancas,cegs,caixa)&select=col,id,data&limit=10000`);
+  const cegDocs = docs.filter((d) => d.col === "cegs" && d.data.planilha);
+  const planilhas = new Map(cegDocs.map((d) => [d.data.nome, d.data.planilha]));
+  const comunidadeDa = new Map(cegDocs.map((d) => [d.data.nome, d.data.comunidade || ""]));
+  const todas = docs.filter((d) => d.col === "cobrancas");
+  const abertas = todas.filter((d) => ABERTAS.includes(d.data.status));
 
+  // Toda CEG com planilha que ainda não acabou entra (não só as que têm
+  // cobrança aberta): é assim que aparece a cobrança que falta no app.
   const porCeg = new Map();
-  for (const c of abertas) {
-    const k = c.data.ceg || "";
-    if (!porCeg.has(k)) porCeg.set(k, []);
-    porCeg.get(k).push(c);
-  }
+  for (const d of cegDocs) if (!/conclu|recebid|finaliz/i.test(d.data.status || "")) porCeg.set(d.data.nome, []);
+  for (const c of abertas) { const k = c.data.ceg || ""; if (!porCeg.has(k)) porCeg.set(k, []); }
+  for (const c of todas) { const k = c.data.ceg || ""; if (porCeg.has(k)) porCeg.get(k).push(c); }
 
-  const resumo = { abertas: abertas.length, conferidas: 0, divergentes: 0, naoEncontradas: 0, semPlanilha: 0, erros: [] };
+  const resumo = { abertas: abertas.length, conferidas: 0, divergentes: 0, naoEncontradas: 0, semPlanilha: 0, faltando: 0, erros: [] };
   const patches = []; // {id, data}
+  const sugestoes = []; // cobranças que estão na planilha e faltam no app
 
-  await Promise.all([...porCeg].map(async ([nomeCeg, cobs]) => {
+  const tarefas = [...porCeg].map(([nomeCeg, cobs]) => async () => {
+    const nAbertas = cobs.filter((c) => ABERTAS.includes(c.data.status)).length;
     const planilha = planilhas.get(nomeCeg);
-    if (!planilha) { resumo.semPlanilha += cobs.length; return; }
+    if (!planilha) { resumo.semPlanilha += nAbertas; return; }
     // O paboracha não é planilha: tem conferência própria (conferir-paboracha.mjs).
-    if (/paboracha\.com/i.test(planilha)) { resumo.paboracha = (resumo.paboracha || 0) + cobs.length; return; }
+    if (/paboracha\.com/i.test(planilha)) { resumo.paboracha = (resumo.paboracha || 0) + nAbertas; return; }
     try {
-      const { resultados } = await conferirCeg({ nomeCeg, planilha, cobs, nomes });
+      const { resultados, faltando = [] } = await conferirCeg({ nomeCeg, planilha, cobs, nomes });
       for (const res of resultados) {
         const c = cobs.find((x) => x.id === res.id);
-        if (!c) continue;
+        if (!c || !ABERTAS.includes(c.data.status)) continue;
         if (res.resultado === "igual") {
           resumo.conferidas++;
           patches.push({ id: c.id, muda: () => ({ conferidoEm: hoje }) });
@@ -163,10 +196,25 @@ export async function conferirCobrancas(url, key, ownerId, { nomes, hoje = hojeB
           } });
         } else resumo.naoEncontradas++;
       }
+      for (const f of faltando) sugestoes.push({ ceg: nomeCeg, comunidade: comunidadeDa.get(nomeCeg) || "", ...f });
     } catch (e) {
       resumo.erros.push(`${nomeCeg}: ${e.message}`);
     }
-  }));
+  });
+  // Poucas por vez, pra não estourar a cota grátis da IA.
+  for (let i = 0; i < tarefas.length; i += 4) await Promise.all(tarefas.slice(i, i + 4).map((f) => f()));
+
+  // Sugestões com id fixo: a mesma linha não volta depois de aceita ou descartada.
+  const jaNaCaixa = new Set(docs.filter((d) => d.col === "caixa").map((d) => d.id));
+  const novas = sugestoesDaPlanilha(sugestoes).filter((x) => !jaNaCaixa.has(x.id));
+  resumo.faltando = novas.length;
+  if (novas.length) {
+    const agora = new Date().toISOString();
+    await rest(url, key, "docs?on_conflict=owner,col,id", {
+      method: "POST", headers: { Prefer: "resolution=ignore-duplicates,return=minimal" },
+      body: JSON.stringify(novas.map((x) => ({ owner: ownerId, col: "caixa", id: x.id, data: { origem: "planilha", recebidoEm: agora, estado: "lida", resumo: `Na planilha e não no app: ${x.registro.referente}`, ceg: { nome: x.registro.ceg }, registros: [x.registro] } }))),
+    });
+  }
 
   // Relê cada cobrança logo antes de gravar e só mexe nos campos da conferência,
   // pra não apagar uma edição que a usuária tenha feito enquanto a IA lia as
