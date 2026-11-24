@@ -212,7 +212,7 @@ export function montar(json, d, { cands = [], modelo = "", t } = {}) {
 const ACAO_TXT = { nova: "novo", paga: "já paga", valor: "valor novo", prazo: "prazo novo", cancelada: "cancelada", status: "agora" };
 export function respostaTelegram(r) {
   if (!r.ceg) return r.pergunta || `Li, mas não achei de qual CEG é: ${r.resumo}`;
-  const l = [`CEG ${r.ceg.nome}${r.ceg.gom ? ` · GOM ${r.ceg.gom}` : ""}`];
+  const l = [`CEG ${r.ceg.nome}${r.ceg.gom ? ` · GOM ${r.ceg.gom}` : ""}${r.ceg.comunidade ? ` · comunidade ${r.ceg.comunidade}` : ""}`];
   const itens = r.registros.filter((x) => x.acao === "status");
   for (const x of r.registros.filter((x) => x.acao !== "status")) {
     const v = typeof x.valor === "number" ? ` ${brl(x.valor)}` : "";

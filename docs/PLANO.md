@@ -190,6 +190,15 @@ Na dúvida sobre um termo, usar o que aparece nas mensagens das GOMs e perguntar
    - Falta: testar com os dados e o Gemini de verdade; ligar o card ao catálogo no print
      (hoje o item nasce sem card, e "Ligar ao catálogo" faz isso depois); share target do
      WhatsApp (PWA); tela de GOM própria.
+2b. **Instalar no celular e compartilhar do WhatsApp** (pronto em 24/11/2026 no branch):
+   - `manifest.webmanifest`, `sw.js`, ícones: o app instala no Android ("Adicionar à tela
+     inicial" / "Instalar app") e aparece na lista de compartilhar do WhatsApp.
+   - Texto e prints compartilhados vão pra `api/investigar.js` (mesma investigação do bot do
+     Telegram): resultado na hora, com ícone e nome da comunidade ao lado da GOM, total
+     devido, aceitar/descartar. Imagem: pergunta se são cards (colar print) ou mensagem/tabela.
+   - Teste: `npm run e2e` (service worker de verdade, banco simulado).
+   - Regra da dona: GOM nunca aparece sozinha; sempre com o ícone e o nome da comunidade
+     (no Telegram, só o nome, porque texto não leva ícone).
 3. **Agora e pagamento** (o app novo substitui o atual aqui).
 4. **Binder, faltantes e caça de fotos.**
 5. **Rodada assistida.**

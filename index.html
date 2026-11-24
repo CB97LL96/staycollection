@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Coleção SKZ</title>
+<link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#111114"><link rel="icon" href="/icon-192.png"><link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -978,7 +979,7 @@ function caixaPendentes(){return list("caixa").filter(c=>c.estado==="erro"||c.es
 const nSug=()=>caixaPendentes().reduce((n,c)=>n+(c.registros||[]).filter(r=>r.estado==="pendente").length,0);
 function registroParaDoc(r,c){
   const base={comunidade:r.comunidade||"",ceg:r.ceg||"",obs:[r.obs,r.duvidas&&"conferir: "+r.duvidas].filter(Boolean).join("\n"),prova:"Telegram "+(c.recebidoEm||"").slice(0,10)+(r.trecho?": “"+r.trecho+"”":"")};
-  if(r.destino==="cobrancas")return {...base,referente:r.referente||"",tipo:r.tipo||"",valor:typeof r.valor==="number"?r.valor:null,prazo:r.prazo||"",status:r.confianca==="alta"?"Pendente":"A confirmar",pix:r.pix||"",pagarComo:r.pagarComo||"",pagarLink:r.pagarLink||"",compOnde:r.compOnde||"",compLink:r.compLink||"",aviso:(c.recebidoEm||"").slice(0,10)};
+  if(r.destino==="cobrancas")return {...base,referente:r.referente||"",tipo:r.tipo||"",valor:typeof r.valor==="number"?r.valor:null,prazo:r.prazo||"",status:r.confianca==="alta"?"Pendente":"A confirmar",aviso:(c.recebidoEm||"").slice(0,10)};
   if(r.destino==="itens")return {...base,item:r.referente||"",membro:r.membro||"",valor:typeof r.valor==="number"?r.valor:null,status:r.status||"A confirmar"};
   if(r.destino==="envios")return {...base,gom:"",status:"A confirmar",prazo:r.prazo||"",itens:r.referente||""};
   return {...base,item:r.referente||"",valor:typeof r.valor==="number"?r.valor:null,pago:"A confirmar"};
@@ -1010,6 +1011,15 @@ async function caixaAcao(b){const id=b.dataset.cx, c=D.caixa.get(id); if(!c||!db
     else{r.estado="descartado";toast("Descartado")}
     await db.doc("caixa/"+id).update({registros:regs});
   }catch(err){b.disabled=false;toast("Não deu pra salvar; tente de novo")}}
+async function caixaTodasDe(id,b){const c=D.caixa.get(id); if(!c||!db)return; b.disabled=true; const regs=(c.registros||[]).map(r=>({...r})); let ok=0,fail=0;
+  for(const r of regs){if(r.estado!=="pendente")continue;
+    try{
+      if(r.acao==="status"){if(!D.itens.has(r.alvo)){fail++;continue} await db.doc("itens/"+r.alvo).update({status:r.status})}
+      else if(r.acao&&r.acao!=="nova"){if(!D.cobrancas.has(r.alvo)){fail++;continue} const patch=r.acao==="paga"?{status:"Paga",pagoEm:r.pagoEm||isoToday()}:r.acao==="cancelada"?{status:"Cancelada"}:r.acao==="valor"?{valor:r.valor}:{prazo:r.prazo}; await db.doc("cobrancas/"+r.alvo).update({...patch,conferidoEm:isoToday()})}
+      else{const col=DESTINO[r.destino]?r.destino:"cobrancas"; await db.collection(col).add(registroParaDoc(r,c))}
+      r.estado="aceito"; ok++}catch(err){fail++}}
+  try{await db.doc("caixa/"+id).update({registros:regs})}catch(err){fail++}
+  toast(fail?`${ok} aceitas, ${fail} não deram`:`${ok} aceitas`)}
 async function caixaTodas(b){
   if(!b.dataset.sure){b.dataset.sure="1";b.dataset.t=b.textContent;b.textContent="Toque de novo pra aceitar todas";setTimeout(()=>{if(b.isConnected){delete b.dataset.sure;b.textContent=b.dataset.t}},4000);return}
   b.disabled=true; let ok=0,fail=0;
@@ -1308,6 +1318,60 @@ document.addEventListener("paste",e=>{
   if(sheetFn===printSheet){pr.step=0;lerPrint(f)}else abrirPrint("",f);
 });
 
+// ---------- Compartilhar do WhatsApp (app instalado no celular) ----------
+// O sw.js guarda o que ela compartilhou; aqui o app lê, manda pra investigação
+// (api/investigar) e mostra o resultado com aceitar/descartar.
+const sh={busy:false,erro:"",res:null,texto:"",nome:"",imagem:null,escolha:null};
+const SH_ACAO={nova:"novo",paga:"já paga",valor:"valor novo",prazo:"prazo novo",cancelada:"cancelada",status:"agora"};
+function shGom(res){const c=res.ceg; if(!c)return ""; return `<div class="origem">${av("com",c.comunidade,"lg")}<span><b>${esc(nomeCom(c.comunidade)||"Sem comunidade")}</b><small>${esc([c.gom&&"GOM "+c.gom,"CEG "+c.nome].filter(Boolean).join(" · "))}</small></span></div>`}
+function shareSheet(){
+  if(sh.escolha)return `<p class="lede" style="margin:0 0 12px">Recebi uma imagem. O que é?</p><div class="actions"><button class="btn pri" data-shesc="cards" type="button">Cards pra criar itens</button><button class="btn" data-shesc="ler" type="button">Mensagem ou tabela com cobrança</button></div><p class="note">Cards: o app recorta cada photocard. Mensagem ou tabela: o app lê o que mudou e quanto você deve.</p>`;
+  if(sh.busy)return `<p class="lede">Lendo e conferindo com o que você já tem…</p><p class="note">Costuma levar uns 10 a 25 segundos. Abre a planilha da CEG se ela existir.</p>`;
+  if(sh.erro)return `<p class="note" style="color:var(--late)">${esc(sh.erro)}</p><div class="actions"><button class="btn" data-shnovo type="button">Tentar de novo</button></div>`;
+  const r=sh.res; if(!r)return `<p class="empty">Nada pra ler.</p>`;
+  const c=D.caixa.get(r.id), regs=(c&&c.registros)||r.registros||[];
+  const pend=regs.map((x,i)=>({x,i})).filter(({x})=>x.estado==="pendente"), pronto=!!c;
+  const reg=({x,i})=>`<div class="reg"><div class="l1"><b>${esc(x.referente||"(sem título)")}</b><span style="font-weight:700;white-space:nowrap">${typeof x.valor==="number"?brl(x.valor):"sem valor"}</span></div>
+    <div class="meta"><span class="pill info">${esc(SH_ACAO[x.acao]||ACAO[x.acao]||DESTINO[x.destino]||"")}</span>${x.acao==="status"&&x.status?` <span class="pill">${esc(x.status)}</span>`:""} ${x.confianca!=="alta"?`<span class="pill guess">conferir</span> `:""}${esc(x.prazo?"prazo "+fdd(x.prazo):"")}</div>
+    ${x.trecho?`<div class="quote">“${esc(x.trecho)}”</div>`:""}${x.duvidas?`<div class="quote warn">${esc(x.duvidas)}</div>`:""}
+    <div class="actions" style="margin:4px 0"><button class="btn sm" data-cx="${esc(r.id)}" data-cxi="${i}" data-cxa="aceitar" type="button" ${pronto?"":"disabled"}>aceitar</button><button class="btn sm" data-cx="${esc(r.id)}" data-cxi="${i}" data-cxa="descartar" type="button" ${pronto?"":"disabled"}>descartar</button></div></div>`;
+  return `${shGom(r)}
+  ${r.repetido?`<p class="note">Já li essa mensagem antes. Segue o que ficou.</p>`:""}
+  ${r.resumo?`<p class="lede" style="margin:8px 0">${esc(r.resumo)}</p>`:""}
+  ${r.ceg&&typeof r.totalDevido==="number"?`<div class="hero"><div class="big">${brl(r.totalDevido)}</div><span class="pill ${r.totalDevido?"late":"ok"}">${r.totalDevido?"você deve nesta CEG":"nada a pagar nesta CEG"}</span></div>${r.semValor?`<p class="note">+ ${plural(r.semValor,"cobrança sem valor","cobranças sem valor")}. Não entram na soma.</p>`:""}`:""}
+  ${r.ceg&&r.ceg.planilha?`<p class="note">${r.ceg.planilha.erro?"Planilha: não consegui ler.":r.ceg.planilha.abas.length?"Conferido na planilha: "+esc(r.ceg.planilha.abas.join(", ")):"Planilha lida, mas seu nome não aparece nela."}</p>`:""}
+  ${r.ceg?`<p class="note">Onde olhar: ${esc(r.ceg.ondeOlhar||"grupo da CEG")}</p>`:""}
+  ${!r.ceg&&(r.candidatas||[]).length>1?`<p class="lede">${esc(r.pergunta||"De qual CEG é?")}</p><div class="actions">${r.candidatas.slice(0,3).map(x=>`<button class="btn" data-shceg="${esc(x.id)}" type="button">${esc(x.nome)}</button>`).join("")}</div>`:!r.ceg?`<p class="note">${esc(r.pergunta||"Não achei de qual CEG é.")}</p>`:""}
+  ${pend.length?pend.map(reg).join(""):r.ceg?`<p class="note">Nada novo: o app já está igual.</p>`:""}
+  ${pend.length>1&&pronto?`<div class="actions stick"><button class="btn pri" data-shall="${esc(r.id)}" type="button">Aceitar as ${pend.length}</button></div>`:""}`;
+}
+async function shEnviar(corpo){
+  sh.busy=true; sh.erro=""; sh.res=null; sh.escolha=null; if(sheetFn===shareSheet)$("#shB").innerHTML=shareSheet();
+  try{
+    const s=await window.stay.getSession(); const r=await fetch("/api/investigar",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+(s&&s.access_token)},body:JSON.stringify(corpo)});
+    const j=await r.json().catch(()=>({})); if(!r.ok)throw new Error(j.erro||"Não consegui ler isso.");
+    sh.res=j;
+  }catch(e){sh.erro=e.message||"Não consegui ler isso."}
+  sh.busy=false; if(sheetFn===shareSheet)$("#shB").innerHTML=shareSheet();
+}
+function abrirCompartilhado({texto="",nome="",imagem=null}){
+  Object.assign(sh,{texto,nome,imagem,busy:false,erro:"",res:null,escolha:null});
+  if(imagem&&!texto.trim()){sh.escolha=imagem}
+  openSheet("Compartilhado",shareSheet);
+  if(!sh.escolha)shEnviar({texto,nomeArquivo:nome});
+}
+async function imagemParaIA(file){const {canvas}=await reduzir(file,1600,.85); return {tipo:"image/jpeg",dados:canvas.toDataURL("image/jpeg",.85).split(",")[1]}}
+async function iniciarShare(){
+  if("serviceWorker" in navigator){try{await navigator.serviceWorker.register("/sw.js")}catch(e){}}
+  const q=new URLSearchParams(location.search); if(!q.has("c")&&!q.has("text")&&!q.has("title"))return;
+  history.replaceState(null,"",location.pathname+location.hash);
+  let texto=[q.get("title"),q.get("text"),q.get("url")].filter(Boolean).join("\n"), arq=null;
+  if(q.has("c")&&window.caches){try{const c=await caches.open("compartilhado"); const t=await c.match("/_c/texto"); if(t)texto=await t.text(); const a=await c.match("/_c/arq/0"); if(a){const b=await a.blob(); arq=new File([b],decodeURIComponent(a.headers.get("X-Nome")||"print.jpg"),{type:b.type})} for(const k of await c.keys())await c.delete(k)}catch(e){}}
+  if(arq&&!/^image\//.test(arq.type))arq=null;
+  if(!texto.trim()&&!arq){toast("Não recebi nada pra ler");return}
+  abrirCompartilhado({texto,imagem:arq});
+}
+
 // ---------- render ----------
 let io=null;
 function lazy(){
@@ -1338,6 +1402,10 @@ document.addEventListener("click",async e=>{
   if(ds.kv){ui.kv=ds.kv;save();render();return}
   if(ds.gf){ui.gf=ds.gf;save();render();return}
   if(ds.gc!=null){ui.gc=ds.gc;render();window.scrollTo(0,0);return}
+  if(ds.shesc){const f=sh.escolha; if(!f)return; if(ds.shesc==="cards"){sh.escolha=null;abrirPrint("",f)}else{sh.escolha=null;shEnviar({texto:"",nomeArquivo:f.name,imagem:await imagemParaIA(f)})} return}
+  if(ds.shceg){shEnviar({texto:sh.texto,nomeArquivo:sh.nome,cegForcada:ds.shceg,...(sh.imagem?{imagem:await imagemParaIA(sh.imagem)}:{})});return}
+  if(ds.shnovo!=null){shEnviar({texto:sh.texto,nomeArquivo:sh.nome,...(sh.imagem?{imagem:await imagemParaIA(sh.imagem)}:{})});return}
+  if(ds.shall){await caixaTodasDe(ds.shall,b);return}
   if(ds.mg!=null){ui.mg=ds.mg;render();return}
   if(ds.me!=null){ui.me=ds.me;render();return}
   if(ds.mfs!=null){ui.mf=ds.mfs;render();return}
@@ -1442,7 +1510,7 @@ function mergeNovos(){if(!COL||!COL.base)return;ERA_ORD=new Map();COL.base.forEa
   db.collection("fotos").limit(1000).onSnapshot(s=>{const m={};s.docs.forEach(d=>m[d.id]=d.data());fotos=m;schedule()},()=>{});
   db.collection("colecao").limit(50).onSnapshot(s=>{const m={};s.docs.forEach(d=>{const x=d.data();m[d.id]=(x&&x.s&&typeof x.s==="object")?x.s:{}});posse=m;schedule()},()=>{});
   db.collection("cardsnovos").limit(1000).onSnapshot(s=>{const m=new Map();s.docs.forEach(d=>m.set(d.id,d.data()));novos=m;mergeNovos();schedule()},()=>{});
-  loadCol();
+  loadCol(); iniciarShare();
 })();
 render();
 })();
