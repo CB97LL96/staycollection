@@ -773,7 +773,10 @@ async function compBaixa(id,file){
   if(!db||!canWrite){toast("Sem permissão pra gravar");return}
   if(!file||!/^image\//.test(file.type)){toast("Isso não é uma imagem");return}
   let asset; try{const {blob}=await reduzir(file,1600,.85); asset=await subirFoto(blob)}catch(e){toast("Não deu pra enviar o comprovante; a conta continua em aberto");return}
-  await setMany([["cobrancas",id,{status:"Paga",pagoEm:c.pagoEm||isoToday(),comprovanteAsset:asset,pagoProva:"comprovante PicPay",conferidoEm:isoToday()}]],"Paga, com o comprovante anexado");
+  const antes={status:c.status===undefined?null:c.status,pagoEm:c.pagoEm===undefined?null:c.pagoEm,comprovanteAsset:null,pagoProva:c.pagoProva===undefined?null:c.pagoProva,conferidoEm:c.conferidoEm===undefined?null:c.conferidoEm};
+  try{await db.doc("cobrancas/"+id).update({status:"Paga",pagoEm:c.pagoEm||isoToday(),comprovanteAsset:asset,pagoProva:"comprovante PicPay",conferidoEm:isoToday()})}
+  catch(e){try{await (await window.claude.use("assets")).delete(asset)}catch(e2){} toast("Não deu pra salvar; tente de novo");return}
+  toast("Paga, com o comprovante anexado",async()=>{await db.doc("cobrancas/"+id).update(antes); try{await (await window.claude.use("assets")).delete(asset)}catch(e){}})
 }
 const compUrl=c=>{const u=/^[0-9a-f]{32}$/.test(c.comprovanteAsset||"")&&window.stay&&window.stay.blobUrl(c.comprovanteAsset); return okUrl(u)?u:""};
 // ---------- tela da GOM ----------
@@ -960,9 +963,10 @@ function cegSheet(key){const r=cegs().find(x=>x.key===key); if(!r)return "<p cla
 function enviosSheet(){const es=list("envios").filter(e=>e.status==="A pedir").sort(byPrazo);
   if(!es.length)return cadSheet("envios");
   return `<p class="lede" style="margin:0 0 12px">Já liberados. Peça o envio com cada GOM.</p><div class="panel"><ul class="rows">${es.map(e=>`<li><button class="row" data-envio="${esc(e.id)}" type="button">${dateBlk(e.prazo)}<span class="tx"><span class="t">${gomTag(e.gom,e.comunidade)}</span><span class="s">${esc([e.tipo].filter(Boolean).join(" · "))}</span></span></button></li>`).join("")}</ul></div>`}
-function envioSheet(id,gk){const e0=D.envios.get(id); if(!e0)return ""; const e={...e0,id}; return `<div class="hero">${av("com",e.comunidade,"lg")}<div><div style="font-size:20px;font-weight:700">${gomTag(e.gom,e.comunidade,"lg")}</div><div style="color:var(--ink2)">${esc([e.tipo,e.status].filter(Boolean).join(" · "))}</div></div></div>
+const novoEnvio=id=>{const [g,com]=id.slice(5).split("\u0001"); return {gom:gomNome(g)==="Sem GOM"?"":g,comunidade:com,tipo:"Envio",status:"A pedir",origem:"app novo"}};
+function envioSheet(id,gk){const e0=id.startsWith("novo:")?novoEnvio(id):D.envios.get(id); if(!e0)return ""; const e={...e0,id}; return `<div class="hero">${av("com",e.comunidade,"lg")}<div><div style="font-size:20px;font-weight:700">${gomTag(e.gom,e.comunidade,"lg")}</div><div style="color:var(--ink2)">${esc([e.tipo,e.status].filter(Boolean).join(" · "))}</div></div></div>
   <dl class="kv">${[["Prazo",e.prazo&&fdd(e.prazo)],["Como pedir",e.comoPedir],["Rastreio",e.rastreio],["Itens",e.itens]].filter(x=>x[1]).map(([a,b])=>`<dt>${a}</dt><dd>${esc(b)}</dd>`).join("")}</dl>
-  ${envioItens(e,gk)}<div class="actions">${editBtn("envios",e.id,"editar envio")}</div>`}
+  ${envioItens(e,gk)}${id.startsWith("novo:")?"":`<div class="actions">${editBtn("envios",e.id,"editar envio")}</div>`}`}
 // ao pedir ou receber, oferece mudar junto os itens daquela comunidade que estão na fase certa
 function envioItens(e,gk){
   const rec=e.status==="Enviado"||e.status==="Pedido", alvo=gk?["lib"]:rec?["ped","lib"]:["lib","br"];
@@ -1408,10 +1412,7 @@ document.addEventListener("click",async e=>{
   if(ds.agskip){ui.ags=[...(ui.ags||[]).filter(x=>x!==ds.agskip),ds.agskip];if(ui.agp===ds.agskip)ui.agp="";render();return}
   if(ds.gomk!=null){const k=ds.gomk; if(sheetFn){$("#shT").textContent="GOM";sheetFn=()=>gomSheet(k);$("#shB").innerHTML=sheetFn();lazy();$("#shB").scrollTop=0}else openSheet("GOM",()=>gomSheet(k));return}
   if(ds.gomenv){const k=ds.gomenv, [g,com]=k.split("\u0001"); if(!gomResumo(g,com).lib.length){toast("Nada com envio liberado nesta GOM");return}
-    let ev=list("envios").find(x=>x.status==="A pedir"&&gomNome(x.gom)===gomNome(g)&&(x.comunidade||"")===(com||"")), id=ev&&ev.id;
-    if(!id){if(!db||!canWrite){toast("Sem permissão pra gravar");return}
-      try{const r=await db.collection("envios").add({gom:gomNome(g)==="Sem GOM"?"":g,comunidade:com,tipo:"Envio",status:"A pedir",origem:"app novo",criadoEm:isoToday()}); id=r.id; for(let i=0;i<20&&!D.envios.has(id);i++)await new Promise(x=>setTimeout(x,50))}
-      catch(err){toast("Não deu pra montar o envio; tente de novo");return}}
+    const ev=list("envios").find(x=>x.status==="A pedir"&&gomNome(x.gom)===gomNome(g)&&(x.comunidade||"")===(com||"")), id=ev?ev.id:"novo:"+k;
     const f=()=>envioSheet(id,k); if(sheetFn){$("#shT").textContent="Montar envio";sheetFn=f;$("#shB").innerHTML=f();lazy();$("#shB").scrollTop=0}else openSheet("Montar envio",f); return}
   if(ds.conferi){const r=cegs().find(x=>x.key===ds.conferi); if(!r||!r.doc)return; await setMany([["cegs",cegIdOf(r.doc),{conferidoEm:isoToday()}]],"CEG conferida hoje"); return}
   if(ds.go){if(ds.cf){ui.cf=ds.cf;ui.cn=240}go(ds.go);return}
@@ -1462,6 +1463,12 @@ document.addEventListener("click",async e=>{
   if(ds.liq){const r=cegs().find(x=>x.key===ds.liq); if(!r)return; const dv=r.contas.filter(devo);
     if(!b.dataset.sure){b.dataset.sure="1";b.textContent=`Toque de novo: marcar ${plural(dv.length,"conta","contas")} como pagas`;setTimeout(()=>{if(b.isConnected){delete b.dataset.sure;b.textContent="Paguei tudo: "+brl(dv.reduce((s,c)=>s+(c.valor||0),0))}},5000);return}
     b.disabled=true; await setMany(dv.map(c=>["cobrancas",c.id,{status:"Paga",pagoEm:c.pagoEm||isoToday()}]),`${plural(dv.length,"conta paga","contas pagas")}`); return}
+  if(ds.evst&&ds.evst.startsWith("novo:")){const [id,st]=ds.evst.split("|"); const ids=[...document.querySelectorAll("#shB .evi:checked")].map(x=>x.value);
+    if(!ids.length){toast("Marque ao menos um item");return} if(!db||!canWrite){toast("Sem permissão pra gravar");return} b.disabled=true;
+    const antes=ids.map(i=>[i,D.itens.get(i).status]); let nid;
+    try{nid=(await db.collection("envios").add({...novoEnvio(id),status:"Pedido",criadoEm:isoToday()})).id; for(const i of ids)await db.doc("itens/"+i).update({status:"Envio pedido"})}
+    catch(err){if(nid){try{await db.doc("envios/"+nid).delete()}catch(e2){}} for(const [i,st0] of antes){try{await db.doc("itens/"+i).update({status:st0})}catch(e2){}} toast("Não deu pra salvar; tente de novo");b.disabled=false;return}
+    toast("Envio pedido",async()=>{for(const [i,st0] of antes)await db.doc("itens/"+i).update({status:st0}); await db.doc("envios/"+nid).delete()}); closeSheet(); return}
   if(ds.evst){const [id,st]=ds.evst.split("|"); const ids=[...document.querySelectorAll("#shB .evi:checked")].map(x=>x.value);
     const ch=[["envios",id,{status:st}],...ids.map(i=>["itens",i,{status:st==="Recebido"?"Recebido":"Envio pedido"}])]; b.disabled=true;
     if(await setMany(ch,st==="Recebido"?`Recebido${ids.length?", "+plural(ids.length,"item","itens")+" comigo":""}`:"Envio pedido"))closeSheet(); return}

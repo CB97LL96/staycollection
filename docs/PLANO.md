@@ -204,10 +204,10 @@ Na dúvida sobre um termo, usar o que aparece nas mensagens das GOMs e perguntar
      só com os itens liberados daquela GOM). Abre pelo Mural, pela CEG e pela Agora.
    - **Regra da dona**: GOM nunca aparece sozinha. `gomTag(gom, comunidade)` é o único jeito de
      mostrar uma GOM (ícone + comunidade + GOM). O Mural agora agrupa por (GOM, comunidade).
-   - Testes: `scripts/e2e/agora.cjs` (48 checagens, desktop e celular); `mural.cjs` ajustado
+   - Testes: `scripts/e2e/agora.cjs` (52 checagens, desktop e celular); `mural.cjs` ajustado
      ao cabeçalho novo. `banco-falso.js` aceita `window.__seedExtra` pra somar dados de teste.
-   - Falta: ligar "montar envio" a um envio já em andamento por GOM no Telegram; ler o valor
-     do comprovante (decidido adiar); apagar o asset quando se desfaz o comprovante.
+   - Desfazer o comprovante apaga o arquivo subido; "montar envio" só cria o envio ao confirmar (desfazer apaga).
+   - Falta: ler o valor do comprovante (decidido adiar); conferir tudo com o banco e os assets reais.
 4. **Binder, faltantes e caça de fotos.**
 5. **Rodada assistida.**
 

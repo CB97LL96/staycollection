@@ -80,11 +80,14 @@ const extra = {
     // montar envio seleciona só os liberados desta GOM e reaproveita envioItens
     await pg.click(".gsheet [data-gomenv]"); await pg.waitForSelector("#shB .evi");
     ok(await pg.locator("#shB .evi:checked").count() === 1, `${nome}: montar envio seleciona só o item liberado da GOM`);
+    const nEnv = await pg.evaluate(() => window.__store.envios ? window.__store.envios.size : 0);
+    ok(nEnv === 0, `${nome}: abrir 'montar envio' não cria envio vazio`);
     await pg.click("[data-evst]"); await pg.waitForTimeout(400);
     const it = await pg.evaluate(() => [window.__store.itens.get("i5").status, window.__store.itens.get("i3").status]);
     ok(it[0] === "Envio pedido" && it[1] === "Envio liberado", `${nome}: pediu o envio só dos itens da Gabi Verde (${it})`);
     await pg.click(".undo"); await pg.waitForTimeout(300);
     ok((await pg.evaluate(() => window.__store.itens.get("i5").status)) === "Envio liberado", `${nome}: desfazer o envio`);
+    ok((await pg.evaluate(() => window.__store.envios ? window.__store.envios.size : 0)) === 0, `${nome}: desfazer apaga o envio criado`);
     // abrir a GOM pela CEG e pela Agora
     await pg.goto(base + "/#agora"); await pg.reload(); await pg.waitForSelector(".agq");
     await pg.locator(".agq [data-gomk]").first().click(); await pg.waitForSelector(".gsheet");
