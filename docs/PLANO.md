@@ -105,6 +105,58 @@ Falta ou ficou parcial:
 - Alvos de toque ainda pequenos na Coleção (botão "info" dos cards, mitigado com área de clique maior).
 - Não conferi o escuro em Itens e Coleção, nem a faixa de contraste de todos os chips de comunidade (cores por comunidade).
 
+## staycollection 2 (24/11/2026): o que vem agora
+
+A proposta completa, comentada pela dona, está na página "staycollection 2"
+(artefato privado dela no claude.ai). Resumo das decisões:
+
+- **Card é a unidade**, organizado em comunidade > GOM > CEG. GOM vira nível próprio.
+- **O robô investiga antes de sugerir:** acha a CEG, lê a planilha, compara com o que já
+  existe e responde com o total devido na CEG. Nunca grava sozinho.
+- **Sem pix:** o app não guarda chave pix nem caminho de comprovante. Só diz em que
+  grupo/comunidade olhar. O que ele precisa saber é se ela pagou, e as provas são:
+  chat com a GOM, forms respondido ou comprovante do PicPay.
+- **Claim ≠ card:** a claim é a linha como a GOM escreveu ("caixa 2", "26 e 27",
+  "linguinha"); ela aponta para um ou vários itens. Apelidos confirmados ficam salvos por
+  CEG. Na dúvida, o robô pergunta; nunca junta nem separa itens sozinho.
+- **Item = a cópia dela** de um card do catálogo. Várias cópias do mesmo card: "repetido"
+  é um selo, não um status. Repetido acontece muito e é informação útil.
+- **Tudo editável** (Mural e Binder como o board do Figma). Campo editado à mão fica
+  travado: o robô não muda sozinho, mas sempre pode sugerir. Notas dela viram contexto
+  do robô.
+- **Caça de fotos** nas bases mapeadas em `fontes-catalogo.md`; guarda só o link.
+- **Celular:** Android. A entrada principal será compartilhar do WhatsApp para o app (PWA).
+
+### Língua do app: a das comunidades
+Regra da dona: os textos do app usam os termos das comunidades, não termos inventados.
+
+| use | evite |
+|---|---|
+| CEG, GOM, claim, set, POB, LD, pc, binder, bias | "compra coletiva", "organizadora", "pedido" |
+| cobrança, frete inter, frete nacional, taxa, multa | "conta", "fatura" |
+| garantido, na proxy / WH, com a GOM, envio liberado, pedir envio, enviado, recebido | "comigo", "vindo", "liberado" sozinho |
+| set não fechou, claim perdida, repasse, repetido, troca | "fora", "cópia" |
+| planilha, forms, comprovante, grupo, comunidade | "fonte", "registro" |
+
+Na dúvida sobre um termo, usar o que aparece nas mensagens das GOMs e perguntar a ela.
+
+### Etapas
+0. **Modelo novo e migração** (código pronto em 24/11/2026, falta rodar no banco dela):
+   - `supabase/v2.sql`: tabelas novas ao lado de `docs` (o app atual não muda).
+   - `scripts/v2/mapear.mjs` + `scripts/migrar-v2.mjs` (`npm run migrar-v2`, relatório sem
+     gravar; `-- --apply` grava; rodar de novo não duplica nem sobrescreve).
+   - Testes: `npm run test-v2` (dados inventados). O esquema e a gravação foram testados
+     num Postgres local, duas vezes seguidas.
+   - Falta: ela rodar `v2.sql` no SQL Editor, depois `npm run migrar-v2` e conferir o
+     relatório (CEGs criadas por citação, CEGs ambíguas, valores ilegíveis) antes do
+     `--apply`.
+1. **Bot que investiga** (agente com ferramentas; resposta com total e botões; cron cria
+   cobrança que está na planilha e falta no app).
+2. **Mural e colar print.**
+3. **Agora e pagamento** (o app novo substitui o atual aqui).
+4. **Binder, faltantes e caça de fotos.**
+5. **Rodada assistida.**
+
 ## App novo do zero (01/11/2026)
 
 O `index.html` agora é um app novo, feito do zero. O antigo está em `/antigo.html`, e `/novo.html` só redireciona para `/`.

@@ -9,7 +9,9 @@
     "migrar-pocamarket": "node scripts/migrar-pocamarket.mjs",
     "sync-catalogo": "node scripts/sync-catalogo.mjs",
     "exportar-catalogo": "node scripts/exportar-catalogo.mjs",
-    "melhorar-fotos": "node scripts/melhorar-fotos.mjs"
+    "melhorar-fotos": "node scripts/melhorar-fotos.mjs",
+    "migrar-v2": "node scripts/migrar-v2.mjs",
+    "test-v2": "node --test scripts/v2/mapear.test.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.31.0",
