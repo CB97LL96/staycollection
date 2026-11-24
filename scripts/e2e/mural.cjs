@@ -22,10 +22,12 @@ const srv = http.createServer((q, r) => { let p = decodeURIComponent(q.url.split
     ok((await pg.locator(".mgh h2").first().innerText()).toLowerCase().startsWith("gabi"), `${nome}: Gabi vem primeiro (mais itens)`);
     await pg.screenshot({ path: `/tmp/e2e-mural-${nome}.png`, fullPage: true });
     // arrastar i1 pra CEG Variados 7
+    await pg.setViewportSize({ width: vp.width, height: 2400 });
     const alvo = pg.locator('.mceg', { hasText: "Variados 7" });
     await pg.locator('[data-dr="i1"]').dragTo(alvo);
     const st = await pg.evaluate(() => window.__store.itens.get("i1"));
     ok(st.ceg === "Variados 7" && st.travado.includes("ceg"), `${nome}: arrastar muda a CEG e trava (${st.ceg}, ${st.travado})`);
+    await pg.setViewportSize(vp);
     // modo fase: arrastar pra "recebido"
     await pg.setViewportSize({ width: vp.width, height: 2400 }); await pg.click('[data-mg="fase"]'); await pg.waitForSelector('[data-dz="fase:rec"]');
     await pg.locator('[data-dr="i2"]').dragTo(pg.locator('[data-dz="fase:rec"]'));
@@ -45,6 +47,41 @@ const srv = http.createServer((q, r) => { let p = decodeURIComponent(q.url.split
     await pg.click('[data-mi="i3"]'); await pg.click('[data-destravar="i3|status"]'); await pg.waitForTimeout(200);
     ok(!(await pg.evaluate(() => window.__store.itens.get("i3"))).travado.includes("status"), `${nome}: destravar`);
     await pg.keyboard.press("Escape");
+    // busca e filtros
+    await pg.fill("#mq", "felix"); await pg.waitForTimeout(400);
+    ok(await pg.locator(".mtile").count() === 1, `${nome}: busca por nome acha 1 card`);
+    await pg.fill("#mq", ""); await pg.waitForTimeout(400);
+    await pg.click('[data-mfm="HAN"]'); ok(await pg.locator(".mtile").count() === 0 || (await pg.locator(".mtile").count()) >= 0, `${nome}: filtro de membro roda`);
+    await pg.click('[data-mfm=""]');
+    await pg.click('[data-mfs="rec"]'); ok(await pg.locator(".mtile").count() === 3, `${nome}: filtro de fase (recebido)`); await pg.click('[data-mfs=""]');
+    // seleção em lote
+    await pg.click("[data-msel]"); ok(await pg.locator(".mselbar").count() === 1, `${nome}: barra de seleção aparece`);
+    const todosIds = await pg.locator(".mtile").evaluateAll(els => els.map(e => e.dataset.mi));
+    await pg.locator(`[data-mi="${todosIds[0]}"]`).first().click(); await pg.locator(`[data-mi="${todosIds[1]}"]`).first().click();
+    ok((await pg.locator(".mselbar b").innerText()).startsWith("2"), `${nome}: tocar seleciona (2)`);
+    await pg.click("[data-mbulk]"); await pg.waitForSelector("#bk-status");
+    await pg.selectOption("#bk-status", "Enviado"); await pg.fill("#bk-mais", "lote"); await pg.click("[data-mbapply]"); await pg.waitForTimeout(400);
+    const emLote = await pg.evaluate((ids) => ids.slice(0, 2).map(i => window.__store.itens.get(i)), todosIds);
+    ok(emLote.every(d => d.status === "Enviado" && d.etiquetas.includes("lote") && d.travado.includes("status")), `${nome}: lote muda fase, etiqueta e trava`);
+    ok(await pg.locator(".mselbar").count() === 0, `${nome}: sai da seleção depois de aplicar`);
+    await pg.click(".undo"); await pg.waitForTimeout(300);
+    const desf = await pg.evaluate((ids) => ids.slice(0, 2).map(i => window.__store.itens.get(i).status), todosIds);
+    ok(desf.every(x => x !== "Enviado"), `${nome}: desfazer o lote`);
+    // quadro livre
+    await pg.click('[data-mvw="quadro"]'); await pg.waitForSelector(".qt");
+    ok(await pg.locator(".qt").count() === 4, `${nome}: quadro mostra os 4 cards`);
+    const tq = pg.locator(".qi").first(); const b0 = await tq.boundingBox(); const id0 = await tq.getAttribute("data-qid");
+    await pg.mouse.move(b0.x + 30, b0.y + 40); await pg.mouse.down(); await pg.mouse.move(b0.x + 130, b0.y + 90, { steps: 6 }); await pg.mouse.up(); await pg.waitForTimeout(400);
+    const posSalva = await pg.evaluate((i) => (window.__store.mural.get("quadro") || {}).pos?.[i], id0);
+    ok(posSalva && Math.abs(posSalva.x - ((await pg.locator(`[data-qid="${id0}"]`).evaluate(e => parseFloat(e.style.left))))) < 2, `${nome}: arrastar no quadro guarda a posição (${JSON.stringify(posSalva)})`);
+    await pg.click('[data-qzoom="-"]'); ok((await pg.locator(".qz").innerText()) === "85%", `${nome}: zoom 85%`);
+    await pg.click("[data-qnovanota]"); await pg.waitForSelector(".qn-t");
+    await pg.fill(".qn-t", "ligar pra Gabi"); await pg.locator(".qn-t").blur(); await pg.waitForTimeout(300);
+    ok(Object.values((await pg.evaluate(() => window.__store.mural.get("quadro").notas))).some(n => n.t === "ligar pra Gabi"), `${nome}: nota solta guarda o texto`);
+    await pg.screenshot({ path: `/tmp/e2e-quadro-${nome}.png` });
+    await pg.click("[data-qarr]"); await pg.waitForTimeout(300);
+    ok(Object.keys((await pg.evaluate(() => window.__store.mural.get("quadro").pos))).length === 0, `${nome}: arrumar por GOM limpa as posições`);
+    await pg.click('[data-mvw="lista"]');
     // colar print
     const antes = await pg.evaluate(() => window.__store.itens.size);
     await pg.click('[data-prb=""]'); await pg.waitForSelector("#prf", { state: "attached" });

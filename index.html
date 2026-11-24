@@ -244,6 +244,21 @@ h2 .r{margin-left:auto;font-size:14px;font-weight:700}
 .prl{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px}.prrow{display:grid;grid-template-columns:auto 56px minmax(0,1fr);gap:10px;align-items:center}
 .prrow img{width:56px;aspect-ratio:55/85;object-fit:cover;border-radius:7px;box-shadow:0 0 0 1px var(--line)}
 .prf{display:grid;gap:4px;min-width:0}.prf input,.prf select{width:100%;min-width:0}.prrow input[type=checkbox]{width:22px;height:22px;accent-color:var(--accent)}
+.mbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.mbar .seg{margin-bottom:0}.srow{margin-bottom:6px}
+.mtile.sel .ph{box-shadow:0 0 0 3px var(--accent)}.ph .ck{position:absolute;top:5px;left:5px;width:22px;height:22px;border-radius:50%;background:var(--surface);box-shadow:0 0 0 2px var(--ink);display:grid;place-items:center;font:700 14px/1 var(--f-body,inherit);font-style:normal;color:var(--ink)}
+.mtile.sel .ph .ck{background:var(--ink);color:var(--bg)}
+.mselbar{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:40;display:flex;gap:10px;align-items:center;justify-content:space-between;background:var(--ink);color:var(--bg);border-radius:16px;padding:10px 12px;width:min(640px,calc(100% - 24px));box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.mselbar .g{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mselbar .btn{background:var(--bg);color:var(--ink);border-color:var(--bg)}.mselbar .btn.pri{background:var(--accent);color:var(--ink);border-color:var(--accent)}.mselbar .btn:disabled{opacity:.4}
+.qbar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:8px 0}.qz{min-width:44px;text-align:center;font-weight:700;font-size:13px}
+.qd{overflow:auto;height:68vh;min-height:360px;border:1.5px solid var(--ink);border-radius:14px;background:var(--surface2);background-image:radial-gradient(var(--line) 1px,transparent 1px);background-size:24px 24px;overscroll-behavior:contain}
+.qs{position:relative}.qin{position:absolute;left:0;top:0;transform-origin:0 0}
+.qi,.qn,.ql{position:absolute}.qi{width:92px}.qt{width:92px;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}.qt .cap{font-size:11.5px}
+.qi .arrastando,.qn.arrastando{opacity:.85;z-index:5;cursor:grabbing}.qi:has(.arrastando){z-index:5}
+.ql{white-space:nowrap;font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:12px;color:var(--ink2)}.ql.gom{font-size:20px;letter-spacing:-.02em;color:var(--ink)}
+.qn{width:210px;background:#FFF3B0;color:#111;border:1.5px solid #111;border-radius:10px;box-shadow:3px 3px 0 rgba(0,0,0,.25)}
+.qn-h{display:flex;justify-content:space-between;align-items:center;padding:4px 8px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;cursor:grab;touch-action:none;user-select:none;border-bottom:1.5px solid #111}
+.qn-h button{border:0;background:none;font-size:18px;line-height:1;cursor:pointer;color:#111;padding:2px 6px}.qn-t{width:100%;border:0;background:transparent;padding:8px;font:inherit;font-size:14px;color:#111;resize:vertical}
+@media (max-width:820px){.mselbar{bottom:calc(76px + env(safe-area-inset-bottom,0px))}.qd{height:62vh}}
 .picker .tile.sel .ph{box-shadow:0 0 0 3px var(--accent)}
 .picker .tile.sel .ph::after{content:"";background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5 9-10'/%3E%3C/svg%3E");background-size:14px;background-position:center;background-repeat:no-repeat;position:absolute;right:6px;top:6px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-weight:800;font-size:13px}
 .stepper{display:flex;gap:6px;margin-bottom:16px}
@@ -398,7 +413,7 @@ h2>.n:last-child{margin-left:auto}
   .rail{display:none}
   .main{padding:18px 16px 120px}
   h1{font-size:23px}
-  .tabbar{display:grid;grid-template-columns:repeat(4,1fr);position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom));z-index:30}
+  .tabbar{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom));z-index:30}
   .tabbar button{border:0;background:none;display:grid;justify-items:center;gap:2px;font-size:11.5px;font-weight:650;color:var(--ink3);padding:6px 0;cursor:pointer;position:relative}
   .tabbar svg{width:22px;height:22px}
   .tabbar button[aria-current="page"]{color:var(--ink)}
@@ -423,7 +438,7 @@ h2>.n:last-child{margin-left:auto}
 @media (max-width:820px){
   .tabbar{background:var(--bg);border-top:2px solid var(--rule);padding:12px 4px calc(10px + env(safe-area-inset-bottom))}
   .tabbar svg{display:none}
-  .tabbar button{font-size:11.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);padding:8px 0}
+  .tabbar button{font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--ink3);padding:8px 0}
   .tabbar button[aria-current="page"]{color:var(--ink);text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:6px}
   .tabbar .ct{top:-4px}
   .btn.fab{width:56px;height:56px;padding:0;border-radius:50%;box-shadow:0 0 0 3px var(--bg)}
@@ -505,7 +520,7 @@ const I={
 const ico=(n,sz)=>`<svg viewBox="0 0 24 24" ${sz?`width="${sz}" height="${sz}"`:""} fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[n]}</svg>`;
 
 // ---------- dados ----------
-const COLS=["cobrancas","itens","envios","cegs","comunidades","repasses","acervo","caixa","gruposwa"];
+const COLS=["cobrancas","itens","envios","cegs","comunidades","repasses","acervo","caixa","gruposwa","mural"];
 const D={}; COLS.forEach(k=>D[k]=new Map());
 let fotos={}, posse={}, novos=new Map(), COL=null, CIDX=new Map(), db=null, ready=false, ver=0;
 const list=k=>[...D[k].entries()].map(([id,d])=>({id,...d}));
@@ -1049,31 +1064,137 @@ const etiquetasDe=d=>String(d.etiquetas||"").split(",").map(s=>s.trim()).filter(
 const travadosDe=d=>Array.isArray(d.travado)?d.travado:[];
 const travar=(d,campos)=>({travado:[...new Set([...travadosDe(d),...campos])]});
 let drag="";
-function murTile(d,cap){
-  const cs=Array.isArray(d.cards)?d.cards:[]; const c=cs.length&&COL?CIDX.get(cs[0]):null; const bg=c?cardBg(c):itemBg(d), f=faseDe(d.status), et=etiquetasDe(d);
-  return `<button class="tile mtile" type="button" draggable="true" data-mi="${esc(d.id)}" data-dr="${esc(d.id)}">${ph(bg,"",bg?`<span class="pill ${FTONE[f]} bdg">${FLBL[f]}</span>`:esc(d.item||""))}<span class="cap">${esc(d.item||"")}<small>${esc([cap!=null?cap:d.membro,...et].filter(Boolean).join(" · "))}${travadosDe(d).length?" · travado":""}</small></span></button>`}
-function murCeg(r){
-  return `<div class="mceg" data-dz="ceg:${esc(r.key)}"><div class="mhd"><span class="t">${esc(r.lbl||r.nome)}</span><span class="s">${esc(plural(r.itens.length,"item","itens"))}</span>${r.devN?`<span class="pill late">devo ${r.deve?brl(r.deve):"sem valor"}</span>`:""}<button class="btn sm" data-prb="${esc(r.key)}" type="button">${ico("plus",14)}print</button></div>
-    <div class="mini mm">${r.itens.map(d=>murTile(d)).join("")}</div></div>`}
-function renderMural(){
-  const mode=ui.mg||"gom", et=ui.me||"", todos=list("itens").filter(d=>faseDe(d.status)!=="fora");
-  const todasEt=[...new Set(todos.flatMap(etiquetasDe))].sort((a,b)=>a.localeCompare(b,"pt-BR"));
-  const rows=cegs().map(r=>({...r,itens:r.itens.filter(d=>!et||etiquetasDe(d).includes(et))})).filter(r=>r.itens.length);
-  let corpo="";
-  if(mode==="fase"){
-    const its=todos.filter(d=>!et||etiquetasDe(d).includes(et));
-    corpo=MUR_FASES.map(f=>{const xs=its.filter(d=>faseDe(d.status)===f); return `<section class="mgrp" data-dz="fase:${f}"><h2>${FLBL[f]} <span class="n">${xs.length}</span></h2><div class="mini mm">${xs.map(d=>murTile(d,[d.membro,cegLbl(d)||d.ceg].filter(Boolean).join(" · "))).join("")||`<p class="note" style="grid-column:1/-1">Solte aqui pra mudar a fase.</p>`}</div></section>`}).join("");
-  }else{
-    const m=new Map(); rows.forEach(r=>{const k=mode==="comunidade"?(nomeCom(r.com)||"Sem comunidade"):gomDe(r); if(!m.has(k))m.set(k,[]); m.get(k).push(r)});
-    const gs=[...m].sort((a,b)=>b[1].reduce((s,r)=>s+r.itens.length,0)-a[1].reduce((s,r)=>s+r.itens.length,0));
-    corpo=gs.map(([k,rs])=>{const n=rs.reduce((s,r)=>s+r.itens.length,0), lib=rs.reduce((s,r)=>s+r.itens.filter(d=>faseDe(d.status)==="lib").length,0), deve=rs.reduce((s,r)=>s+r.deve,0);
-      return `<section class="mgrp"><div class="mgh"><h2>${esc(k)} <span class="n">${n}</span></h2>${lib?`<span class="pill ok">${lib} com envio liberado</span>`:""}${deve?`<span class="pill late">devo ${brl(deve)}</span>`:""}</div>${rs.sort((a,b)=>b.ativos-a.ativos).map(murCeg).join("")}</section>`}).join("");
-  }
-  $("#main").innerHTML=`${head("Mural",`${plural(todos.length,"item","itens")} · arraste pra mudar de CEG ou de fase, solte uma foto num card pra trocar, toque pra editar`)}
-  <div class="srow"><div class="seg" role="group" aria-label="Agrupar">${[["gom","GOM"],["comunidade","Comunidade"],["fase","Fase"]].map(([k,l])=>`<button data-mg="${k}" aria-pressed="${mode===k}" type="button">${l}</button>`).join("")}</div><button class="btn pri sm" data-prb="" type="button">${ico("plus",16)}Colar print</button></div>
-  ${todasEt.length?`<div class="chips" style="margin-bottom:12px"><button class="chip" data-me="" aria-pressed="${!et}" type="button">todas</button>${todasEt.map(x=>`<button class="chip" data-me="${esc(x)}" aria-pressed="${et===x}" type="button">${esc(x)}</button>`).join("")}</div>`:""}
-  ${corpo||`<p class="empty">Nada por aqui ainda. Cole um print pra começar.</p>`}`;
+const sel=new Set(); let suprimir=false, qs={x:0,y:0};
+const murFino=()=>window.matchMedia&&matchMedia("(pointer:fine)").matches;
+function murFiltra(d){
+  if(faseDe(d.status)==="fora")return false;
+  if(ui.mf&&faseDe(d.status)!==ui.mf)return false;
+  if(ui.mm&&membro(d.membro)!==ui.mm)return false;
+  if(ui.me&&!etiquetasDe(d).includes(ui.me))return false;
+  const q=norm(ui.mq||""); if(q&&!norm([d.item,d.membro,d.ceg,d.comunidade,d.etiquetas,d.obs,d.status].join(" ")).includes(q))return false;
+  return true;
 }
+function murTile(d,cap,cls){
+  const cs=Array.isArray(d.cards)?d.cards:[]; const c=cs.length&&COL?CIDX.get(cs[0]):null; const bg=c?cardBg(c):itemBg(d), f=faseDe(d.status), et=etiquetasDe(d), on=sel.has(d.id);
+  const sub=[cap!=null?cap:d.membro,...et].filter(Boolean).join(" · ")+(travadosDe(d).length?" · travado":"");
+  return `<button class="tile mtile ${cls||""} ${on?"sel":""}" type="button" ${!cls&&!ui.msel&&murFino()?`draggable="true" data-dr="${esc(d.id)}"`:""} data-mi="${esc(d.id)}">${ph(bg,"",(bg?`<span class="pill ${FTONE[f]} bdg">${FLBL[f]}</span>`:esc(d.item||""))+(ui.msel?`<i class="ck">${on?"✓":""}</i>`:""))}<span class="cap">${esc(d.item||"")}<small>${esc(sub)}</small></span></button>`}
+function murCeg(r){
+  const ids=r.itens.map(d=>d.id).join(",");
+  return `<div class="mceg" data-dz="ceg:${esc(r.key)}"><div class="mhd"><span class="t">${esc(r.lbl||r.nome)}</span><span class="s">${esc(plural(r.itens.length,"item","itens"))}</span>${r.devN?`<span class="pill late">devo ${r.deve?brl(r.deve):"sem valor"}</span>`:""}${ui.msel?`<button class="btn sm" data-selids="${esc(ids)}" type="button">todos</button>`:`<button class="btn sm" data-prb="${esc(r.key)}" type="button">${ico("plus",14)}print</button>`}</div>
+    <div class="mini mm">${r.itens.map(d=>murTile(d)).join("")}</div></div>`}
+// ---- quadro livre ----
+const quadro=()=>D.mural.get("quadro")||{};
+async function quadroSalvar(patch){const q=quadro(); await db.doc("mural/quadro").set({pos:q.pos||{},notas:q.notas||{},...patch})}
+const QW=104, QH=170;
+function quadroAuto(rows){
+  const pos={}, rot=[]; let x=0, maxY=0;
+  const m=new Map(); rows.forEach(r=>{const k=gomDe(r); if(!m.has(k))m.set(k,[]); m.get(k).push(r)});
+  [...m].sort((a,b)=>b[1].reduce((s,r)=>s+r.itens.length,0)-a[1].reduce((s,r)=>s+r.itens.length,0)).forEach(([g,rs])=>{
+    rot.push({t:g,x,y:0,k:"gom"}); let y=46;
+    rs.sort((a,b)=>b.ativos-a.ativos).forEach(r=>{rot.push({t:r.lbl||r.nome,x,y,k:"ceg"}); y+=30; r.itens.forEach((d,i)=>{pos[d.id]={x:x+(i%4)*QW,y:y+Math.floor(i/4)*QH}}); y+=Math.ceil(r.itens.length/4)*QH+18});
+    maxY=Math.max(maxY,y); x+=4*QW+56});
+  return {pos,rot,w:x,h:maxY};
+}
+function quadroHtml(rowsTodas){
+  const A=quadroAuto(rowsTodas), q=quadro(), P=q.pos||{}, N=q.notas||{}, z=ui.mz||1;
+  const itens=rowsTodas.flatMap(r=>r.itens).filter(murFiltra);
+  let w=A.w+200, h=A.h+200;
+  const tiles=itens.map(d=>{const p=P[d.id]||A.pos[d.id]||{x:0,y:0}; w=Math.max(w,p.x+QW+200); h=Math.max(h,p.y+QH+200); return `<div class="qi" style="left:${p.x}px;top:${p.y}px" data-qid="${esc(d.id)}">${murTile(d,null,"qt")}</div>`}).join("");
+  const notas=Object.entries(N).map(([id,n])=>{w=Math.max(w,n.x+260);h=Math.max(h,n.y+200); return `<div class="qn" style="left:${n.x}px;top:${n.y}px" data-qid="n:${esc(id)}"><div class="qn-h"><span>nota</span><button type="button" data-qdel="${esc(id)}" aria-label="apagar nota">×</button></div><textarea class="qn-t" data-qnota="${esc(id)}" rows="4" placeholder="escreva aqui">${esc(n.t||"")}</textarea></div>`}).join("");
+  const rot=Object.keys(P).length?"":A.rot.map(l=>`<div class="ql ${l.k}" style="left:${l.x}px;top:${l.y}px">${esc(l.t)}</div>`).join("");
+  return `<div class="qbar"><button class="btn sm" data-qzoom="-" type="button" aria-label="menos zoom">−</button><span class="qz">${Math.round(z*100)}%</span><button class="btn sm" data-qzoom="+" type="button" aria-label="mais zoom">+</button><button class="btn sm" data-qnovanota type="button">${ico("plus",14)}nota</button><button class="btn sm" data-qarr type="button">Arrumar por GOM</button></div>
+  <div class="qd" id="qd"><div class="qs" style="width:${w*z}px;height:${h*z}px"><div class="qin" style="width:${w}px;height:${h}px;transform:scale(${z})">${rot}${tiles}${notas}</div></div></div>`;
+}
+function renderMural(){
+  const mode=ui.mg||"gom", vw=ui.mv||"lista", todos=list("itens").filter(d=>faseDe(d.status)!=="fora"), vis=todos.filter(murFiltra);
+  const rowsTodas=cegs().map(r=>({...r,itens:r.itens.filter(murFiltra)})).filter(r=>r.itens.length);
+  const cnt=f=>todos.filter(d=>faseDe(d.status)===f).length;
+  const todasEt=[...new Set(todos.flatMap(etiquetasDe))].sort((a,b)=>a.localeCompare(b,"pt-BR"));
+  const membros=MEMBROS.filter(m=>todos.some(d=>membro(d.membro)===m));
+  const chip=(att,val,lab,n,on)=>`<button class="chip" data-${att}="${esc(val)}" aria-pressed="${on}" type="button">${esc(lab)}${n!=null?` <span class="c">${n}</span>`:""}</button>`;
+  let corpo="";
+  if(vw==="quadro")corpo=quadroHtml(cegs().map(r=>({...r})).filter(r=>r.itens.length));
+  else if(mode==="fase"){
+    corpo=MUR_FASES.map(f=>{const xs=vis.filter(d=>faseDe(d.status)===f); return `<section class="mgrp" data-dz="fase:${f}"><div class="mgh"><h2>${FLBL[f]} <span class="n">${xs.length}</span></h2>${ui.msel?`<button class="btn sm" data-selids="${esc(xs.map(d=>d.id).join(","))}" type="button">todos</button>`:""}</div><div class="mini mm">${xs.map(d=>murTile(d,[d.membro,cegLbl(d)||d.ceg].filter(Boolean).join(" · "))).join("")||`<p class="note" style="grid-column:1/-1">${ui.msel||!murFino()?"Nada nesta fase.":"Solte aqui pra mudar a fase."}</p>`}</div></section>`}).join("");
+  }else{
+    const m=new Map(); rowsTodas.forEach(r=>{const k=mode==="comunidade"?(nomeCom(r.com)||"Sem comunidade"):gomDe(r); if(!m.has(k))m.set(k,[]); m.get(k).push(r)});
+    const gs=[...m].sort((a,b)=>b[1].reduce((s,r)=>s+r.itens.length,0)-a[1].reduce((s,r)=>s+r.itens.length,0));
+    corpo=gs.map(([k,rs])=>{const n=rs.reduce((s,r)=>s+r.itens.length,0), lib=rs.reduce((s,r)=>s+r.itens.filter(d=>faseDe(d.status)==="lib").length,0), deve=rs.reduce((s,r)=>s+r.deve,0), ids=rs.flatMap(r=>r.itens.map(d=>d.id)).join(",");
+      return `<section class="mgrp"><div class="mgh"><h2>${esc(k)} <span class="n">${n}</span></h2>${lib?`<span class="pill ok">${lib} com envio liberado</span>`:""}${deve?`<span class="pill late">devo ${brl(deve)}</span>`:""}${ui.msel?`<button class="btn sm" data-selids="${esc(ids)}" type="button">todos</button>`:""}</div>${rs.sort((a,b)=>b.ativos-a.ativos).map(murCeg).join("")}</section>`}).join("");
+  }
+  const filtros=ui.mf||ui.mm||ui.me||ui.mq;
+  $("#main").innerHTML=`${head("Mural",`${plural(vis.length,"item","itens")}${filtros?` de ${todos.length}`:""}${vw==="lista"&&murFino()?" · arraste pra mudar de CEG ou fase":""} · ${ui.msel?"toque nos cards pra selecionar":"toque pra editar, segure pra selecionar"}`)}
+  <div class="srow"><div class="search">${ico("search")}<input id="mq" type="search" placeholder="Buscar card, membro, CEG, etiqueta" value="${esc(ui.mq||"")}" aria-label="Buscar no mural"></div><button class="btn sm ${ui.msel?"pri":""}" data-msel type="button">${ui.msel?"Sair da seleção":"Selecionar"}</button><button class="btn pri sm" data-prb="" type="button">${ico("plus",16)}Print</button></div>
+  <div class="mbar"><div class="seg" role="group" aria-label="Visão">${[["lista","Lista"],["quadro","Quadro"]].map(([k,l])=>`<button data-mvw="${k}" aria-pressed="${vw===k}" type="button">${l}</button>`).join("")}</div>${vw==="lista"?`<div class="seg" role="group" aria-label="Agrupar">${[["gom","GOM"],["comunidade","Comunidade"],["fase","Fase"]].map(([k,l])=>`<button data-mg="${k}" aria-pressed="${mode===k}" type="button">${l}</button>`).join("")}</div>`:""}</div>
+  <div class="chips scroll">${chip("mfs","","todas as fases",null,!ui.mf)}${MUR_FASES.filter(cnt).map(f=>chip("mfs",f,FLBL[f],cnt(f),ui.mf===f)).join("")}</div>
+  ${membros.length>1?`<div class="chips scroll">${chip("mfm","","todos os membros",null,!ui.mm)}${membros.map(m=>chip("mfm",m,m,todos.filter(d=>membro(d.membro)===m).length,ui.mm===m)).join("")}</div>`:""}
+  ${todasEt.length?`<div class="chips scroll">${chip("me","","sem etiqueta",null,!ui.me)}${todasEt.map(x=>chip("me",x,x,todos.filter(d=>etiquetasDe(d).includes(x)).length,ui.me===x)).join("")}</div>`:""}
+  ${corpo||`<p class="empty">${filtros?"Nada com esses filtros.":"Nada por aqui ainda. Cole um print pra começar."}</p>`}
+  ${ui.msel?selBar():""}`;
+  const qd=$("#qd"); if(qd){qd.scrollLeft=qs.x;qd.scrollTop=qs.y;qd.addEventListener("scroll",()=>{qs.x=qd.scrollLeft;qs.y=qd.scrollTop},{passive:true})}
+}
+// ---- seleção e edição em lote ----
+function selBar(){const n=[...sel].filter(id=>D.itens.has(id)).length;
+  return `<div class="mselbar" role="region" aria-label="Seleção"><b>${plural(n,"selecionado","selecionados")}</b><span class="g"><button class="btn sm" data-mall type="button">Todos</button><button class="btn sm" data-mclr type="button">Limpar</button><button class="btn sm" data-mrec type="button" ${n?"":"disabled"}>Recebi</button><button class="btn pri sm" data-mbulk type="button" ${n?"":"disabled"}>Mudar…</button></span></div>`}
+function selAtualiza(){
+  document.querySelectorAll(".mtile").forEach(t=>{const on=sel.has(t.dataset.mi); t.classList.toggle("sel",on); const ck=t.querySelector(".ck"); if(ck)ck.textContent=on?"✓":""});
+  const bar=$(".mselbar"); if(bar){const tmp=document.createElement("div"); tmp.innerHTML=selBar(); bar.replaceWith(tmp.firstChild)}
+}
+function bulkSheet(){
+  const ids=[...sel].filter(id=>D.itens.has(id)), ets=[...new Set(ids.flatMap(id=>etiquetasDe(D.itens.get(id))))];
+  const cegOpts=cegs().filter(r=>r.nome).sort((a,b)=>(a.com+a.nome).localeCompare(b.com+b.nome,"pt-BR")).map(r=>`<option value="${esc(r.key)}">${esc(nomeCom(r.com))} · ${esc(r.lbl||r.nome)}</option>`).join("");
+  return `<p class="lede" style="margin:0 0 12px">${plural(ids.length,"item selecionado","itens selecionados")}. Só muda o que você preencher.</p>
+  <div class="form">
+    <div class="field"><label for="bk-status">Fase</label><select id="bk-status"><option value="">não mudar</option>${CAMPOS.itens.opts.map(s=>`<option>${esc(s)}</option>`).join("")}</select></div>
+    <div class="field"><label for="bk-ceg">Mover para a CEG</label><select id="bk-ceg"><option value="">não mudar</option>${cegOpts}</select></div>
+    <div class="field"><label for="bk-mais">Adicionar etiqueta</label><input id="bk-mais" placeholder="troca, presente..."></div>
+    <div class="field"><label for="bk-menos">Tirar etiqueta</label><select id="bk-menos"><option value="">não tirar</option>${ets.map(e=>`<option>${esc(e)}</option>`).join("")}</select></div>
+  </div>
+  <div class="actions stick"><button class="btn pri" data-mbapply type="button">Aplicar a ${ids.length}</button></div>`;
+}
+async function bulkAplicar(b){
+  const ids=[...sel].filter(id=>D.itens.has(id)); if(!ids.length)return;
+  const v=x=>$("#bk-"+x).value, st=v("status"), r=cegs().find(x=>x.key===v("ceg")), mais=v("mais").split(",").map(s=>s.trim()).filter(Boolean), menos=v("menos");
+  if(!st&&!r&&!mais.length&&!menos){toast("Escolha o que mudar");return}
+  const ch=ids.map(id=>{const d=D.itens.get(id), p={}, tr=[];
+    if(st&&st!==d.status){p.status=st;tr.push("status")}
+    if(r&&!(d.ceg===r.nome&&(d.comunidade||"")===r.com)){p.ceg=r.nome;p.comunidade=r.com;tr.push("ceg","comunidade")}
+    if(mais.length||menos){const e=etiquetasDe(d).filter(x=>x!==menos); mais.forEach(x=>{if(!e.includes(x))e.push(x)}); const s=e.join(", "); if(s!==String(d.etiquetas||""))p.etiquetas=s}
+    return Object.keys(p).length?["itens",id,{...p,...(tr.length?travar(d,tr):{})}]:null}).filter(Boolean);
+  if(!ch.length){toast("Nada mudou");closeSheet();return}
+  b.disabled=true; if(await setMany(ch,`${plural(ch.length,"item mudou","itens mudaram")}`)){closeSheet();sel.clear();ui.msel=false;render()} else b.disabled=false;
+}
+function murToggle(id){sel.has(id)?sel.delete(id):sel.add(id); selAtualiza()}
+// ---- quadro: arrastar com o dedo ou o mouse, soltar e guardar ----
+let qdrag=null, lp=null;
+document.addEventListener("pointerdown",e=>{
+  const alvo=e.target.closest&&e.target.closest(".mtile,.qn-h"); if(!alvo||e.button>0)return;
+  const q=e.target.closest(".qi,.qn");
+  if(alvo.classList.contains("mtile")&&!ui.msel){clearTimeout(lp);const id=alvo.dataset.mi,x=e.clientX,y=e.clientY; lp=setTimeout(()=>{if(qdrag&&qdrag.moved)return; suprimir=true; ui.msel=true; sel.add(id); if(navigator.vibrate)try{navigator.vibrate(15)}catch(err){} render()},550); alvo._lp={x,y}}
+  if(!q)return;
+  const z=ui.mz||1, id=q.dataset.qid, grupo=[q];
+  if(ui.msel&&sel.has(id))document.querySelectorAll(".qi").forEach(o=>{if(o!==q&&sel.has(o.dataset.qid))grupo.push(o)});
+  qdrag={sx:e.clientX,sy:e.clientY,z,moved:false,els:grupo.map(el=>({el,x:parseFloat(el.style.left)||0,y:parseFloat(el.style.top)||0}))};
+});
+document.addEventListener("pointermove",e=>{
+  if(lp&&Math.hypot(e.movementX||0,e.movementY||0)>0){const a=e.target.closest&&e.target.closest(".mtile"); if(a&&a._lp&&Math.hypot(e.clientX-a._lp.x,e.clientY-a._lp.y)>8){clearTimeout(lp);lp=null}}
+  if(!qdrag)return; const dx=(e.clientX-qdrag.sx)/qdrag.z, dy=(e.clientY-qdrag.sy)/qdrag.z;
+  if(!qdrag.moved){if(Math.hypot(dx*qdrag.z,dy*qdrag.z)<5)return; qdrag.moved=true; clearTimeout(lp);lp=null; qdrag.els.forEach(o=>o.el.classList.add("arrastando"))}
+  e.preventDefault(); qdrag.els.forEach(o=>{o.el.style.left=Math.max(0,o.x+dx)+"px";o.el.style.top=Math.max(0,o.y+dy)+"px"});
+},{passive:false});
+async function qFim(){
+  clearTimeout(lp);lp=null; const d=qdrag; qdrag=null; if(!d||!d.moved)return;
+  suprimir=true; setTimeout(()=>{suprimir=false},0);
+  d.els.forEach(o=>o.el.classList.remove("arrastando"));
+  const q=quadro(), pos={...(q.pos||{})}, notas={...(q.notas||{})};
+  // a primeira vez que ela mexe, o arranjo automático vira o arranjo dela
+  if(!Object.keys(pos).length){document.querySelectorAll(".qi").forEach(el=>{pos[el.dataset.qid]={x:parseFloat(el.style.left)||0,y:parseFloat(el.style.top)||0}})}
+  d.els.forEach(o=>{const id=o.el.dataset.qid, p={x:Math.round(parseFloat(o.el.style.left)||0),y:Math.round(parseFloat(o.el.style.top)||0)}; if(id.startsWith("n:"))notas[id.slice(2)]={...notas[id.slice(2)],...p}; else pos[id]=p});
+  try{await quadroSalvar({pos,notas})}catch(e){toast("Não deu pra guardar a posição; tente de novo")}
+}
+document.addEventListener("pointerup",qFim); document.addEventListener("pointercancel",qFim);
+document.addEventListener("contextmenu",e=>{if(e.target.closest&&e.target.closest(".mtile"))e.preventDefault()});
+document.addEventListener("focusout",e=>{const t=e.target; if(t.matches&&t.matches(".qn-t")){const id=t.dataset.qnota, n=(quadro().notas||{})[id]; if(n&&n.t!==t.value)quadroSalvar({notas:{...(quadro().notas||{}),[id]:{...n,t:t.value}}}).catch(()=>toast("Não deu pra guardar a nota"))}});
 // ---- mover e trocar foto ----
 async function murMover(id,zona){
   const d=D.itens.get(id); if(!d||!zona)return;
@@ -1219,7 +1340,21 @@ document.addEventListener("click",async e=>{
   if(ds.gc!=null){ui.gc=ds.gc;render();window.scrollTo(0,0);return}
   if(ds.mg!=null){ui.mg=ds.mg;render();return}
   if(ds.me!=null){ui.me=ds.me;render();return}
-  if(ds.mi){const id=ds.mi;openSheet("Item",()=>muralSheet(id));return}
+  if(ds.mfs!=null){ui.mf=ds.mfs;render();return}
+  if(ds.mfm!=null){ui.mm=ds.mfm;render();return}
+  if(ds.mvw){ui.mv=ds.mvw;render();return}
+  if(ds.msel!=null){ui.msel=!ui.msel;if(!ui.msel)sel.clear();render();return}
+  if(ds.selids){ds.selids.split(",").forEach(i=>sel.add(i));selAtualiza();return}
+  if(ds.mall!=null){const ids=list("itens").filter(murFiltra).map(d=>d.id);ids.forEach(i=>sel.add(i));selAtualiza();return}
+  if(ds.mclr!=null){sel.clear();selAtualiza();return}
+  if(ds.mrec!=null){const ids=[...sel].filter(i=>D.itens.has(i)); if(await setMany(ids.map(i=>["itens",i,{status:"Recebido",...travar(D.itens.get(i),["status"])}]),`${plural(ids.length,"item recebido","itens recebidos")}`)){sel.clear();ui.msel=false;render()} return}
+  if(ds.mbulk!=null){openSheet("Mudar em lote",bulkSheet);return}
+  if(ds.mbapply!=null){await bulkAplicar(b);return}
+  if(ds.qzoom){ui.mz=Math.max(.4,Math.min(1.6,Math.round(((ui.mz||1)+(ds.qzoom==="+"?.15:-.15))*100)/100));render();return}
+  if(ds.qarr!=null){await quadroSalvar({pos:{}});toast("Arrumado por GOM");return}
+  if(ds.qnovanota!=null){const qd=$("#qd"),z=ui.mz||1,id="n"+Date.now().toString(36),n={...(quadro().notas||{}),[id]:{x:Math.round(((qd?qd.scrollLeft+qd.clientWidth-250:0))/z),y:Math.round(((qd?qd.scrollTop:0)+20)/z),t:""}}; await quadroSalvar({notas:n}); return}
+  if(ds.qdel){const n={...(quadro().notas||{})}; delete n[ds.qdel]; await quadroSalvar({notas:n}); return}
+  if(ds.mi){if(suprimir){suprimir=false;return} if(ui.msel){murToggle(ds.mi);return} const id=ds.mi;openSheet("Item",()=>muralSheet(id));return}
   if(ds.msave){await murSalvar(b);return}
   if(ds.prb!=null){abrirPrint(ds.prb);return}
   if(ds.prreset!=null){pr.step=0;pr.items=[];pr.erro="";$("#shB").innerHTML=printSheet();return}
@@ -1278,6 +1413,7 @@ let qt=null;
 document.addEventListener("input",e=>{
   const id=e.target.id;
   if(id==="cq"||id==="gq"){clearTimeout(qt);qt=setTimeout(()=>{ui[id]=e.target.value;const pos=e.target.selectionStart;render();const el=$("#"+id);if(el){el.focus();try{el.setSelectionRange(pos,pos)}catch(err){}}},180);return}
+  if(id==="mq"){clearTimeout(qt);qt=setTimeout(()=>{ui.mq=e.target.value;const pos=e.target.selectionStart;render();const el=$("#mq");if(el){el.focus();try{el.setSelectionRange(pos,pos)}catch(err){}}},180);return}
   if(id==="ncq"){clearTimeout(qt);qt=setTimeout(()=>{nc.q=e.target.value;$("#shB").innerHTML=novaSheet();lazy();const el=$("#ncq");el.focus();el.setSelectionRange(nc.q.length,nc.q.length)},200);return}
   if(id==="ncv"){nc.valor=e.target.value}
   if(id==="ncp"){nc.prazo=e.target.value}

@@ -181,6 +181,12 @@ Na dúvida sobre um termo, usar o que aparece nas mensagens das GOMs e perguntar
      recebido.
    - Testes: `npm test` e, no navegador com banco simulado, `npx playwright` em
      `scripts/e2e/mural.cjs` (30 checagens, desktop e celular).
+   - **Mural v2 (24/11, depois do feedback "fraco e chato de mexer")**: busca; filtros por fase,
+     membro e etiqueta (com contagem); **seleção em lote** (Selecionar, ou segurar um card;
+     "Recebi" e "Mudar…" fase/CEG/etiqueta de vários de uma vez, com desfazer); **Quadro livre**
+     (cards posicionados por ela com mouse ou dedo, arrastar vários selecionados juntos, zoom,
+     notas soltas, "Arrumar por GOM"); posições e notas ficam em `mural/quadro`. No celular
+     não depende de arrastar: segurar + "Mudar…". 5 abas cabem no celular.
    - Falta: testar com os dados e o Gemini de verdade; ligar o card ao catálogo no print
      (hoje o item nasce sem card, e "Ligar ao catálogo" faz isso depois); share target do
      WhatsApp (PWA); tela de GOM própria.
