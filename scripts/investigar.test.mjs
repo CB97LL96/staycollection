@@ -95,3 +95,14 @@ test("aceitar pelo Telegram grava no app como o botão do app, sem pix", async (
 test("registro de confiança média entra como 'A confirmar'", () => {
   assert.equal(registroParaDoc({ destino: "cobrancas", confianca: "media" }, {}).status, "A confirmar");
 });
+
+test("dossiê mostra a nota dela e o campo travado, sem pix", () => {
+  const { tabelas: t2 } = mapear([
+    doc("cegs", "g1", { nome: "Caixa 2 PHP" }),
+    doc("itens", "i1", { item: "Han Aladin", ceg: "Caixa 2 PHP", status: "Garantido", obs: "só vem depois do dia 10", travado: ["status"], pix: "segredo" }),
+  ]);
+  const d2 = dossie(t2.cegs[0], t2);
+  const l = d2.claims.map((cl) => `${cl.notas}|${cl.legado.travado}`).join();
+  assert.equal(l, "só vem depois do dia 10|status");
+  assert.ok(!JSON.stringify(d2).includes("segredo"));
+});

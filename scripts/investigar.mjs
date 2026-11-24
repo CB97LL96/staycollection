@@ -67,7 +67,7 @@ function dossieTexto(d, planilha) {
     "Cobranças já anotadas:",
     ...(d.cobs.length ? d.cobs.map((c) => `- [cobranca ${idAntigo(c.id)}] ${c.referente || "(sem título)"} | ${c.tipo || ""} | ${typeof c.valor === "number" ? brl(c.valor) : "sem valor"} | ${c.status || ""}${c.prazo ? ` | prazo ${c.prazo}` : ""}${c.pago_em ? ` | paga em ${c.pago_em}` : ""}`) : ["(nenhuma)"]),
     "Claims e itens dela:",
-    ...(d.claims.length ? d.claims.map((cl) => `- [item ${idAntigo(cl.id)}] claim "${cl.texto}"${typeof cl.valor === "number" ? ` ${brl(cl.valor)}` : ""} | ${(cl.itens[0] && cl.itens[0].status) || ""}${cl.itens.length > 1 || cl.itens.some((i) => i.card_id) ? ` | cards: ${cl.itens.map((i) => i.card_id || i.descricao).filter(Boolean).join(", ")}` : ""}`) : ["(nenhuma)"]),
+    ...(d.claims.length ? d.claims.map((cl) => `- [item ${idAntigo(cl.id)}] claim "${cl.texto}"${typeof cl.valor === "number" ? ` ${brl(cl.valor)}` : ""} | ${(cl.itens[0] && cl.itens[0].status) || ""}${cl.itens.length > 1 || cl.itens.some((i) => i.card_id) ? ` | cards: ${cl.itens.map((i) => i.card_id || i.descricao).filter(Boolean).join(", ")}` : ""}${cl.notas ? ` | nota dela: ${cl.notas}` : ""}${(cl.legado && cl.legado.travado && cl.legado.travado.length) ? ` | ela travou: ${cl.legado.travado.join(", ")}` : ""}`) : ["(nenhuma)"]),
   ];
   if (planilha) linhas.push(planilha);
   return linhas.filter(Boolean).join("\n");
@@ -130,6 +130,8 @@ Regras:
 - Aviso geral pra todos da CEG ("frete liberado, prazo sexta") vale pra ela se ela tem itens nessa CEG. Use confiança "media" e diga em "duvidas" que é aviso geral, a menos que a planilha confirme o valor dela (aí "alta").
 - Valor só se estiver escrito (na mensagem ou na linha dela da planilha). Não calcule rateio por conta própria. Moeda estrangeira vai em "duvidas", com valor null.
 - Datas relativas viram absolutas a partir de "Hoje".
+- Item com "ela travou": ela editou esse campo à mão. Só proponha mudança nele se a mensagem for clara, e então use confiança "media" e diga em "duvidas" que o campo estava travado.
+- "nota dela" é informação que ela mesma escreveu sobre o item: use como contexto.
 - Nunca extraia chave pix nem onde mandar comprovante.
 - Se a mensagem não for sobre nenhuma CEG do dossiê, ou não der pra saber qual, deixe "ceg" vazio e pergunte em "pergunta".
 - "trecho" é sempre citação literal. Não invente.`;

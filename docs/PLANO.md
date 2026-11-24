@@ -168,7 +168,22 @@ Na dúvida sobre um termo, usar o que aparece nas mensagens das GOMs e perguntar
      testado com o Gemini de verdade nem com o banco dela.
    - Deploy: nada de variável nova. Opcional `APP_URL` (padrão
      staycollection.vercel.app). O webhook atual já recebe os toques nos botões.
-2. **Mural e colar print.**
+2. **Mural e colar print** (pronto em 24/11/2026 no branch, falta publicar):
+   - Aba **Mural** (`index.html`): itens por GOM, comunidade ou fase; arrastar um card muda de
+     CEG ou de fase; soltar uma imagem num card troca a foto; tocar abre a edição rápida
+     (nome, membro, fase, CEG, etiquetas, notas). O que ela edita vira "travado"
+     (campo `travado` no item); o bot lê notas e travas e só sugere.
+   - **Colar print** (`api/print.js`, `scripts/print-core.mjs`): a IA acha cada card, o
+     navegador recorta, ela confirma (membro, nome, quais ficam) e os itens nascem com a
+     foto, na CEG escolhida, com "desfazer". Ctrl+V no computador; "Escolher imagem" no celular.
+   - Feito em cima dos dados de hoje (tabela `docs`): não depende da migração.
+   - Termos: fases agora se chamam claim, a caminho, com a GOM, envio liberado, enviado,
+     recebido.
+   - Testes: `npm test` e, no navegador com banco simulado, `npx playwright` em
+     `scripts/e2e/mural.cjs` (30 checagens, desktop e celular).
+   - Falta: testar com os dados e o Gemini de verdade; ligar o card ao catálogo no print
+     (hoje o item nasce sem card, e "Ligar ao catálogo" faz isso depois); share target do
+     WhatsApp (PWA); tela de GOM própria.
 3. **Agora e pagamento** (o app novo substitui o atual aqui).
 4. **Binder, faltantes e caça de fotos.**
 5. **Rodada assistida.**

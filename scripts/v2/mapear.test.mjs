@@ -12,7 +12,7 @@ const exemplo = [
   doc("itens", "i1", { item: "caixa 2 PHP", ceg: "Caixa 2 PHP", comunidade: "Comunidade Azul", valor: "9,45", status: "Na WH / proxy", cards: ["karma-han-01", "karma-felix-01"] }),
   doc("itens", "i2", { item: "Han Aladin", ceg: "Caixa 2 PHP", comunidade: "Comunidade Azul", status: "Recebido", cards: ["karma-han-01"], prova: "msg da GOM" }),
   doc("itens", "i3", { item: "SG linguinha", ceg: "CEG sem cadastro", comunidade: "Comunidade Azul", status: "Garantido" }),
-  doc("itens", "i4", { item: "Variados 26", ceg: "Variados", status: "Garantido" }),
+  doc("itens", "i4", { item: "Variados 26", ceg: "Variados", status: "Garantido", etiquetas: "troca, bias", travado: ["status"], obs: "veio amassado" }),
   doc("acervo", "a1", { nome: "Lightstick", tipo: "Merch", st: "caminho" }),
   doc("cobrancas", "k1", { referente: "frete inter", comunidade: "Azul", ceg: "Caixa 2 PHP", valor: 18.4, prazo: "2026-11-27", status: "Pendente", pix: "x", grupo: "Avisos" }),
   doc("repasses", "r1", { item: "Felix repetido", pessoa: "Fulana", valor: "25", pago: true }),
@@ -99,4 +99,11 @@ test("rodar duas vezes dá os mesmos ids", () => {
   const de_novo = mapear(exemplo, { cardIds: new Set(["karma-han-01"]) }).tabelas;
   assert.deepEqual(de_novo.cegs.map((x) => x.id), t.cegs.map((x) => x.id));
   assert.deepEqual(de_novo.goms.map((x) => x.id), t.goms.map((x) => x.id));
+});
+
+test("etiquetas, campos travados e notas dela vão pro item novo", () => {
+  const it = t.itens.find((x) => x.id === "item-i4");
+  assert.deepEqual(it.etiquetas, ["troca", "bias"]);
+  assert.deepEqual(it.travado, ["status"]);
+  assert.equal(it.notas, "veio amassado");
 });

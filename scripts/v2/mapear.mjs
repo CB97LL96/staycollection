@@ -125,7 +125,8 @@ export function mapear(docs, { cardIds = new Set() } = {}) {
     prova("claims", claimId, x);
     const cards = Array.isArray(x.cards) ? x.cards.filter(Boolean) : [];
     const foto = fotos.get(d.id) || fotos.get(`item-${d.id}`) || null;
-    const base = { membro: txt(x.membro), tipo: txt(x.tipo), claim_id: claimId, ceg_id: cegId, origem: x.ceg ? "ceg" : "compra", status: txt(x.status), foto };
+    const etiquetas = String(x.etiquetas || "").split(",").map((e) => e.trim()).filter(Boolean);
+    const base = { membro: txt(x.membro), tipo: txt(x.tipo), claim_id: claimId, ceg_id: cegId, origem: x.ceg ? "ceg" : "compra", status: txt(x.status), foto, etiquetas, travado: Array.isArray(x.travado) ? x.travado : [], notas: txt(x.obs) };
     if (!cards.length) { rel.itensSemCard++; t.itens.push({ id: `item-${d.id}`, card_id: null, descricao: txt(x.item), ...base }); }
     cards.forEach((c, i) => t.itens.push({ id: cards.length === 1 ? `item-${d.id}` : `item-${d.id}-${i + 1}`, card_id: c, descricao: cards.length === 1 ? txt(x.item) : null, ...base, foto: cards.length === 1 ? foto : null }));
   }

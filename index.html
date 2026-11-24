@@ -236,6 +236,14 @@ h2 .r{margin-left:auto;font-size:14px;font-weight:700}
 .actions{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
 .mini{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:10px;margin-top:20px}
 .mini .cap{font-size:11.5px}
+.mgh{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}.mgh h2{margin:0}
+.mgrp{margin-top:26px}.mceg{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.mhd{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.mhd .t{font-weight:700}.mhd .s{color:var(--ink3);font-size:13px;margin-right:auto}
+.mini.mm{margin-top:12px}.mtile{cursor:grab}.mtile.dragging{opacity:.4}
+[data-dz].over,.mtile.over{outline:3px dashed var(--accent);outline-offset:3px}
+.prl{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px}.prrow{display:grid;grid-template-columns:auto 56px minmax(0,1fr);gap:10px;align-items:center}
+.prrow img{width:56px;aspect-ratio:55/85;object-fit:cover;border-radius:7px;box-shadow:0 0 0 1px var(--line)}
+.prf{display:grid;gap:4px;min-width:0}.prf input,.prf select{width:100%;min-width:0}.prrow input[type=checkbox]{width:22px;height:22px;accent-color:var(--accent)}
 .picker .tile.sel .ph{box-shadow:0 0 0 3px var(--accent)}
 .picker .tile.sel .ph::after{content:"";background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5 9-10'/%3E%3C/svg%3E");background-size:14px;background-position:center;background-repeat:no-repeat;position:absolute;right:6px;top:6px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-weight:800;font-size:13px}
 .stepper{display:flex;gap:6px;margin-bottom:16px}
@@ -511,7 +519,7 @@ const membro=m=>{const k=norm(m).replace(/[^a-z]/g,"");return MKEY[k]||(m?String
 const FASES=[["esp","Esperando a CEG",["Tentativa de claim","Garantido","Aguardando","A confirmar"]],["cam","A caminho",["Comprado","Na seller","A caminho da proxy","Na WH / proxy","A caminho do Brasil"]],["br","No Brasil",["Com a GOM no Brasil"]],["lib","Liberado pra envio",["Envio liberado"]],["ped","Vindo pra mim",["Envio pedido","Enviado"]],["rec","Comigo",["Recebido"]],["fora","Fora",["Set não fechou","Claim perdida","Repassei","Abandonado","Cancelado"]]];
 const faseDe=st=>{const f=FASES.find(x=>x[2].includes(st));return f?f[0]:"esp"};
 const FORD={quero:0,esp:1,cam:2,br:3,lib:4,ped:5,rec:6};
-const FLBL={quero:"quero",esp:"esperando CEG",cam:"a caminho",br:"no Brasil",lib:"liberado",ped:"vindo pra mim",rec:"comigo"};
+const FLBL={quero:"quero",esp:"claim",cam:"a caminho",br:"com a GOM",lib:"envio liberado",ped:"enviado",rec:"recebido"};
 const FTONE={quero:"guess",esp:"",cam:"info",br:"soon",lib:"soon",ped:"info",rec:"ok"};
 const GRUPO_F={comigo:["rec"],vindo:["cam","br","lib","ped"],esperando:["esp"],quero:["quero"]};
 const TIPOS=["Photocard / set","Álbum","SG / fankit","Merch"];
@@ -623,7 +631,7 @@ function cegs(){
 }
 
 // ---------- estado da tela ----------
-const TABS=[["inicio","Início","home"],["colecao","Coleção","cards"],["contas","Contas","wallet"],["cegs","CEGs","users"]];
+const TABS=[["inicio","Início","home"],["mural","Mural","box"],["colecao","Coleção","cards"],["contas","Contas","wallet"],["cegs","CEGs","users"]];
 const ui={tab:"inicio",cf:"todos",cm:"",ct:"",cq:"",cn:240,kv:"prazo",gf:"abertas",gc:"",gq:"",cco:"",cce:"",cs:"era"};
 try{Object.assign(ui,JSON.parse(localStorage.getItem("novo-ui")||"{}"))}catch(e){}
 const h=location.hash.slice(1); if(TABS.some(t=>t[0]===h))ui.tab=h;
@@ -1030,6 +1038,155 @@ function novaSheet(){
   <div class="actions stick"><button class="btn" data-ncback type="button">Voltar</button><button class="btn pri" data-act="salvar" type="button">Salvar compra</button></div>`;
 }
 
+// ---------- Mural: o board dela, montado sozinho e editável ----------
+// Agrupa por GOM (ou comunidade, ou fase). Arrastar um card muda de CEG ou de fase;
+// soltar uma imagem troca a foto; tocar abre a edição rápida. O que ela edita
+// fica em "travado": o robô não muda esses campos sozinho, só sugere.
+const FASE_PADRAO={esp:"Garantido",cam:"Na WH / proxy",br:"Com a GOM no Brasil",lib:"Envio liberado",ped:"Enviado",rec:"Recebido"};
+const MUR_FASES=["esp","cam","br","lib","ped","rec"];
+const gomDe=r=>{const g=r.doc&&String(r.doc.gom||"").trim(); if(g)return g; const ci=comInfo(r.com), gs=ci&&String(ci.goms||"").trim(); return gs&&!/[,;\/&+]|\be\b/i.test(gs)?gs:"Sem GOM"};
+const etiquetasDe=d=>String(d.etiquetas||"").split(",").map(s=>s.trim()).filter(Boolean);
+const travadosDe=d=>Array.isArray(d.travado)?d.travado:[];
+const travar=(d,campos)=>({travado:[...new Set([...travadosDe(d),...campos])]});
+let drag="";
+function murTile(d,cap){
+  const cs=Array.isArray(d.cards)?d.cards:[]; const c=cs.length&&COL?CIDX.get(cs[0]):null; const bg=c?cardBg(c):itemBg(d), f=faseDe(d.status), et=etiquetasDe(d);
+  return `<button class="tile mtile" type="button" draggable="true" data-mi="${esc(d.id)}" data-dr="${esc(d.id)}">${ph(bg,"",bg?`<span class="pill ${FTONE[f]} bdg">${FLBL[f]}</span>`:esc(d.item||""))}<span class="cap">${esc(d.item||"")}<small>${esc([cap!=null?cap:d.membro,...et].filter(Boolean).join(" · "))}${travadosDe(d).length?" · travado":""}</small></span></button>`}
+function murCeg(r){
+  return `<div class="mceg" data-dz="ceg:${esc(r.key)}"><div class="mhd"><span class="t">${esc(r.lbl||r.nome)}</span><span class="s">${esc(plural(r.itens.length,"item","itens"))}</span>${r.devN?`<span class="pill late">devo ${r.deve?brl(r.deve):"sem valor"}</span>`:""}<button class="btn sm" data-prb="${esc(r.key)}" type="button">${ico("plus",14)}print</button></div>
+    <div class="mini mm">${r.itens.map(d=>murTile(d)).join("")}</div></div>`}
+function renderMural(){
+  const mode=ui.mg||"gom", et=ui.me||"", todos=list("itens").filter(d=>faseDe(d.status)!=="fora");
+  const todasEt=[...new Set(todos.flatMap(etiquetasDe))].sort((a,b)=>a.localeCompare(b,"pt-BR"));
+  const rows=cegs().map(r=>({...r,itens:r.itens.filter(d=>!et||etiquetasDe(d).includes(et))})).filter(r=>r.itens.length);
+  let corpo="";
+  if(mode==="fase"){
+    const its=todos.filter(d=>!et||etiquetasDe(d).includes(et));
+    corpo=MUR_FASES.map(f=>{const xs=its.filter(d=>faseDe(d.status)===f); return `<section class="mgrp" data-dz="fase:${f}"><h2>${FLBL[f]} <span class="n">${xs.length}</span></h2><div class="mini mm">${xs.map(d=>murTile(d,[d.membro,cegLbl(d)||d.ceg].filter(Boolean).join(" · "))).join("")||`<p class="note" style="grid-column:1/-1">Solte aqui pra mudar a fase.</p>`}</div></section>`}).join("");
+  }else{
+    const m=new Map(); rows.forEach(r=>{const k=mode==="comunidade"?(nomeCom(r.com)||"Sem comunidade"):gomDe(r); if(!m.has(k))m.set(k,[]); m.get(k).push(r)});
+    const gs=[...m].sort((a,b)=>b[1].reduce((s,r)=>s+r.itens.length,0)-a[1].reduce((s,r)=>s+r.itens.length,0));
+    corpo=gs.map(([k,rs])=>{const n=rs.reduce((s,r)=>s+r.itens.length,0), lib=rs.reduce((s,r)=>s+r.itens.filter(d=>faseDe(d.status)==="lib").length,0), deve=rs.reduce((s,r)=>s+r.deve,0);
+      return `<section class="mgrp"><div class="mgh"><h2>${esc(k)} <span class="n">${n}</span></h2>${lib?`<span class="pill ok">${lib} com envio liberado</span>`:""}${deve?`<span class="pill late">devo ${brl(deve)}</span>`:""}</div>${rs.sort((a,b)=>b.ativos-a.ativos).map(murCeg).join("")}</section>`}).join("");
+  }
+  $("#main").innerHTML=`${head("Mural",`${plural(todos.length,"item","itens")} · arraste pra mudar de CEG ou de fase, solte uma foto num card pra trocar, toque pra editar`)}
+  <div class="srow"><div class="seg" role="group" aria-label="Agrupar">${[["gom","GOM"],["comunidade","Comunidade"],["fase","Fase"]].map(([k,l])=>`<button data-mg="${k}" aria-pressed="${mode===k}" type="button">${l}</button>`).join("")}</div><button class="btn pri sm" data-prb="" type="button">${ico("plus",16)}Colar print</button></div>
+  ${todasEt.length?`<div class="chips" style="margin-bottom:12px"><button class="chip" data-me="" aria-pressed="${!et}" type="button">todas</button>${todasEt.map(x=>`<button class="chip" data-me="${esc(x)}" aria-pressed="${et===x}" type="button">${esc(x)}</button>`).join("")}</div>`:""}
+  ${corpo||`<p class="empty">Nada por aqui ainda. Cole um print pra começar.</p>`}`;
+}
+// ---- mover e trocar foto ----
+async function murMover(id,zona){
+  const d=D.itens.get(id); if(!d||!zona)return;
+  let patch, msg;
+  if(zona.startsWith("fase:")){const st=FASE_PADRAO[zona.slice(5)]; if(!st||faseDe(d.status)===zona.slice(5))return; patch={status:st}; msg="Fase: "+FLBL[zona.slice(5)]}
+  else{const r=cegs().find(x=>x.key===zona.slice(4)); if(!r||(d.ceg===r.nome&&(d.comunidade||"")===r.com))return; patch={ceg:r.nome,comunidade:r.com}; msg="Movido para "+(r.lbl||r.nome)}
+  await setMany([["itens",id,{...patch,...travar(d,Object.keys(patch))}]],msg);
+}
+function reduzir(fonte,max,q){return new Promise(async(ok,erro)=>{try{const bm=await createImageBitmap(fonte); const s=Math.min(1,max/Math.max(bm.width,bm.height)); const c=document.createElement("canvas"); c.width=Math.round(bm.width*s); c.height=Math.round(bm.height*s); c.getContext("2d").drawImage(bm,0,0,c.width,c.height); c.toBlob(b=>b?ok({blob:b,canvas:c}):erro(new Error("imagem")),"image/jpeg",q||.85)}catch(e){erro(e)}})}
+async function subirFoto(blob){const a=await window.claude.use("assets"); const r=await a.upload(blob,{type:"image/jpeg"}); return r.id}
+async function murFoto(id,file){
+  if(!db||!canWrite||!file||!/^image\//.test(file.type)){toast("Isso não é uma imagem");return}
+  try{const {blob}=await reduzir(file,900); const antes=fotos[id]&&fotos[id].asset; const asset=await subirFoto(blob); await db.doc("fotos/"+id).set({asset});
+    toast("Foto trocada",async()=>{if(antes)await db.doc("fotos/"+id).set({asset:antes}); else await db.doc("fotos/"+id).delete()})}
+  catch(e){toast("Não deu pra enviar a foto; tente de novo")}
+}
+// ---- edição rápida ----
+function muralSheet(id){
+  const d=D.itens.get(id); if(!d)return "<p class='empty'>Item não encontrado.</p>";
+  const cs=Array.isArray(d.cards)?d.cards:[]; const c=cs.length&&COL?CIDX.get(cs[0]):null, bg=c?cardBg(c):itemBg(d), tr=travadosDe(d);
+  const cur=cegs().find(r=>r.com===(d.comunidade||"")&&r.nome===d.ceg);
+  const cegOpts=cegs().filter(r=>r.nome).sort((a,b)=>(a.com+a.nome).localeCompare(b.com+b.nome,"pt-BR")).map(r=>`<option value="${esc(r.key)}" ${cur&&cur.key===r.key?"selected":""}>${esc(nomeCom(r.com))} · ${esc(r.lbl||r.nome)}</option>`).join("");
+  const stOpts=CAMPOS.itens.opts.map(s=>`<option ${s===d.status?"selected":""}>${esc(s)}</option>`).join("");
+  const mOpts=["",...MEMBROS].map(m=>`<option ${m===membro(d.membro)?"selected":""} value="${esc(m)}">${esc(m||"sem membro")}</option>`).join("");
+  return `<div class="cardhero">${ph(bg,"",bg?"":esc(d.item||""))}<div><div style="font-size:20px;font-weight:700">${esc(d.item||"Item")}</div><div style="color:var(--ink2)">${esc([d.membro,cegLbl(d)||d.ceg].filter(Boolean).join(" · "))}</div><div class="actions"><label class="btn sm">${ico("plus",14)}trocar foto<input type="file" id="mif" accept="image/*" data-for="${esc(id)}" hidden></label></div></div></div>
+  <div class="form" style="margin-top:14px">
+    <div class="field wide"><label for="mq-item">Nome</label><input id="mq-item" value="${esc(d.item||"")}"></div>
+    <div class="field"><label for="mq-membro">Membro</label><select id="mq-membro">${mOpts}</select></div>
+    <div class="field"><label for="mq-status">Fase</label><select id="mq-status">${stOpts}</select></div>
+    <div class="field wide"><label for="mq-ceg">CEG</label><select id="mq-ceg">${cegOpts}</select></div>
+    <div class="field wide"><label for="mq-etiquetas">Etiquetas (troca, presente, bias...)</label><input id="mq-etiquetas" value="${esc(d.etiquetas||"")}"></div>
+    <div class="field wide"><label for="mq-obs">Notas</label><textarea id="mq-obs" rows="3">${esc(d.obs||"")}</textarea></div>
+  </div>
+  ${tr.length?`<p class="note">Campos travados: o robô não muda sozinho, só sugere. ${tr.map(f=>`<button class="chip" data-destravar="${esc(id)}|${esc(f)}" type="button">${esc(f)} ×</button>`).join(" ")}</p>`:""}
+  <div class="actions stick"><button class="btn pri" data-msave="${esc(id)}" type="button">Salvar</button><button class="btn" data-edit="itens|${esc(id)}" type="button">Todos os campos</button>${!cs.length?`<button class="btn" data-link="${esc(id)}" type="button">${ico("link",16)}Ligar ao catálogo</button>`:""}</div>`;
+}
+async function murSalvar(b){
+  const id=b.dataset.msave, d=D.itens.get(id); if(!d)return;
+  const v=x=>$("#mq-"+x).value, novo={item:v("item").trim(),membro:v("membro"),status:v("status"),etiquetas:v("etiquetas").split(",").map(s=>s.trim()).filter(Boolean).join(", "),obs:v("obs")};
+  const r=cegs().find(x=>x.key===v("ceg")); if(r&&!(d.ceg===r.nome&&(d.comunidade||"")===r.com)){novo.ceg=r.nome;novo.comunidade=r.com}
+  const patch={}, trava=[]; for(const k in novo){if(String(novo[k]||"")!==String(d[k]||"")){patch[k]=novo[k]; if(!["etiquetas","obs"].includes(k))trava.push(k)}}
+  if(!Object.keys(patch).length){closeSheet();return}
+  b.disabled=true; if(await setMany([["itens",id,{...patch,...(trava.length?travar(d,trava):{})}]],"Item salvo"))closeSheet(); else b.disabled=false;
+}
+// ---- colar print ----
+const pr={step:0,ceg:"",items:[],busy:false,erro:"",resumo:"",thumb:""};
+function abrirPrint(cegKey,file){
+  Object.assign(pr,{step:0,ceg:cegKey||pr.ceg||"",items:[],busy:false,erro:"",resumo:"",thumb:""});
+  openSheet("Colar print",printSheet); if(file)lerPrint(file);
+}
+function cegOptsHtml(sel){return cegs().filter(r=>r.nome).sort((a,b)=>(a.com+a.nome).localeCompare(b.com+b.nome,"pt-BR")).map(r=>`<option value="${esc(r.key)}" ${r.key===sel?"selected":""}>${esc(nomeCom(r.com))} · ${esc(r.lbl||r.nome)}</option>`).join("")}
+function printSheet(){
+  if(pr.busy)return `<p class="lede">Lendo o print…</p>${pr.thumb?`<img src="${pr.thumb}" alt="" style="max-width:100%;max-height:260px;border-radius:12px">`:""}<p class="note">Costuma levar uns 10 a 20 segundos.</p>`;
+  if(pr.step===0)return `<p class="lede" style="margin:0 0 12px">Cole um print da tabela da CEG, do flyer da GOM ou do seu board antigo. O app acha cada card, recorta e cria os itens com a foto.</p>
+    ${pr.erro?`<p class="note" style="color:var(--late)">${esc(pr.erro)}</p>`:""}
+    <div class="form"><div class="field wide"><label for="prcg">Em qual CEG?</label><select id="prcg"><option value="">escolher depois</option>${cegOptsHtml(pr.ceg)}</select></div></div>
+    <div class="actions"><label class="btn pri">Escolher imagem<input type="file" id="prf" accept="image/*" hidden></label></div>
+    <p class="note">No computador, é só apertar Ctrl+V com o print copiado. No celular, use "Escolher imagem".</p>`;
+  const on=pr.items.filter(i=>i.on).length;
+  return `<p class="lede" style="margin:0 0 10px">${esc(pr.resumo||"")} ${plural(pr.items.length,"card achado","cards achados")}. Desmarque o que não é seu e corrija o que precisar.</p>
+    <div class="form"><div class="field wide"><label for="prcg">CEG</label><select id="prcg"><option value="">sem CEG</option>${cegOptsHtml(pr.ceg)}</select></div></div>
+    <ul class="rows prl">${pr.items.map((x,i)=>`<li class="prrow"><input type="checkbox" class="prc" data-i="${i}" ${x.on?"checked":""} aria-label="incluir"><img src="${x.crop}" alt=""><span class="prf"><input class="prn" data-i="${i}" value="${esc([x.nome,x.numero&&("nº "+x.numero)].filter(Boolean).join(" · "))}" placeholder="nome / versão" aria-label="nome"><select class="prm" data-i="${i}" aria-label="membro">${["",...MEMBROS].map(m=>`<option value="${esc(m)}" ${m===membro(x.membro)?"selected":""}>${esc(m||"sem membro")}</option>`).join("")}</select>${x.legivel===false?`<small style="color:var(--late)">borrado ou cortado</small>`:""}</span></li>`).join("")}</ul>
+    <div class="actions stick"><button class="btn" data-prreset type="button">Outro print</button><button class="btn pri" data-prsave type="button" ${on?"":"disabled"}>Criar ${plural(on,"item","itens")}</button></div>`;
+}
+async function lerPrint(file){
+  if(!/^image\//.test(file.type)){pr.erro="Isso não é uma imagem.";pr.step=0;$("#shB").innerHTML=printSheet();return}
+  pr.busy=true; pr.erro=""; $("#shB").innerHTML=printSheet();
+  try{
+    const {canvas}=await reduzir(file,1600,.85), url=canvas.toDataURL("image/jpeg",.85); pr.thumb=url; $("#shB").innerHTML=printSheet();
+    const s=await window.stay.getSession(); const r=await fetch("/api/print",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+(s&&s.access_token)},body:JSON.stringify({imagem:{tipo:"image/jpeg",dados:url.split(",")[1]}})});
+    const j=await r.json().catch(()=>({})); if(!r.ok)throw new Error(j.erro||"Não consegui ler o print.");
+    const W=canvas.width,H=canvas.height;
+    pr.items=(j.cards||[]).map(c=>{const [y0,x0,y1,x1]=c.caixa, pad=.004, sx=Math.max(0,x0/1000-pad)*W, sy=Math.max(0,y0/1000-pad)*H, sw=Math.min(W-sx,(x1-x0)/1000*W+pad*2*W), sh=Math.min(H-sy,(y1-y0)/1000*H+pad*2*H);
+      const cv=document.createElement("canvas"), k=Math.min(1,520/Math.max(sw,sh)); cv.width=Math.max(1,Math.round(sw*k)); cv.height=Math.max(1,Math.round(sh*k)); cv.getContext("2d").drawImage(canvas,sx,sy,sw,sh,0,0,cv.width,cv.height);
+      return {...c,on:c.legivel!==false,crop:cv.toDataURL("image/jpeg",.9)}});
+    pr.resumo=j.resumo||""; pr.step=pr.items.length?1:0; if(!pr.items.length)pr.erro="Não achei nenhum card nesse print.";
+  }catch(e){pr.erro=e.message||"Não consegui ler o print."; pr.step=0}
+  pr.busy=false; if(sheetFn===printSheet)$("#shB").innerHTML=printSheet();
+}
+async function printSalvar(b){
+  const r=cegs().find(x=>x.key===pr.ceg), sel=pr.items.map((x,i)=>({x,i})).filter(({x})=>x.on); if(!sel.length||!db||!canWrite)return;
+  document.querySelectorAll("#shB .prn").forEach(el=>{pr.items[+el.dataset.i].texto=el.value.trim()}); document.querySelectorAll("#shB .prm").forEach(el=>{pr.items[+el.dataset.i].membro=el.value});
+  b.disabled=true; const feitos=[]; let n=0;
+  try{
+    for(const {x} of sel){
+      b.textContent=`Criando ${++n} de ${sel.length}…`;
+      const nome=(x.texto!=null?x.texto:x.nome)||"card do print";
+      const doc={item:nome,membro:x.membro||"",comunidade:r?r.com:"",ceg:r?r.nome:"",valor:null,status:"Garantido",origem:"Print",tipo:x.tipo==="merch"?"Merch":"Photocard / set",pago:"Ainda não cobrado",criadoEm:isoToday(),obs:x.numero?"número "+x.numero:"",etiquetas:""};
+      const {id}=await db.collection("itens").add(doc); const f={id,asset:null}; feitos.push(f);
+      const blob=await (await fetch(x.crop)).blob(); f.asset=await subirFoto(blob); await db.doc("fotos/"+id).set({asset:f.asset});
+    }
+  }catch(e){toast(`Parou no ${n}º card; os anteriores ficaram salvos`);b.disabled=false;b.textContent="Tentar de novo";return}
+  closeSheet(); toast(`${plural(feitos.length,"item criado","itens criados")}`,async()=>{for(const f of feitos){await db.doc("itens/"+f.id).delete(); await db.doc("fotos/"+f.id).delete().catch(()=>{}); if(f.asset)window.claude.use("assets").then(a=>a.delete(f.asset)).catch(()=>{})}});
+}
+// ---- arrastar, soltar e colar ----
+const temArquivo=e=>[...(e.dataTransfer&&e.dataTransfer.types||[])].includes("Files");
+document.addEventListener("dragstart",e=>{const t=e.target.closest&&e.target.closest("[data-dr]"); if(!t)return; drag=t.dataset.dr; e.dataTransfer.setData("text/plain",drag); e.dataTransfer.effectAllowed="move"; t.classList.add("dragging")});
+document.addEventListener("dragend",()=>{drag="";document.querySelectorAll(".dragging,.over").forEach(x=>x.classList.remove("dragging","over"))});
+let overEl=null;
+document.addEventListener("dragover",e=>{const z=e.target.closest&&(e.target.closest("[data-dr]")&&temArquivo(e)?e.target.closest("[data-dr]"):e.target.closest("[data-dz]")); if(!z||(!drag&&!temArquivo(e)))return; e.preventDefault(); if(overEl!==z){overEl&&overEl.classList.remove("over");overEl=z;z.classList.add("over")}});
+document.addEventListener("drop",async e=>{
+  const alvoTile=e.target.closest&&e.target.closest("[data-dr]"), z=e.target.closest&&e.target.closest("[data-dz]"); overEl&&overEl.classList.remove("over"); overEl=null;
+  const file=e.dataTransfer&&[...e.dataTransfer.files].find(f=>/^image\//.test(f.type));
+  if(file&&alvoTile){e.preventDefault(); await murFoto(alvoTile.dataset.dr,file); return}
+  if(file&&z){e.preventDefault(); abrirPrint(z.dataset.dz.startsWith("ceg:")?z.dataset.dz.slice(4):"",file); return}
+  if(drag&&z){e.preventDefault(); const id=drag; drag=""; await murMover(id,z.dataset.dz)}
+});
+document.addEventListener("paste",e=>{
+  if(ui.tab!=="mural"&&sheetFn!==printSheet)return; if(e.target.matches&&e.target.matches("input,textarea"))return;
+  const f=[...(e.clipboardData&&e.clipboardData.files||[])].find(x=>/^image\//.test(x.type)); if(!f)return; e.preventDefault();
+  if(sheetFn===printSheet){pr.step=0;lerPrint(f)}else abrirPrint("",f);
+});
+
 // ---------- render ----------
 let io=null;
 function lazy(){
@@ -1040,7 +1197,7 @@ function render(){
   nav();
   if(!ready){$("#main").innerHTML=`<p class="empty">Carregando…</p>`;return}
   if(!db){$("#main").innerHTML=`${head("Coleção SKZ")}<p class="note">Entre com a sua conta para ver os dados.</p>`;return}
-  ({inicio:renderInicio,colecao:renderColecao,contas:renderContas,cegs:renderCegs})[ui.tab]();
+  ({inicio:renderInicio,mural:renderMural,colecao:renderColecao,contas:renderContas,cegs:renderCegs})[ui.tab]();
   if(sheetFn&&sheetFn!==formSheet&&!$("#shB").contains(document.activeElement)){const sc=$("#shB").scrollTop;$("#shB").innerHTML=sheetFn();$("#shB").scrollTop=sc}
   lazy();
 }
@@ -1060,6 +1217,14 @@ document.addEventListener("click",async e=>{
   if(ds.kv){ui.kv=ds.kv;save();render();return}
   if(ds.gf){ui.gf=ds.gf;save();render();return}
   if(ds.gc!=null){ui.gc=ds.gc;render();window.scrollTo(0,0);return}
+  if(ds.mg!=null){ui.mg=ds.mg;render();return}
+  if(ds.me!=null){ui.me=ds.me;render();return}
+  if(ds.mi){const id=ds.mi;openSheet("Item",()=>muralSheet(id));return}
+  if(ds.msave){await murSalvar(b);return}
+  if(ds.prb!=null){abrirPrint(ds.prb);return}
+  if(ds.prreset!=null){pr.step=0;pr.items=[];pr.erro="";$("#shB").innerHTML=printSheet();return}
+  if(ds.prsave!=null){await printSalvar(b);return}
+  if(ds.destravar){const [id,f]=ds.destravar.split("|"),d=D.itens.get(id); if(d)await setMany([["itens",id,{travado:travadosDe(d).filter(x=>x!==f)}]],"Destravado: "+f); return}
   if(ds.conta){openSheet("Conta",()=>contaSheet(ds.conta));return}
   if(ds.card){openSheet("Card",()=>cardSheet(ds.card));return}
   if(ds.ceg){const k=ds.ceg;openSheet("CEG",()=>cegSheet(k));return}
@@ -1118,7 +1283,12 @@ document.addEventListener("input",e=>{
   if(id==="ncp"){nc.prazo=e.target.value}
 });
 document.addEventListener("focusout",e=>{if(e.target.matches&&e.target.matches("#cq,#gq"))setTimeout(()=>{if(!document.activeElement||!document.activeElement.matches("input"))render()},50)});
-document.addEventListener("change",e=>{const f=e.target.id; if(f==="fco"){ui.cco=e.target.value;ui.cce="";ui.cn=240;render();return} if(f==="fce"){ui.cce=e.target.value;ui.cn=240;render();return} if(f==="fso"){ui.cs=e.target.value;ui.cn=240;render();return}
+document.addEventListener("change",e=>{const f=e.target.id;
+  if(f==="prf"&&e.target.files[0]){lerPrint(e.target.files[0]);return}
+  if(f==="mif"&&e.target.files[0]){murFoto(e.target.dataset.for,e.target.files[0]);return}
+  if(f==="prcg"){pr.ceg=e.target.value;return}
+  if(e.target.classList&&e.target.classList.contains("prc")){pr.items[+e.target.dataset.i].on=e.target.checked;const n=pr.items.filter(i=>i.on).length,bt=$("[data-prsave]");if(bt){bt.disabled=!n;bt.textContent="Criar "+plural(n,"item","itens")}return}
+ if(f==="fco"){ui.cco=e.target.value;ui.cce="";ui.cn=240;render();return} if(f==="fce"){ui.cce=e.target.value;ui.cn=240;render();return} if(f==="fso"){ui.cs=e.target.value;ui.cn=240;render();return}
   if(e.target.id==="ncpg")nc.pago=e.target.checked; if(e.target.id==="ncp")nc.prazo=e.target.value});
 window.addEventListener("hashchange",()=>{const h=location.hash.slice(1);if(TABS.some(t=>t[0]===h)&&h!==ui.tab){ui.tab=h;render()}});
 

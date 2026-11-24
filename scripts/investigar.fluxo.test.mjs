@@ -20,6 +20,7 @@ const doc = (col, id, data) => ({ col, id, data });
 const docs = [
   doc("comunidades", "c1", { nome: "Comunidade Azul", goms: "Gabi" }),
   doc("cegs", "g1", { nome: "Caixa 2 PHP", comunidade: "Comunidade Azul", gom: "Gabi", planilha: "https://docs.google.com/spreadsheets/d/abc/edit", obs: "só envia depois do dia 10" }),
+  doc("itens", "i9", { item: "Han Aladin", ceg: "Caixa 2 PHP", comunidade: "Comunidade Azul", status: "Garantido", obs: "veio amassado", travado: ["status"] }),
   doc("cobrancas", "k2", { referente: "taxa", ceg: "Caixa 2 PHP", comunidade: "Comunidade Azul", valor: 5, status: "Pendente", pix: "segredo" }),
 ];
 
@@ -30,6 +31,8 @@ test("investiga: dossiê com planilha e notas vai pra IA, resposta sai com total
   assert.doesNotMatch(prompt, /Outra;frete/);       // linha de outra pessoa não vai
   assert.match(prompt, /só envia depois do dia 10/); // nota dela vira contexto
   assert.doesNotMatch(prompt, /segredo/);            // pix nunca vai pra IA
+  assert.match(prompt, /nota dela: veio amassado \| ela travou: status\n/);
+  assert.doesNotMatch(prompt, /\}/);
   assert.equal(r.totalDevido, 23.4);                 // 5 da taxa + 18,40 novo
   const txt = respostaTelegram(r);
   assert.match(txt, /CEG Caixa 2 PHP · GOM Gabi/);
