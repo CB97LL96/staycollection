@@ -449,6 +449,17 @@ h2>.n:last-child{margin-left:auto}
   .grid{gap:10px 8px}
 }
 @media (prefers-reduced-motion:reduce){.sheet,.scrim,.toast{transition:none}}
+.gtag{display:inline-flex;align-items:center;gap:6px;min-width:0;max-width:100%;vertical-align:middle;font-weight:600}
+.gtag .gtc{color:var(--ink2);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gtag .gts{color:var(--ink3)}.gtag .gtg{font-weight:800;color:var(--ink);white-space:nowrap}
+.gtag.lg{font-size:18px;gap:10px}.gtag.lg .gtc,.gtag.lg .gtg{white-space:normal}
+.gomb{display:inline-flex;max-width:100%;background:none;border:0;padding:2px 0;cursor:pointer;color:var(--ink);font:inherit;text-align:left}
+.gomb:hover .gtg{text-decoration:underline}
+.agq{border:2px solid var(--ink);border-radius:16px;padding:16px;margin:0 0 18px;background:var(--surface)}
+.agq .agt{font-weight:800;font-size:19px;line-height:1.25;margin:8px 0 4px}.agq .ags{color:var(--ink2);font-size:14px;margin:0 0 12px}
+.agq .actions{margin:12px 0 0}.agq .tag{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)}
+.agq .strip{display:flex;gap:6px;margin-top:10px}.agq .strip .ph{width:42px}
+.fileb{position:relative;overflow:hidden;cursor:pointer}.fileb input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.gsheet .sit{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
 </style>
 </head>
 <body>
@@ -548,6 +559,12 @@ function cegLbl(d){ if(!d.ceg) return ""; const a=String(d.ceg).trim().split(/\s
 const comInfo=n=>{if(!n)return null;for(const c of D.comunidades.values())if(c.nome===n)return c;return null};
 const cegDoc=(nome,com)=>{if(!nome)return null;let alt=null;for(const g of D.cegs.values()){if(g.nome===nome){if(!com||g.comunidade===com)return g;alt=alt||g}}return alt};
 
+// REGRA DA DONA: GOM nunca aparece sozinha. Sempre ícone + nome da comunidade + nome da GOM.
+const gomNome=g=>String(g||"").trim()||"Sem GOM";
+const gkey=(gom,com)=>gomNome(gom)+"\u0001"+(com||"");
+const gomTag=(gom,com,cls="")=>`<span class="gtag ${cls}">${av("com",com,cls==="lg"?"":"xs")}<span class="gtc">${esc(com?nomeCom(com):"sem comunidade")}</span><span class="gts" aria-hidden="true">·</span><span class="gtg">${esc(gomNome(gom))}</span></span>`;
+const gomBtn=(gom,com,cls)=>`<button class="gomb" data-gomk="${esc(gkey(gom,com))}" type="button" aria-label="${esc("GOM "+gomNome(gom)+", "+(com?nomeCom(com):"sem comunidade"))}">${gomTag(gom,com,cls)}</button>`;
+
 // fotos: ícones de grupo/comunidade e fotos enviadas
 const iconKey=(t,n)=>{let h=5381; const x=String(n||"").toLowerCase().normalize("NFD").replace(/[^a-z0-9]/g,""); for(let i=0;i<x.length;i++)h=((h<<5)+h+x.charCodeAt(i))>>>0; return "icon-"+t+"-"+h.toString(16)};
 const fotoUrl=key=>{const f=fotos[key]; if(!f||!/^[0-9a-f]{32}$/.test(f.asset||""))return ""; const u=window.stay&&window.stay.blobUrl(f.asset); return okUrl(u)?u:""};
@@ -646,10 +663,11 @@ function cegs(){
 }
 
 // ---------- estado da tela ----------
-const TABS=[["inicio","Início","home"],["mural","Mural","box"],["colecao","Coleção","cards"],["contas","Contas","wallet"],["cegs","CEGs","users"]];
-const ui={tab:"inicio",cf:"todos",cm:"",ct:"",cq:"",cn:240,kv:"prazo",gf:"abertas",gc:"",gq:"",cco:"",cce:"",cs:"era"};
+const TABS=[["agora","Agora","home"],["mural","Mural","box"],["colecao","Coleção","cards"],["contas","Contas","wallet"],["cegs","CEGs","users"]];
+const ui={tab:"agora",cf:"todos",cm:"",ct:"",cq:"",cn:240,kv:"prazo",gf:"abertas",gc:"",gq:"",cco:"",cce:"",cs:"era"};
 try{Object.assign(ui,JSON.parse(localStorage.getItem("novo-ui")||"{}"))}catch(e){}
-const h=location.hash.slice(1); if(TABS.some(t=>t[0]===h))ui.tab=h;
+const ALIAS={inicio:"agora"};
+const h=ALIAS[location.hash.slice(1)]||location.hash.slice(1); if(TABS.some(t=>t[0]===h))ui.tab=h;
 const save=()=>{try{localStorage.setItem("novo-ui",JSON.stringify({kv:ui.kv,gf:ui.gf,cf:ui.cf}))}catch(e){}};
 
 function toast(msg,undo){const t=$("#toast");t.innerHTML=esc(msg)+(undo?` <button type="button" class="undo">desfazer</button>`:"");t.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("on"),undo?7000:2600);
@@ -677,7 +695,7 @@ async function addMany(adds,msg){
 
 // ---------- navegação ----------
 function nav(){
-  const {devoL,venc}=contas(); const badge={inicio:"",contas:venc.length||""};
+  const {devoL,venc}=contas(); const badge={agora:"",contas:venc.length||""};
   $("#navlinks").innerHTML=TABS.map(([k,l,i])=>`<button class="nv" data-tab="${k}" type="button" ${ui.tab===k?'aria-current="page"':""}>${ico(i)}${l}${badge[k]?`<span class="ct">${badge[k]}</span>`:""}</button>`).join("");
   $("#tabbar").innerHTML=TABS.map(([k,l,i])=>`<button data-tab="${k}" type="button" ${ui.tab===k?'aria-current="page"':""}>${ico(i)}${l}${badge[k]?`<span class="ct">${badge[k]}</span>`:""}</button>`).join("");
 }
@@ -688,32 +706,86 @@ function dateBlk(s,calmo){let n=daysTo(s); if(calmo&&n!=null&&n<0)n=0; if(n==nul
 function prazoPill(c){const n=daysTo(c.prazo); if(c.status==="Paga")return `<span class="pill ok">paga${c.pagoEm?" "+fdd(c.pagoEm):""}</span>`; if(c.status==="Cancelada")return `<span class="pill">cancelada</span>`; if(c.status==="A confirmar")return `<span class="pill guess ${vencida(c)?"late":""}">a confirmar${vencida(c)?" · venceu":""}</span>`; if(n==null)return ""; if(n<0)return `<span class="pill late">${plural(-n,"dia","dias")} atrasada</span>`; if(n===0)return `<span class="pill soon">vence hoje</span>`; if(n<=7)return `<span class="pill soon">em ${plural(n,"dia","dias")}</span>`; return ""}
 const contaRow=c=>`<li><button class="row" data-conta="${esc(c.id)}" type="button">${dateBlk(c.prazo,c.status==="Paga"||c.status==="A confirmar")}<span class="tx"><span class="t">${esc(c.referente||c.tipo||"Cobrança")}</span><span class="s">${av("com",c.comunidade,"xs")}${esc([c.comunidade,c.tipo].filter(Boolean).join(" · "))}</span></span><span class="v">${typeof c.valor==="number"?brl(c.valor):`<span class="semvalor">sem valor</span>`}${prazoPill(c)}</span></button></li>`;
 
-// ---------- Início ----------
-function renderInicio(){
-  const k=contas(), col=colecao();
-  const n=f=>col.filter(e=>GRUPO_F[f].includes(e.fase)).length;
-  const semana=k.devoL.filter(c=>{const d=daysTo(c.prazo);return d!=null&&d>=0&&d<=7});
+// ---------- Agora: fila de ações, uma por vez ----------
+const SEM_CONF=7;
+const gomDaCeg=(com,ceg)=>{const r=cegs().find(x=>x.com===(com||"")&&x.nome===(ceg||"")); return r?gomDe(r):gomNome("")};
+const ondeOlhar=c=>{const g=cegDoc(c.ceg,c.comunidade); const n=c.grupo||(g&&g.grupo)||(gruposDe(c.comunidade)[0]||{}).nome; return n||(c.comunidade?"grupo da "+nomeCom(c.comunidade):"")};
+function gomResumo(gom,com){
+  const rows=cegs().filter(r=>r.com===(com||"")&&gomNome(gomDe(r))===gomNome(gom)), itens=rows.flatMap(r=>r.itens), contas=rows.flatMap(r=>r.contas), dv=contas.filter(devo);
+  const grupos=[...new Set([...rows.map(r=>r.doc&&r.doc.grupo),...contas.map(c=>c.grupo)].filter(Boolean))];
+  return {gom:gomNome(gom),com:com||"",rows,itens,contas,dv,grupos,lib:itens.filter(d=>faseDe(d.status)==="lib"),br:itens.filter(d=>faseDe(d.status)==="br"),deve:dv.reduce((s,c)=>s+(c.valor||0),0)};
+}
+const itemGomKey=d=>{const r=cegs().find(x=>x.com===(d.comunidade||"")&&x.nome===(d.ceg||"")); return r?gkey(gomDe(r),d.comunidade):""};
+const thumbsDe=(its,max)=>{const bgs=its.map(d=>{const cs=Array.isArray(d.cards)?d.cards:[]; const c=cs.length&&COL?CIDX.get(cs[0]):null; return c?cardBg(c):itemBg(d)}); return `<span class="strip">${bgs.slice(0,max).map(bg=>ph(bg,"","")).join("")}${bgs.length>max?`<span class="more-n">+${bgs.length-max}</span>`:""}</span>`};
+function semConferir(){
+  return cegs().filter(r=>r.aberta&&r.doc&&r.doc.planilha&&okUrl(r.doc.planilha)).map(r=>{
+    const ds=[r.doc.conferidoEm,...r.contas.map(c=>c.conferidoEm)].map(pd).filter(Boolean), last=ds.length?Math.max(...ds):null;
+    return {r,n:last==null?null:Math.round((today()-last)/864e5)}}).filter(x=>x.n==null||x.n>=SEM_CONF).sort((a,b)=>(b.n==null?1e6:b.n)-(a.n==null?1e6:a.n));
+}
+const compBtn=id=>`<label class="btn fileb">Paguei: mandar comprovante<input type="file" accept="image/*" data-comp="${esc(id)}" aria-label="Paguei: mandar comprovante (imagem)"></label>`;
+function agoraFila(k){
+  const f=[];
+  const cobAcao=(c,quando)=>{const gom=gomDaCeg(c.comunidade,c.ceg), n=daysTo(c.prazo), onde=ondeOlhar(c), val=typeof c.valor==="number"?brl(c.valor):"sem valor", ref=c.referente||c.tipo||"Cobrança";
+    return {id:"c:"+c.id,tone:n<0?"late":"soon",t:`${ref} · ${val}`,sub:gomTag(gom,c.comunidade),d:n<0?"venceu":fdd(c.prazo),
+      tag:n<0?`cobrança venceu há ${plural(-n,"dia","dias")}`:n===0?"cobrança vence hoje":`cobrança vence ${fdd(c.prazo)} (em ${plural(n,"dia","dias")})`,
+      full:`<p class="ags">Vence ${fdd(c.prazo)}${onde?` · olhar em: ${esc(onde)}`:""}</p><p style="margin:0">${gomBtn(gom,c.comunidade)}</p>
+      <div class="actions"><button class="btn pri" data-cst="${esc(c.id)}|Paga" type="button">Paguei</button>${compBtn(c.id)}<button class="btn" data-conta="${esc(c.id)}" type="button">ver conta</button></div>`}};
+  [...k.venc].sort(byPrazo).forEach(c=>f.push(cobAcao(c)));
+  k.devoL.filter(c=>{const n=daysTo(c.prazo);return n!=null&&n>=0&&n<=7}).sort(byPrazo).forEach(c=>f.push(cobAcao(c)));
+  const m=new Map(); list("itens").filter(d=>faseDe(d.status)==="lib").forEach(d=>{const r=cegs().find(x=>x.com===(d.comunidade||"")&&x.nome===(d.ceg||"")); const kk=r?gkey(gomDe(r),r.com):gkey("",d.comunidade); if(!m.has(kk))m.set(kk,[]); m.get(kk).push(d)});
+  [...m].sort((a,b)=>b[1].length-a[1].length).forEach(([kk,its])=>{const [g,com]=kk.split("\u0001");
+    f.push({id:"e:"+kk,tone:"soon",t:`${plural(its.length,"item","itens")} com envio liberado`,sub:gomTag(g,com),d:"pedir",tag:"envio liberado: pedir pra casa",
+      full:`<p class="ags">${plural(its.length,"item","itens")} com envio liberado. Peça o envio pra casa.</p><p style="margin:0">${gomBtn(g,com)}</p>${thumbsDe(its,8)}
+      <div class="actions"><button class="btn pri" data-gomenv="${esc(kk)}" type="button">montar envio</button><button class="btn" data-gomk="${esc(kk)}" type="button">ver a GOM</button></div>`})});
+  semConferir().forEach(({r,n})=>{const gom=gomDe(r), kk=gkey(gom,r.com);
+    f.push({id:"v:"+r.key,tone:"guess",t:`${r.lbl||r.nome}: ${n==null?"nunca conferida":"sem conferir há "+plural(n,"dia","dias")}`,sub:gomTag(gom,r.com),d:"conferir",tag:n==null?"CEG nunca conferida com a planilha":`sem conferir há ${plural(n,"dia","dias")}`,
+      full:`<p class="ags">${esc(r.lbl||r.nome)}: confira a planilha da GOM e veja se bate com o que você deve.</p><p style="margin:0">${gomBtn(gom,r.com)}</p>
+      <div class="actions"><a class="btn pri" href="${esc(r.doc.planilha)}" target="_blank" rel="noopener">abrir a planilha</a><button class="btn" data-conferi="${esc(r.key)}" type="button">conferi, está igual</button></div>`})});
+  if(k.confVenc.length)f.push({id:"cv",tone:"guess",t:`${plural(k.confVenc.length,"conta a confirmar já venceu","contas a confirmar já venceram")}`,sub:"ainda são palpites; confirme o valor com a GOM",d:"confirmar",tag:"a confirmar",full:`<p class="ags">Ainda são palpites. Confirme o valor com a GOM.</p><div class="actions"><button class="btn pri" data-go="contas" type="button">ver as contas</button></div>`});
+  const robo=nSug(); if(robo)f.push({id:"robo",tone:"",t:`${plural(robo,"sugestão do robô","sugestões do robô")}`,sub:"ele só sugere; você decide",d:"conferir",tag:"robô",full:`<p class="ags">Ele só sugere; você decide.</p><div class="actions"><button class="btn pri" data-act="robo" type="button">conferir</button></div>`});
   const semCard=list("itens").filter(d=>tipoDe(d)==="Photocard / set"&&faseDe(d.status)!=="fora"&&!(Array.isArray(d.cards)&&d.cards.length)).length;
-  const robo=nSug();
+  if(semCard)f.push({id:"semcard",tone:"",t:`${plural(semCard,"pedido sem card ligado","pedidos sem card ligado")}`,sub:"ligar ao catálogo dá foto e conta repetidos",d:"ligar",tag:"catálogo",full:`<p class="ags">Ligar ao catálogo dá foto e conta repetidos.</p><div class="actions"><button class="btn pri" data-go="colecao" data-cf="semcard" type="button">ligar</button></div>`});
+  const pri=f.find(x=>x.id===ui.agp), ate=new Set(ui.ags||[]);
+  const ord=[...f.filter(x=>x===pri),...f.filter(x=>x!==pri&&!ate.has(x.id)),...f.filter(x=>x!==pri&&ate.has(x.id))];
+  return ord;
+}
+function renderAgora(){
+  const k=contas(), col=colecao(), fila=agoraFila(k);
+  const n=f=>col.filter(e=>GRUPO_F[f].includes(e.fase)).length;
   const dt=new Date().toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"});
-  const eraDot=arr=>{const c=arr&&arr.find(x=>x.ceg); const r=c&&cegs().find(x=>x.com===(c.comunidade||"")&&x.nome===c.ceg); return `<i class="ed" style="--e:${r?eraCor(eraDe(r)):"var(--ink3)"}"></i>`};
-  const item=(tone,t,sub,act,d)=>`<li><button class="trk ${tone}" type="button" ${act}><span class="no" aria-hidden="true"></span><span class="tx"><span class="t">${t}</span><span class="s">${sub}</span></span><span class="d">${d}</span></button></li>`;
-  const tasks=[];
-  if(k.venc.length)tasks.push(item("late",`${plural(k.venc.length,"conta vencida","contas vencidas")}: ${total(k.venc)}`,`${eraDot(k.venc)}a mais antiga venceu há ${plural(Math.max(...k.venc.map(c=>-daysTo(c.prazo))),"dia","dias")}`,'data-go="contas"',"venceu"));
-  if(semana.length){const first=[...semana].sort(byPrazo)[0]; tasks.push(item("soon",semana.length===1?esc(first.referente||"Conta"):`${semana.length} contas vencem em até 7 dias`,`${eraDot(semana)}${esc(first.comunidade||"")} · ${total(semana)}`,semana.length===1?`data-conta="${esc(first.id)}"`:'data-go="contas"',fdd(first.prazo)))}
-  if(k.confVenc.length)tasks.push(item("guess",`${plural(k.confVenc.length,"conta a confirmar já venceu","contas a confirmar já venceram")}`,`${eraDot(k.confVenc)}ainda são palpites; confirme o valor com a GOM`,'data-go="contas"',"confirmar"));
-  if(robo)tasks.push(item("",`${plural(robo,"sugestão do robô","sugestões do robô")}`,"ele só sugere; você decide",'data-act="robo"',"conferir"));
-  if(semCard)tasks.push(item("",`${plural(semCard,"pedido sem card ligado","pedidos sem card ligado")}`,"ligar ao catálogo dá foto e conta repetidos",'data-go="colecao" data-cf="semcard"',"ligar"));
   const pedir=col.filter(e=>["lib","br"].includes(e.fase)&&bgOf(e)).sort((a,b)=>FORD[b.fase]-FORD[a.fase]), nPedir=f=>col.filter(e=>e.fase===f).length, MAXT=11;
   const recent=k.pagas.slice(0,4), sv=semValor(k.devoL);
+  const row=x=>`<li><button class="trk ${x.tone}" type="button" data-agi="${esc(x.id)}"><span class="no" aria-hidden="true"></span><span class="tx"><span class="t">${esc(x.t)}</span><span class="s">${x.sub}</span></span><span class="d">${esc(x.d)}</span></button></li>`;
+  const cur=fila[0], depois=fila.slice(1);
   $("#main").innerHTML=`<div class="topline"><span>Coleção SKZ</span><span>${esc(dt)}</span></div>
   <button class="cover" data-go="contas" type="button"><small>Devo hoje</small><b>${brl(k.soma(k.devoL))}</b>
     <span class="stks"><span class="stk">${plural(k.devoL.length,"conta","contas")}</span>${sv?`<span class="stk g">${sv} sem valor</span>`:""}${k.conf.length?`<span class="stk g">${k.conf.length} a confirmar, fora da soma</span>`:""}${k.venc.length?`<span class="stk r">${k.venc.length} vencida${k.venc.length>1?"s":""}</span>`:""}</span></button>
-  <h2>Pra fazer hoje <span class="n">${tasks.length?plural(tasks.length,"item","itens"):""}</span></h2>
-  ${tasks.length?`<ol class="trks">${tasks.join("")}</ol>`:`<div class="calm">Nada pra fazer hoje.</div>`}
+  <h2>Agora <span class="n">${fila.length?plural(fila.length,"ação","ações"):""}</span></h2>
+  ${cur?`<section class="agq" data-ag="${esc(cur.id)}"><span class="tag">${esc(cur.tag)}</span><div class="agt">${esc(cur.t)}</div>${cur.full}${depois.length?`<div class="actions"><button class="btn sm" data-agskip="${esc(cur.id)}" type="button">deixar pra depois</button></div>`:""}</section>`:`<div class="calm">Nada pra fazer agora.</div>`}
+  ${depois.length?`<h2>Depois <span class="n">${depois.length}</span></h2><ol class="trks">${depois.map(row).join("")}</ol>`:""}
   <button class="tray" data-go="colecao" data-cf="vindo" type="button"><span class="lab"><b>Pra pedir envio</b><span>${nPedir("lib")} liberado · ${nPedir("br")} no Brasil</span></span>
     ${pedir.length?`<span class="slots">${pedir.slice(0,MAXT).map(e=>`<span class="slot">${ph(bgOf(e),"","")}</span>`).join("")}${pedir.length>MAXT?`<span class="slot" style="display:grid;place-items:center;font-weight:800;font-size:15px;background:rgba(255,255,255,.12)">+${pedir.length-MAXT}</span>`:""}</span>`:""}</button>
   ${recent.length?`<h2>Pagas por último</h2><div class="panel"><ul class="rows">${recent.map(contaRow).join("")}</ul></div>`:""}`;
+}
+// baixa pelo comprovante: sobe a imagem como prova e marca paga (sem ler valor por IA)
+async function compBaixa(id,file){
+  const c=D.cobrancas.get(id); if(!c)return;
+  if(!db||!canWrite){toast("Sem permissão pra gravar");return}
+  if(!file||!/^image\//.test(file.type)){toast("Isso não é uma imagem");return}
+  let asset; try{const {blob}=await reduzir(file,1600,.85); asset=await subirFoto(blob)}catch(e){toast("Não deu pra enviar o comprovante; a conta continua em aberto");return}
+  await setMany([["cobrancas",id,{status:"Paga",pagoEm:c.pagoEm||isoToday(),comprovanteAsset:asset,pagoProva:"comprovante PicPay",conferidoEm:isoToday()}]],"Paga, com o comprovante anexado");
+}
+const compUrl=c=>{const u=/^[0-9a-f]{32}$/.test(c.comprovanteAsset||"")&&window.stay&&window.stay.blobUrl(c.comprovanteAsset); return okUrl(u)?u:""};
+// ---------- tela da GOM ----------
+function gomSheet(k){
+  const [g,com]=k.split("\u0001"), R=gomResumo(g,com), onde=R.grupos.length?R.grupos.join(" · "):(com?"grupo da "+nomeCom(com):"");
+  const cegRow=r=>`<li><button class="row" data-cegk="${esc(r.key)}" type="button">${grpAv(r.doc,r.com,"sm")}<span class="tx"><span class="t">${esc(r.lbl||r.nome)}</span><span class="s">${esc(CSTEPS[r.step]+" · "+plural(r.itens.length,"item","itens"))}</span></span><span class="v">${r.devN?`<span class="pill late">devo ${r.deve?brl(r.deve):"sem valor"}</span>`:""}</span></button></li>`;
+  return `<div class="gsheet"><div class="hero">${gomTag(g,com,"lg")}</div>
+  <div class="sit">${R.lib.length?`<span class="pill soon">${plural(R.lib.length,"item","itens")} com envio liberado</span>`:`<span class="pill">nada com envio liberado</span>`}${R.br.length?`<span class="pill info">${R.br.length} com a GOM</span>`:""}${R.dv.length?`<span class="pill late">devo ${total(R.dv)}</span>`:`<span class="pill ok">sem cobrança em aberto</span>`}</div>
+  <dl class="kv">${[["Onde olhar",onde]].filter(x=>x[1]).map(([a,b])=>`<dt>${a}</dt><dd>${esc(b)}</dd>`).join("")}</dl>
+  ${R.lib.length?`<h2>Envio liberado <span class="n">${R.lib.length}</span></h2><div class="mini">${R.lib.map(d=>itemTile(d)).join("")}</div><div class="actions"><button class="btn pri" data-gomenv="${esc(k)}" type="button">montar envio</button></div>`:""}
+  ${R.rows.length?`<h2>CEGs <span class="n">${R.rows.length}</span></h2><div class="panel"><ul class="rows">${R.rows.map(cegRow).join("")}</ul></div>`:`<p class="note">Nenhuma CEG desta GOM ainda.</p>`}
+  ${R.dv.length?`<h2>Quanto devo <span class="n">${total(R.dv)}</span></h2><div class="panel"><ul class="rows">${[...R.dv].sort(byPrazo).map(contaRow).join("")}</ul></div>`:""}</div>`;
 }
 
 // ---------- Coleção ----------
@@ -837,7 +909,7 @@ function renderCegs(){
   const grupos=[...m.entries()].sort((a,b)=>b[1].reduce((s,r)=>s+r.ativos,0)-a[1].reduce((s,r)=>s+r.ativos,0));
   const closed=v.filter(r=>!r.aberta);
   const card=r=>{const t=itemThumbs(r,5), cc=catCeg(r); return `<button class="ceg" style="--e:${eraCor(eraDe(r))}" data-ceg="${esc(r.key)}" type="button">
-    <span class="top">${grpAv(r.doc,r.com,"")}<span class="tx">${cc?`<span class="catp cat-${cc}">${CATL[cc]}</span>`:""}<span class="t">${esc(r.lbl||r.nome)}</span><span class="s">${esc([r.doc&&r.doc.gom,plural(r.itens.length,"item","itens")].filter(Boolean).join(" · "))}</span></span>${r.devN?`<span class="pill late">devo ${r.deve?brl(r.deve):"sem valor"}</span>`:""}</span>
+    <span class="top">${grpAv(r.doc,r.com,"")}<span class="tx">${cc?`<span class="catp cat-${cc}">${CATL[cc]}</span>`:""}<span class="t">${esc(r.lbl||r.nome)}</span><span class="s">${r.doc&&r.doc.gom?gomTag(r.doc.gom,r.com)+" · ":""}${esc(plural(r.itens.length,"item","itens"))}</span></span>${r.devN?`<span class="pill late">devo ${r.deve?brl(r.deve):"sem valor"}</span>`:""}</span>
     ${t.n||t.sem?`<span class="strip">${t.html}${t.n+t.sem>5&&t.n?`<span class="more-n">+${t.n+t.sem-Math.min(5,t.n)}</span>`:""}${!t.n?`<span class="more-n">${plural(t.sem,"item sem foto","itens sem foto")}</span>`:""}</span>`:""}
     <span>${steps(r.step)}<span class="stepl"><span><b>${CSTEPS[r.step]}</b></span><span>${r.ativos?r.ativos+" por chegar":r.itens.length?"tudo comigo":""}</span></span></span>
   </button>`};
@@ -860,8 +932,9 @@ function contaSheet(id){const c0=D.cobrancas.get(id); if(!c0)return "<p class='e
   return `<div class="origem">${av("com",c.comunidade,"lg")}<span><b>${esc(c.comunidade||"Sem comunidade")}</b><small>${esc([g&&g.gom||ci&&ci.goms,cegLbl(c)||c.ceg].filter(Boolean).join(" · "))}</small></span></div>
   <p class="ref">${esc(c.referente||c.tipo||"Cobrança")}</p>
   <div class="hero">${typeof c.valor==="number"?`<div class="big">${brl(c.valor)}</div>`:`<span class="pill guess">sem valor ainda</span>`}${prazoPill(c)}</div>
-  <div class="actions">${c.status!=="Paga"?`<button class="btn pri" data-cst="${esc(c.id)}|Paga" type="button">Paguei</button>`:`<button class="btn" data-cst="${esc(c.id)}|Pendente" type="button">Voltar pra pagar</button>`}${c.pix||ci&&ci.pix?`<button class="btn" data-pixc="${esc(c.id)}" type="button">${ico("copy",16)}copiar pix</button>`:""}${c.status==="A confirmar"&&typeof c.valor==="number"?`<button class="btn" data-cst="${esc(c.id)}|Pendente" type="button">Valor certo, devo</button>`:""}</div>
+  <div class="actions">${c.status!=="Paga"?`<button class="btn pri" data-cst="${esc(c.id)}|Paga" type="button">Paguei</button>${compBtn(c.id)}`:`<button class="btn" data-cst="${esc(c.id)}|Pendente" type="button">Voltar pra pagar</button>`}${c.pix||ci&&ci.pix?`<button class="btn" data-pixc="${esc(c.id)}" type="button">${ico("copy",16)}copiar pix</button>`:""}${c.status==="A confirmar"&&typeof c.valor==="number"?`<button class="btn" data-cst="${esc(c.id)}|Pendente" type="button">Valor certo, devo</button>`:""}</div>
   <dl class="kv">${kv.map(([a,b])=>`<dt>${a}</dt><dd>${esc(b)}</dd>`).join("")}</dl>
+  ${compUrl(c)?`<p><a href="${esc(compUrl(c))}" target="_blank" rel="noopener">ver o comprovante</a>${c.pagoProva?` · ${esc(c.pagoProva)}`:""}</p>`:""}
   ${c.provaLink&&okUrl(c.provaLink)?`<p><a href="${esc(c.provaLink)}" target="_blank" rel="noopener">abrir a prova</a></p>`:""}
   <div class="actions">${c.ceg?`<button class="btn sm" data-cegk="${esc((c.comunidade||"")+"\u0001"+c.ceg)}" type="button">ver a CEG</button>`:""}${editBtn("cobrancas",c.id,"editar conta")}</div>`;
 }
@@ -875,8 +948,9 @@ function cegSheet(key){const r=cegs().find(x=>x.key===key); if(!r)return "<p cla
   const deve=r.contas.filter(devo), pagas=r.contas.filter(c=>c.status==="Paga"), sum=a=>a.reduce((s,c)=>s+(c.valor||0),0);
   const its=r.itens.map(dd=>itemTile(dd)).join("");
   return `<div class="hero">${grpAv(r.doc,r.com,"xl")}<div><div style="font-size:20px;font-weight:700">${esc(r.lbl||r.nome)}</div><div style="color:var(--ink2);display:flex;gap:6px;align-items:center">${av("com",r.com,"xs")}${esc(r.com)}</div></div></div>
+  ${d.gom?`<p style="margin:0 0 8px">${gomBtn(d.gom,r.com)}</p>`:""}
   <ul class="bigsteps">${CSTEPS.map((s,i)=>`<li class="${i<r.step?"on":i===r.step?"on now":""}"><span class="d"></span>${s}</li>`).join("")}</ul>
-  <dl class="kv">${[["GOM",d.gom],["Situação",d.status],["Grupo",d.grupo],["Devo",deve.length?total(deve):""],["Já paguei",pagas.length?brl(sum(pagas)):""]].filter(x=>x[1]).map(([a,b])=>`<dt>${a}</dt><dd>${esc(b)}</dd>`).join("")}</dl>
+  <dl class="kv">${[["Situação",d.status],["Grupo",d.grupo],["Devo",deve.length?total(deve):""],["Já paguei",pagas.length?brl(sum(pagas)):""]].filter(x=>x[1]).map(([a,b])=>`<dt>${a}</dt><dd>${esc(b)}</dd>`).join("")}</dl>
   ${d.planilha&&okUrl(d.planilha)?`<p><a href="${esc(d.planilha)}" target="_blank" rel="noopener">abrir planilha</a></p>`:""}
   ${its?`<h2>Meus itens <span class="n">${r.itens.length}</span></h2><div class="mini">${its}</div>`:""}
   ${r.contas.length?`<h2>Contas desta CEG <span class="n">${r.contas.length}</span></h2><div class="panel"><ul class="rows">${[...r.contas].sort(byPrazo).map(contaRow).join("")}</ul></div>`:""}
@@ -885,15 +959,15 @@ function cegSheet(key){const r=cegs().find(x=>x.key===key); if(!r)return "<p cla
 }
 function enviosSheet(){const es=list("envios").filter(e=>e.status==="A pedir").sort(byPrazo);
   if(!es.length)return cadSheet("envios");
-  return `<p class="lede" style="margin:0 0 12px">Já liberados. Peça o envio com cada GOM.</p><div class="panel"><ul class="rows">${es.map(e=>`<li><button class="row" data-envio="${esc(e.id)}" type="button">${dateBlk(e.prazo)}<span class="tx"><span class="t">${esc(e.gom||e.comunidade||"Envio")}</span><span class="s">${av("com",e.comunidade,"xs")}${esc([e.comunidade,e.tipo].filter(Boolean).join(" · "))}</span></span></button></li>`).join("")}</ul></div>`}
-function envioSheet(id){const e0=D.envios.get(id); if(!e0)return ""; const e={...e0,id}; return `<div class="hero">${av("com",e.comunidade,"lg")}<div><div style="font-size:20px;font-weight:700">${esc(e.gom||e.comunidade||"Envio")}</div><div style="color:var(--ink2)">${esc([e.tipo,e.status].filter(Boolean).join(" · "))}</div></div></div>
+  return `<p class="lede" style="margin:0 0 12px">Já liberados. Peça o envio com cada GOM.</p><div class="panel"><ul class="rows">${es.map(e=>`<li><button class="row" data-envio="${esc(e.id)}" type="button">${dateBlk(e.prazo)}<span class="tx"><span class="t">${gomTag(e.gom,e.comunidade)}</span><span class="s">${esc([e.tipo].filter(Boolean).join(" · "))}</span></span></button></li>`).join("")}</ul></div>`}
+function envioSheet(id,gk){const e0=D.envios.get(id); if(!e0)return ""; const e={...e0,id}; return `<div class="hero">${av("com",e.comunidade,"lg")}<div><div style="font-size:20px;font-weight:700">${gomTag(e.gom,e.comunidade,"lg")}</div><div style="color:var(--ink2)">${esc([e.tipo,e.status].filter(Boolean).join(" · "))}</div></div></div>
   <dl class="kv">${[["Prazo",e.prazo&&fdd(e.prazo)],["Como pedir",e.comoPedir],["Rastreio",e.rastreio],["Itens",e.itens]].filter(x=>x[1]).map(([a,b])=>`<dt>${a}</dt><dd>${esc(b)}</dd>`).join("")}</dl>
-  ${envioItens(e)}<div class="actions">${editBtn("envios",e.id,"editar envio")}</div>`}
+  ${envioItens(e,gk)}<div class="actions">${editBtn("envios",e.id,"editar envio")}</div>`}
 // ao pedir ou receber, oferece mudar junto os itens daquela comunidade que estão na fase certa
-function envioItens(e){
-  const rec=e.status==="Enviado"||e.status==="Pedido", alvo=rec?["ped","lib"]:["lib","br"];
+function envioItens(e,gk){
+  const rec=e.status==="Enviado"||e.status==="Pedido", alvo=gk?["lib"]:rec?["ped","lib"]:["lib","br"];
   if(e.status==="Recebido")return `<p class="note">Já recebido.</p>`;
-  const its=list("itens").filter(d=>d.comunidade===e.comunidade&&alvo.includes(faseDe(d.status)));
+  const its=list("itens").filter(d=>d.comunidade===e.comunidade&&alvo.includes(faseDe(d.status))&&(!gk||itemGomKey(d)===gk));
   return `${its.length?`<h2>${rec?"O que chegou":"O que vai neste envio"} <span class="n">${its.length}</span></h2><p class="lede" style="margin:0 0 10px">Desmarque o que não ${rec?"veio":"vai"}.</p>
   <div class="panel"><ul class="rows">${its.map(d=>{const cs=Array.isArray(d.cards)?d.cards:[]; const c=cs.length&&COL?CIDX.get(cs[0]):null;
     return `<li><label class="row"><input type="checkbox" class="evi" value="${esc(d.id)}" checked style="width:20px;height:20px;accent-color:var(--accent)"><span style="width:34px;flex:none">${ph(c?cardBg(c):itemBg(d),"","")}</span><span class="tx"><span class="t">${esc([d.item,d.membro].filter(Boolean).join(" · "))}</span><span class="s">${esc([cegLbl(d)||d.ceg,d.status].filter(Boolean).join(" · "))}</span></span></label></li>`}).join("")}</ul></div>`:""}
@@ -927,7 +1001,7 @@ function lerForm(){const {k}=fm, out={}; CAMPOS[k].fields.forEach(([n,,t])=>{con
   if(t==="num"){v=v.trim()===""?null:parseFloat(v.replace(/\./g,"").replace(",","."));if(v!=null&&!isFinite(v))v=null} out[n]=v}); return out}
 // CEGs da comunidade, dentro da folha de edição da comunidade
 function nestaComunidade(d){const cs=cegs().filter(r=>r.com===d.nome); const n=cs.reduce((s,r)=>s+r.itens.length,0);
-  return `<h2>Nesta comunidade <span class="n">${cs.length}</span></h2>${cs.length?`<p class="lede" style="margin:0 0 10px">${plural(n,"item","itens")} no total. Toque numa CEG pra ver os itens.</p><div class="panel"><ul class="rows">${cs.map(r=>`<li><button class="row" data-cegk="${esc(r.key)}" type="button"><span class="tx"><span class="t">${esc(r.lbl||r.nome)}</span><span class="s">${esc([r.doc&&r.doc.gom,plural(r.itens.length,"item","itens")].filter(Boolean).join(" · "))}</span></span></button></li>`).join("")}</ul></div>`:`<p class="empty">Nenhuma CEG nesta comunidade ainda.</p>`}`}
+  return `<h2>Nesta comunidade <span class="n">${cs.length}</span></h2>${cs.length?`<p class="lede" style="margin:0 0 10px">${plural(n,"item","itens")} no total. Toque numa CEG pra ver os itens.</p><div class="panel"><ul class="rows">${cs.map(r=>`<li><button class="row" data-cegk="${esc(r.key)}" type="button"><span class="tx"><span class="t">${esc(r.lbl||r.nome)}</span><span class="s">${r.doc&&r.doc.gom?gomTag(r.doc.gom,r.com)+" · ":""}${esc(plural(r.itens.length,"item","itens"))}</span></span></button></li>`).join("")}</ul></div>`:`<p class="empty">Nenhuma CEG nesta comunidade ainda.</p>`}`}
 // ao renomear comunidade ou CEG, os registros que apontam pro nome antigo vão junto (senão somem dos grupos)
 function vinculosDe(k,prev,v,patch){
   const out=[];
@@ -963,11 +1037,11 @@ const editBtn=(k,id,txt)=>`<button class="btn sm" data-edit="${k}|${esc(id)}" ty
 
 // lista simples de cadastros (comunidades, repasses, envios)
 function cadSheet(k){const rows=list(k).sort((a,b)=>{const t=x=>String(x.nome||x.item||x.gom||x.comunidade||"");return t(a).localeCompare(t(b),"pt-BR")});
-  const row=d=>{let ic,t,sub,v="";
+  const row=d=>{let ic,t,sub,v="",th="";
     if(k==="comunidades"){ic=av("com",d.nome,"sm");t=d.nome;sub=[d.goms,d.situacao].filter(Boolean).join(" · ")}
     else if(k==="repasses"){ic=av("com",d.comunidade,"sm");t=d.item;sub=[d.tipo,d.pessoa,d.pago&&"pago: "+d.pago].filter(Boolean).join(" · ");v=brl(d.valor)}
-    else{ic=av("com",d.comunidade,"sm");t=d.gom||d.comunidade||"Envio";sub=[d.comunidade,d.tipo,d.status].filter(Boolean).join(" · ")}
-    return `<li><button class="row" data-edit="${k}|${esc(d.id)}" type="button">${ic}<span class="tx"><span class="t">${esc(t||"(sem nome)")}</span><span class="s">${esc(sub)}</span></span>${v?`<span class="v">${v}</span>`:""}</button></li>`};
+    else{ic="";th=gomTag(d.gom,d.comunidade);sub=[d.tipo,d.status].filter(Boolean).join(" · ")}
+    return `<li><button class="row" data-edit="${k}|${esc(d.id)}" type="button">${ic}<span class="tx"><span class="t">${th||esc(t||"(sem nome)")}</span><span class="s">${esc(sub)}</span></span>${v?`<span class="v">${v}</span>`:""}</button></li>`};
   return `<div class="actions" style="margin-top:0"><button class="btn pri" data-new="${k}" type="button">+ ${NOME[k]==="comunidade"?"nova comunidade":"novo "+NOME[k]}</button></div>${rows.length?`<div class="panel"><ul class="rows">${rows.map(row).join("")}</ul></div>`:`<p class="empty">Nada cadastrado.</p>`}`}
 
 // ---------- sugestões do robô (caixa) ----------
@@ -1088,9 +1162,9 @@ async function quadroSalvar(patch){const q=quadro(); await db.doc("mural/quadro"
 const QW=104, QH=170;
 function quadroAuto(rows){
   const pos={}, rot=[]; let x=0, maxY=0;
-  const m=new Map(); rows.forEach(r=>{const k=gomDe(r); if(!m.has(k))m.set(k,[]); m.get(k).push(r)});
+  const m=new Map(); rows.forEach(r=>{const k=gkey(gomDe(r),r.com); if(!m.has(k))m.set(k,[]); m.get(k).push(r)});
   [...m].sort((a,b)=>b[1].reduce((s,r)=>s+r.itens.length,0)-a[1].reduce((s,r)=>s+r.itens.length,0)).forEach(([g,rs])=>{
-    rot.push({t:g,x,y:0,k:"gom"}); let y=46;
+    rot.push({t:g,h:gomTag(gomDe(rs[0]),rs[0].com),x,y:0,k:"gom"}); let y=46;
     rs.sort((a,b)=>b.ativos-a.ativos).forEach(r=>{rot.push({t:r.lbl||r.nome,x,y,k:"ceg"}); y+=30; r.itens.forEach((d,i)=>{pos[d.id]={x:x+(i%4)*QW,y:y+Math.floor(i/4)*QH}}); y+=Math.ceil(r.itens.length/4)*QH+18});
     maxY=Math.max(maxY,y); x+=4*QW+56});
   return {pos,rot,w:x,h:maxY};
@@ -1101,7 +1175,7 @@ function quadroHtml(rowsTodas){
   let w=A.w+200, h=A.h+200;
   const tiles=itens.map(d=>{const p=P[d.id]||A.pos[d.id]||{x:0,y:0}; w=Math.max(w,p.x+QW+200); h=Math.max(h,p.y+QH+200); return `<div class="qi" style="left:${p.x}px;top:${p.y}px" data-qid="${esc(d.id)}">${murTile(d,null,"qt")}</div>`}).join("");
   const notas=Object.entries(N).map(([id,n])=>{w=Math.max(w,n.x+260);h=Math.max(h,n.y+200); return `<div class="qn" style="left:${n.x}px;top:${n.y}px" data-qid="n:${esc(id)}"><div class="qn-h"><span>nota</span><button type="button" data-qdel="${esc(id)}" aria-label="apagar nota">×</button></div><textarea class="qn-t" data-qnota="${esc(id)}" rows="4" placeholder="escreva aqui">${esc(n.t||"")}</textarea></div>`}).join("");
-  const rot=Object.keys(P).length?"":A.rot.map(l=>`<div class="ql ${l.k}" style="left:${l.x}px;top:${l.y}px">${esc(l.t)}</div>`).join("");
+  const rot=Object.keys(P).length?"":A.rot.map(l=>`<div class="ql ${l.k}" style="left:${l.x}px;top:${l.y}px">${l.h||esc(l.t)}</div>`).join("");
   return `<div class="qbar"><button class="btn sm" data-qzoom="-" type="button" aria-label="menos zoom">−</button><span class="qz">${Math.round(z*100)}%</span><button class="btn sm" data-qzoom="+" type="button" aria-label="mais zoom">+</button><button class="btn sm" data-qnovanota type="button">${ico("plus",14)}nota</button><button class="btn sm" data-qarr type="button">Arrumar por GOM</button></div>
   <div class="qd" id="qd"><div class="qs" style="width:${w*z}px;height:${h*z}px"><div class="qin" style="width:${w}px;height:${h}px;transform:scale(${z})">${rot}${tiles}${notas}</div></div></div>`;
 }
@@ -1117,10 +1191,10 @@ function renderMural(){
   else if(mode==="fase"){
     corpo=MUR_FASES.map(f=>{const xs=vis.filter(d=>faseDe(d.status)===f); return `<section class="mgrp" data-dz="fase:${f}"><div class="mgh"><h2>${FLBL[f]} <span class="n">${xs.length}</span></h2>${ui.msel?`<button class="btn sm" data-selids="${esc(xs.map(d=>d.id).join(","))}" type="button">todos</button>`:""}</div><div class="mini mm">${xs.map(d=>murTile(d,[d.membro,cegLbl(d)||d.ceg].filter(Boolean).join(" · "))).join("")||`<p class="note" style="grid-column:1/-1">${ui.msel||!murFino()?"Nada nesta fase.":"Solte aqui pra mudar a fase."}</p>`}</div></section>`}).join("");
   }else{
-    const m=new Map(); rowsTodas.forEach(r=>{const k=mode==="comunidade"?(nomeCom(r.com)||"Sem comunidade"):gomDe(r); if(!m.has(k))m.set(k,[]); m.get(k).push(r)});
+    const m=new Map(); rowsTodas.forEach(r=>{const k=mode==="comunidade"?(nomeCom(r.com)||"Sem comunidade"):gkey(gomDe(r),r.com); if(!m.has(k))m.set(k,[]); m.get(k).push(r)});
     const gs=[...m].sort((a,b)=>b[1].reduce((s,r)=>s+r.itens.length,0)-a[1].reduce((s,r)=>s+r.itens.length,0));
     corpo=gs.map(([k,rs])=>{const n=rs.reduce((s,r)=>s+r.itens.length,0), lib=rs.reduce((s,r)=>s+r.itens.filter(d=>faseDe(d.status)==="lib").length,0), deve=rs.reduce((s,r)=>s+r.deve,0), ids=rs.flatMap(r=>r.itens.map(d=>d.id)).join(",");
-      return `<section class="mgrp"><div class="mgh"><h2>${esc(k)} <span class="n">${n}</span></h2>${lib?`<span class="pill ok">${lib} com envio liberado</span>`:""}${deve?`<span class="pill late">devo ${brl(deve)}</span>`:""}${ui.msel?`<button class="btn sm" data-selids="${esc(ids)}" type="button">todos</button>`:""}</div>${rs.sort((a,b)=>b.ativos-a.ativos).map(murCeg).join("")}</section>`}).join("");
+      return `<section class="mgrp"><div class="mgh"><h2>${mode==="comunidade"?av("com",rs[0].com,"xs")+" "+esc(k):gomBtn(gomDe(rs[0]),rs[0].com)} <span class="n">${n}</span></h2>${lib?`<span class="pill ok">${lib} com envio liberado</span>`:""}${deve?`<span class="pill late">devo ${brl(deve)}</span>`:""}${ui.msel?`<button class="btn sm" data-selids="${esc(ids)}" type="button">todos</button>`:""}</div>${rs.sort((a,b)=>b.ativos-a.ativos).map(murCeg).join("")}</section>`}).join("");
   }
   const filtros=ui.mf||ui.mm||ui.me||ui.mq;
   $("#main").innerHTML=`${head("Mural",`${plural(vis.length,"item","itens")}${filtros?` de ${todos.length}`:""}${vw==="lista"&&murFino()?" · arraste pra mudar de CEG ou fase":""} · ${ui.msel?"toque nos cards pra selecionar":"toque pra editar, segure pra selecionar"}`)}
@@ -1318,7 +1392,7 @@ function render(){
   nav();
   if(!ready){$("#main").innerHTML=`<p class="empty">Carregando…</p>`;return}
   if(!db){$("#main").innerHTML=`${head("Coleção SKZ")}<p class="note">Entre com a sua conta para ver os dados.</p>`;return}
-  ({inicio:renderInicio,mural:renderMural,colecao:renderColecao,contas:renderContas,cegs:renderCegs})[ui.tab]();
+  ({agora:renderAgora,mural:renderMural,colecao:renderColecao,contas:renderContas,cegs:renderCegs})[ui.tab]();
   if(sheetFn&&sheetFn!==formSheet&&!$("#shB").contains(document.activeElement)){const sc=$("#shB").scrollTop;$("#shB").innerHTML=sheetFn();$("#shB").scrollTop=sc}
   lazy();
 }
@@ -1330,6 +1404,16 @@ document.addEventListener("click",async e=>{
   const b=e.target.closest("button,[data-href]"); if(!b)return;
   const ds=b.dataset;
   if(ds.tab){go(ds.tab);return}
+  if(ds.agi){ui.agp=ds.agi;render();window.scrollTo(0,0);return}
+  if(ds.agskip){ui.ags=[...(ui.ags||[]).filter(x=>x!==ds.agskip),ds.agskip];if(ui.agp===ds.agskip)ui.agp="";render();return}
+  if(ds.gomk!=null){const k=ds.gomk; if(sheetFn){$("#shT").textContent="GOM";sheetFn=()=>gomSheet(k);$("#shB").innerHTML=sheetFn();lazy();$("#shB").scrollTop=0}else openSheet("GOM",()=>gomSheet(k));return}
+  if(ds.gomenv){const k=ds.gomenv, [g,com]=k.split("\u0001"); if(!gomResumo(g,com).lib.length){toast("Nada com envio liberado nesta GOM");return}
+    let ev=list("envios").find(x=>x.status==="A pedir"&&gomNome(x.gom)===gomNome(g)&&(x.comunidade||"")===(com||"")), id=ev&&ev.id;
+    if(!id){if(!db||!canWrite){toast("Sem permissão pra gravar");return}
+      try{const r=await db.collection("envios").add({gom:gomNome(g)==="Sem GOM"?"":g,comunidade:com,tipo:"Envio",status:"A pedir",origem:"app novo",criadoEm:isoToday()}); id=r.id; for(let i=0;i<20&&!D.envios.has(id);i++)await new Promise(x=>setTimeout(x,50))}
+      catch(err){toast("Não deu pra montar o envio; tente de novo");return}}
+    const f=()=>envioSheet(id,k); if(sheetFn){$("#shT").textContent="Montar envio";sheetFn=f;$("#shB").innerHTML=f();lazy();$("#shB").scrollTop=0}else openSheet("Montar envio",f); return}
+  if(ds.conferi){const r=cegs().find(x=>x.key===ds.conferi); if(!r||!r.doc)return; await setMany([["cegs",cegIdOf(r.doc),{conferidoEm:isoToday()}]],"CEG conferida hoje"); return}
   if(ds.go){if(ds.cf){ui.cf=ds.cf;ui.cn=240}go(ds.go);return}
   if(ds.href){location.href=ds.href;return}
   if(ds.cf!=null){ui.cf=ds.cf;ui.cn=240;save();render();return}
@@ -1421,12 +1505,13 @@ document.addEventListener("input",e=>{
 document.addEventListener("focusout",e=>{if(e.target.matches&&e.target.matches("#cq,#gq"))setTimeout(()=>{if(!document.activeElement||!document.activeElement.matches("input"))render()},50)});
 document.addEventListener("change",e=>{const f=e.target.id;
   if(f==="prf"&&e.target.files[0]){lerPrint(e.target.files[0]);return}
+  if(e.target.dataset&&e.target.dataset.comp&&e.target.files[0]){const fl=e.target.files[0]; e.target.value=""; compBaixa(e.target.dataset.comp,fl); return}
   if(f==="mif"&&e.target.files[0]){murFoto(e.target.dataset.for,e.target.files[0]);return}
   if(f==="prcg"){pr.ceg=e.target.value;return}
   if(e.target.classList&&e.target.classList.contains("prc")){pr.items[+e.target.dataset.i].on=e.target.checked;const n=pr.items.filter(i=>i.on).length,bt=$("[data-prsave]");if(bt){bt.disabled=!n;bt.textContent="Criar "+plural(n,"item","itens")}return}
  if(f==="fco"){ui.cco=e.target.value;ui.cce="";ui.cn=240;render();return} if(f==="fce"){ui.cce=e.target.value;ui.cn=240;render();return} if(f==="fso"){ui.cs=e.target.value;ui.cn=240;render();return}
   if(e.target.id==="ncpg")nc.pago=e.target.checked; if(e.target.id==="ncp")nc.prazo=e.target.value});
-window.addEventListener("hashchange",()=>{const h=location.hash.slice(1);if(TABS.some(t=>t[0]===h)&&h!==ui.tab){ui.tab=h;render()}});
+window.addEventListener("hashchange",()=>{const h=ALIAS[location.hash.slice(1)]||location.hash.slice(1);if(TABS.some(t=>t[0]===h)&&h!==ui.tab){ui.tab=h;render()}});
 
 // ---------- carga ----------
 async function loadCol(){
