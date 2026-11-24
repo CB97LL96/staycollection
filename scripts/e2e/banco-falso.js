@@ -11,7 +11,7 @@ const store={}; const subs={};
 for(const c in seed){store[c]=new Map(Object.entries(seed[c]).map(([k,v])=>[k,JSON.parse(JSON.stringify(v))]));subs[c]=new Set()}
 const fire=c=>{(subs[c]||[]).forEach(f=>f())};
 const snap=c=>({docs:[...(store[c]||new Map())].map(([id,d])=>({id,data:()=>d}))});
-window.__store=store;
+window.__store=store;window.__fire=fire;
 const db={
  collection:c=>{store[c]=store[c]||new Map();subs[c]=subs[c]||new Set();return{limit(){return this},onSnapshot(cb){const f=()=>cb(snap(c));subs[c].add(f);setTimeout(f,0);return()=>subs[c].delete(f)},async add(d){const id=hex(10);store[c].set(id,d);fire(c);return{id}}}},
  doc:p=>{const i=p.indexOf("/"),c=p.slice(0,i),id=p.slice(i+1);store[c]=store[c]||new Map();return{async set(d){store[c].set(id,d);fire(c)},async update(pt){store[c].set(id,{...store[c].get(id),...pt});fire(c)},async delete(){store[c].delete(id);fire(c)}}}

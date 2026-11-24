@@ -16,6 +16,9 @@
     "api/print.js": {
       "maxDuration": 120,
       "includeFiles": "colecao.json"
+    },
+    "api/investigar.js": {
+      "maxDuration": 120
     }
   },
   "rewrites": [
@@ -32,6 +35,30 @@
     {
       "path": "/api/cron/sync-eventos",
       "schedule": "0 14 * * 1"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/sw.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        },
+        {
+          "key": "Service-Worker-Allowed",
+          "value": "/"
+        }
+      ]
+    },
+    {
+      "source": "/manifest.webmanifest",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/manifest+json"
+        }
+      ]
     }
   ]
 }
