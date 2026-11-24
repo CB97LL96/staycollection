@@ -13,9 +13,9 @@ const srv = http.createServer((q, r) => { let p = decodeURIComponent(q.url.split
     await pg.route("**/@supabase/**", r => r.fulfill({ contentType: "application/javascript", body: "" }));
     await pg.route("**/fonts.g*/**", r => r.abort());
     await pg.route("**/api/print", async r => { await new Promise(x => setTimeout(x, 300)); r.fulfill({ contentType: "application/json", body: JSON.stringify({ resumo: "tabela de CEG", cards: [
-      { caixa: [100, 50, 600, 250], tipo: "photocard", membro: "HAN", nome: "Aladin", numero: "26", legivel: true },
+      { caixa: [100, 50, 600, 250], tipo: "photocard", membro: "HAN", nome: "Aladin", numero: "26", legivel: true, candidatos: [{ i: "mixtape-bangchan-01", nota: 0.9 }, { i: "mixtape-bangchan-02", nota: 0.5 }] },
       { caixa: [100, 300, 600, 500], tipo: "photocard", membro: "", nome: "", numero: "", legivel: false },
-      { caixa: [100, 550, 600, 750], tipo: "merch", membro: "", nome: "keyring", numero: "", legivel: true } ] }) }); });
+      { caixa: [100, 550, 600, 750], tipo: "merch", membro: "", nome: "keyring", numero: "", legivel: true, candidatos: [] } ] }) }); });
     await pg.addInitScript({ path: __dirname + "/banco-falso.js" });
     await pg.goto(base + "/#mural"); await pg.waitForSelector(".mgrp");
     ok(await pg.locator(".mgh h2").count() === 2, `${nome}: 2 grupos de GOM (Gabi, Ana)`);
@@ -91,11 +91,23 @@ const srv = http.createServer((q, r) => { let p = decodeURIComponent(q.url.split
     const w = await pg.locator(".prrow img").first().evaluate(i => [i.naturalWidth, i.naturalHeight]);
     ok(w[0] > 20 && w[1] > w[0], `${nome}: recorte tem forma de card em pé (${w})`);
     await pg.screenshot({ path: `/tmp/e2e-print-${nome}.png` });
+    ok(await pg.locator('[data-prc="0|0"].on').count() === 1 && await pg.locator('[data-prc="0|1"]').count() === 1, `${nome}: 1ª linha mostra o melhor candidato e o 2º`);
+    ok(await pg.locator('[data-prc^="1|"]').count() === 0, `${nome}: sem candidato, sem seletor`);
+    await pg.click('[data-prc="0|1"]'); ok(await pg.locator('[data-prc="0|1"].on').count() === 1, `${nome}: tocar troca de candidato`);
+    await pg.click('[data-prc="0|-1"]'); ok(await pg.locator('[data-prc="0|-1"].on').count() === 1, `${nome}: "nenhum" funciona`);
+    await pg.click('[data-prc="0|0"]');
+    await pg.screenshot({ path: `/tmp/e2e-print-${nome}.png` });
     await pg.selectOption("#prcg", { label: "Comunidade Azul · Variados 7" });
     await pg.click("[data-prsave]"); await pg.waitForTimeout(800);
     const novos = await pg.evaluate(() => [...window.__store.itens].filter(([k, v]) => v.origem === "Print"));
     ok(novos.length === 2 && novos.every(([, v]) => v.ceg === "Variados 7" && v.status === "Garantido"), `${nome}: criou 2 itens do print na CEG`);
-    ok((await pg.evaluate(() => window.__store.fotos.size)) === 2, `${nome}: cada item ganhou foto`);
+    ok(novos.filter(([, v]) => (v.cards || []).join() === "mixtape-bangchan-01").length === 1 && novos.filter(([, v]) => !v.cards).length === 1, `${nome}: item com card grava cards:[id]; o outro fica sem card`);
+    ok((await pg.evaluate(() => window.__store.fotos.size)) === 1, `${nome}: foto do recorte só para o item sem card`);
+    // segundo print com o mesmo card: avisa "repetido"
+    await pg.click('[data-prb=""]'); await pg.setInputFiles("#prf", __dirname + "/print.png"); await pg.waitForSelector(".prrow", { timeout: 8000 });
+    ok(await pg.locator(".prrep").count() === 1, `${nome}: avisa repetido quando o card já tem pedido ativo`);
+    await pg.click('[data-prc="0|1"]'); ok(await pg.locator(".prrep").count() === 0, `${nome}: outro candidato não é repetido`);
+    await pg.keyboard.press("Escape"); await pg.waitForTimeout(300);
     await pg.click(".undo"); await pg.waitForTimeout(500);
     ok((await pg.evaluate(() => window.__store.itens.size)) === antes, `${nome}: desfazer apaga os criados`);
     ok(erros.length === 0, `${nome}: sem erro no console ${erros.join(" | ")}`);

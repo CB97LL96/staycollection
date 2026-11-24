@@ -2,6 +2,14 @@
 // Variáveis: GEMINI_API_KEY, SUPABASE_URL, SUPABASE_ANON_KEY, ALLOWED_EMAILS.
 import { lerPrint } from "../scripts/print-core.mjs";
 import { IMAGENS } from "../scripts/ler-core.mjs";
+import { readFileSync } from "node:fs";
+
+// colecao.json vai junto da função (includeFiles no vercel.json)
+let CATALOGO = null;
+function catalogo() {
+  if (!CATALOGO) { try { CATALOGO = JSON.parse(readFileSync(new URL("../colecao.json", import.meta.url), "utf8")).items || []; } catch { CATALOGO = []; } }
+  return CATALOGO;
+}
 
 async function permitido(req) {
   const token = (req.headers.authorization || "").replace(/^Bearer\s+/i, "");
@@ -20,7 +28,7 @@ export default async function handler(req, res) {
   if (!imagem || !imagem.dados) return res.status(400).json({ erro: "Mande uma imagem." });
   if (!IMAGENS.includes(imagem.tipo)) return res.status(400).json({ erro: "Formato de imagem não suportado." });
   try {
-    return res.status(200).json(await lerPrint({ imagem }));
+    return res.status(200).json(await lerPrint({ imagem, catalogo: catalogo() }));
   } catch (e) {
     if (e.codigo === "recusa") return res.status(422).json({ erro: e.message });
     if (e.codigo === "limite") return res.status(429).json({ erro: "A cota grátis da IA acabou por agora. Tente daqui a pouco." });
