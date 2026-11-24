@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Coleção SKZ</title>
+<title>STAY collection</title>
 <link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#111114"><link rel="icon" href="/icon-192.png"><link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -463,7 +463,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 -->
 <div class="app">
   <nav class="rail" aria-label="Seções">
-    <div class="brand">Coleção SKZ</div>
+    <div class="brand">STAY collection</div>
     <div id="navlinks"></div>
     <button class="btn pri add" data-act="nova" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Nova compra</button>
     <div class="foot">
@@ -707,7 +707,7 @@ function renderInicio(){
   if(semCard)tasks.push(item("",`${plural(semCard,"pedido sem card ligado","pedidos sem card ligado")}`,"ligar ao catálogo dá foto e conta repetidos",'data-go="colecao" data-cf="semcard"',"ligar"));
   const pedir=col.filter(e=>["lib","br"].includes(e.fase)&&bgOf(e)).sort((a,b)=>FORD[b.fase]-FORD[a.fase]), nPedir=f=>col.filter(e=>e.fase===f).length, MAXT=11;
   const recent=k.pagas.slice(0,4), sv=semValor(k.devoL);
-  $("#main").innerHTML=`<div class="topline"><span>Coleção SKZ</span><span>${esc(dt)}</span></div>
+  $("#main").innerHTML=`<div class="topline"><span>STAY collection</span><span>${esc(dt)}</span></div>
   <button class="cover" data-go="contas" type="button"><small>Devo hoje</small><b>${brl(k.soma(k.devoL))}</b>
     <span class="stks"><span class="stk">${plural(k.devoL.length,"conta","contas")}</span>${sv?`<span class="stk g">${sv} sem valor</span>`:""}${k.conf.length?`<span class="stk g">${k.conf.length} a confirmar, fora da soma</span>`:""}${k.venc.length?`<span class="stk r">${k.venc.length} vencida${k.venc.length>1?"s":""}</span>`:""}</span></button>
   <h2>Pra fazer hoje <span class="n">${tasks.length?plural(tasks.length,"item","itens"):""}</span></h2>
@@ -1381,7 +1381,7 @@ function lazy(){
 function render(){
   nav();
   if(!ready){$("#main").innerHTML=`<p class="empty">Carregando…</p>`;return}
-  if(!db){$("#main").innerHTML=`${head("Coleção SKZ")}<p class="note">Entre com a sua conta para ver os dados.</p>`;return}
+  if(!db){$("#main").innerHTML=`${head("STAY collection")}<p class="note">Entre com a sua conta para ver os dados.</p>`;return}
   ({inicio:renderInicio,mural:renderMural,colecao:renderColecao,contas:renderContas,cegs:renderCegs})[ui.tab]();
   if(sheetFn&&sheetFn!==formSheet&&!$("#shB").contains(document.activeElement)){const sc=$("#shB").scrollTop;$("#shB").innerHTML=sheetFn();$("#shB").scrollTop=sc}
   lazy();

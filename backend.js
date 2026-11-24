@@ -109,7 +109,7 @@ function showLogin(){
   if (document.getElementById("stay-login")) return;
   const el = document.createElement("div");
   el.id = "stay-login";
-  el.innerHTML = `<div class="sl-card"><h2>Coleção SKZ</h2><p>Entre com a sua conta do Google pra ver e editar suas CEGs.</p><button type="button">Entrar com Google</button><small></small></div>`;
+  el.innerHTML = `<div class="sl-card"><h2>STAY collection</h2><p>Entre com a sua conta do Google pra ver e editar suas CEGs.</p><button type="button">Entrar com Google</button><small></small></div>`;
   const st = document.createElement("style");
   st.textContent = `#stay-login{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:16px;background:var(--bg,#FCF5F8)}
 #stay-login .sl-card{max-width:360px;width:100%;display:grid;gap:12px;text-align:center;background:var(--surface,#fff);border-radius:22px;padding:28px 20px;box-shadow:var(--shadow,0 8px 22px rgba(0,0,0,.08));color:var(--ink,#2B2233);font-family:var(--f-body,system-ui,sans-serif)}
