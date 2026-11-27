@@ -261,6 +261,26 @@ h2 .r{margin-left:auto;font-size:14px;font-weight:700}
 .qn-h{display:flex;justify-content:space-between;align-items:center;padding:4px 8px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;cursor:grab;touch-action:none;user-select:none;border-bottom:1.5px solid #111}
 .qn-h button{border:0;background:none;font-size:18px;line-height:1;cursor:pointer;color:#111;padding:2px 6px}.qn-t{width:100%;border:0;background:transparent;padding:8px;font:inherit;font-size:14px;color:#111;resize:vertical}
 @media (max-width:820px){.mselbar{bottom:calc(76px + env(safe-area-inset-bottom,0px))}.qd{height:62vh}}
+.qhome{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-top:16px}
+.qb{display:flex;gap:14px;align-items:center;text-align:left;padding:14px;border:1.5px solid var(--ink);border-radius:14px;background:var(--surface);cursor:pointer;font:inherit;color:var(--ink);min-width:0}
+.qb:hover{background:var(--surface2)}.qb .tx{display:grid;gap:2px;min-width:0}.qb .tx b{font-size:17px;overflow-wrap:anywhere}.qb .tx span{color:var(--ink2)}.qb .tx small{color:var(--ink3);font-size:12.5px}
+.qtop{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}.qtit{margin-left:6px}
+.qbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0 8px}.qbar .g{margin-left:auto;display:flex;gap:6px;align-items:center}.qnew{display:flex;gap:6px;flex:1;min-width:220px}.qnew input{flex:1;min-width:0;border:1.5px solid var(--ink);background:var(--surface);border-radius:10px;padding:9px 12px;font:inherit;color:var(--ink)}
+.qz{min-width:44px;text-align:center;font-weight:700;font-size:13px}
+.qcanvas{overflow:auto;height:calc(100vh - 250px);min-height:420px;border:1.5px solid var(--ink);border-radius:14px;padding:18px;background:var(--surface2);background-image:radial-gradient(var(--line) 1px,transparent 1px);background-size:24px 24px;overscroll-behavior:contain}
+.qcols{display:flex;gap:22px;align-items:flex-start;width:max-content}.qcol{display:grid;gap:22px;width:432px;align-content:start}
+.qf{background:var(--surface);border:2px solid var(--ink);border-radius:14px;padding:12px;display:grid;gap:10px}.qf.act{outline:3px solid var(--accent);outline-offset:2px}
+.qf.over{outline:3px dashed var(--accent);outline-offset:2px}
+.qfh{display:flex;gap:8px;align-items:center;min-width:0}.qft{border:0;background:none;font:inherit;font-weight:800;font-size:17px;letter-spacing:-.01em;cursor:pointer;color:var(--ink);padding:0;text-align:left;overflow-wrap:anywhere}.qfh .s{color:var(--ink3);font-size:13px;margin-right:auto}
+.qsem{width:32px;height:32px;border-radius:50%;border:1.5px dashed var(--ink3);display:grid;place-items:center;color:var(--ink3);font-weight:800;flex:none}
+.qfa{display:flex;gap:6px;flex-wrap:wrap}.qfg{display:grid;grid-template-columns:repeat(4,92px);gap:12px;align-items:start}.qvazio{color:var(--ink3);font-size:13px;margin:0}
+.rt{grid-column:span 2;display:grid;gap:5px;padding:7px;border:1.5px dashed var(--ink);border-radius:12px;background:var(--bg)}.rt.dragging{opacity:.4}
+.rimg{aspect-ratio:55/85;border-radius:8px;background:var(--surface2) center/contain no-repeat;box-shadow:0 0 0 1px var(--line)}
+.rt input,.rt select{width:100%;min-width:0;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 8px;font:inherit;font-size:13.5px;color:var(--ink)}.rt .qnome{font-weight:650;border-color:var(--ink)}
+.qsug{display:flex;gap:5px;align-items:center;flex-wrap:wrap}.qsug:empty{display:none}.qpick{border:0;background:none;padding:0;width:34px;cursor:pointer;border-radius:6px}.qpick .ph{border-radius:5px}.qpick.on .ph{box-shadow:0 0 0 3px var(--accent)}.qsl{font-size:11.5px;color:var(--ink3);flex-basis:100%}
+.ract{display:flex;gap:5px;flex-wrap:wrap}.ract .btn{padding-inline:9px}
+.qnotas{background:#FFF3B0;color:#111;border-color:#111}.qnotas .qft{color:#111}.qn2{display:flex;gap:4px}.qn2 textarea{flex:1;min-width:0;border:1.5px solid #111;border-radius:8px;background:#FFFBE0;color:#111;padding:8px;font:inherit;font-size:14px}.qn2 button{border:0;background:none;font-size:20px;cursor:pointer;color:#111}
+.mgh>.av,.mgh>span.av{flex:none}
 .picker .tile.sel .ph{box-shadow:0 0 0 3px var(--accent)}
 .picker .tile.sel .ph::after{content:"";background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5 9-10'/%3E%3C/svg%3E");background-size:14px;background-position:center;background-repeat:no-repeat;position:absolute;right:6px;top:6px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-weight:800;font-size:13px}
 .stepper{display:flex;gap:6px;margin-bottom:16px}
@@ -533,7 +553,7 @@ const I={
 const ico=(n,sz)=>`<svg viewBox="0 0 24 24" ${sz?`width="${sz}" height="${sz}"`:""} fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[n]}</svg>`;
 
 // ---------- dados ----------
-const COLS=["cobrancas","itens","envios","cegs","comunidades","repasses","acervo","caixa","gruposwa","mural"];
+const COLS=["cobrancas","itens","envios","cegs","comunidades","repasses","acervo","caixa","gruposwa","mural","quadros"];
 const D={}; COLS.forEach(k=>D[k]=new Map());
 let fotos={}, posse={}, novos=new Map(), COL=null, CIDX=new Map(), db=null, ready=false, ver=0;
 const list=k=>[...D[k].entries()].map(([id,d])=>({id,...d}));
@@ -698,8 +718,8 @@ async function addMany(adds,msg){
 // ---------- navegação ----------
 function nav(){
   const {devoL,venc}=contas(); const badge={agora:"",contas:venc.length||""};
-  $("#navlinks").innerHTML=TABS.map(([k,l,i])=>`<button class="nv" data-tab="${k}" type="button" ${ui.tab===k?'aria-current="page"':""}>${ico(i)}${l}${badge[k]?`<span class="ct">${badge[k]}</span>`:""}</button>`).join("");
-  $("#tabbar").innerHTML=TABS.map(([k,l,i])=>`<button data-tab="${k}" type="button" ${ui.tab===k?'aria-current="page"':""}>${ico(i)}${l}${badge[k]?`<span class="ct">${badge[k]}</span>`:""}</button>`).join("");
+  $("#navlinks").innerHTML=TABS.map(([k,l,i])=>`<button class="nv" data-tab="${k}" type="button" ${(ui.tab==="quadro"?"mural":ui.tab)===k?'aria-current="page"':""}>${ico(i)}${l}${badge[k]?`<span class="ct">${badge[k]}</span>`:""}</button>`).join("");
+  $("#tabbar").innerHTML=TABS.map(([k,l,i])=>`<button data-tab="${k}" type="button" ${(ui.tab==="quadro"?"mural":ui.tab)===k?'aria-current="page"':""}>${ico(i)}${l}${badge[k]?`<span class="ct">${badge[k]}</span>`:""}</button>`).join("");
 }
 const head=(t,lede)=>`<h1>${t}</h1>${lede?`<p class="lede">${lede}</p>`:""}`;
 
@@ -1169,58 +1189,33 @@ function murTile(d,cap,cls){
   return `<button class="tile mtile ${cls||""} ${on?"sel":""}" type="button" ${!cls&&!ui.msel&&murFino()?`draggable="true" data-dr="${esc(d.id)}"`:""} data-mi="${esc(d.id)}">${ph(bg,"",(bg?`<span class="pill ${FTONE[f]} bdg">${FLBL[f]}</span>`:esc(d.item||""))+(ui.msel?`<i class="ck">${on?"✓":""}</i>`:""))}<span class="cap">${esc(d.item||"")}<small>${esc(sub)}</small></span></button>`}
 function murCeg(r){
   const ids=r.itens.map(d=>d.id).join(",");
-  return `<div class="mceg" data-dz="ceg:${esc(r.key)}"><div class="mhd"><span class="t">${esc(r.lbl||r.nome)}</span><span class="s">${esc(plural(r.itens.length,"item","itens"))}</span>${r.devN?`<span class="pill late">devo ${r.deve?brl(r.deve):"sem valor"}</span>`:""}${ui.msel?`<button class="btn sm" data-selids="${esc(ids)}" type="button">todos</button>`:`<button class="btn sm" data-prb="${esc(r.key)}" type="button">${ico("plus",14)}print</button>`}</div>
+  return `<div class="mceg" data-dz="ceg:${esc(r.key)}"><div class="mhd">${grpAv(r.doc,r.com,"sm")}<span class="t">${esc(r.lbl||r.nome)}</span><span class="s">${esc(plural(r.itens.length,"item","itens"))}</span>${r.devN?`<span class="pill late">devo ${r.deve?brl(r.deve):"sem valor"}</span>`:""}${ui.msel?`<button class="btn sm" data-selids="${esc(ids)}" type="button">todos</button>`:`<button class="btn sm" data-qopen="${esc(gkey(gomDe(r),r.com))}" data-qf="${esc(r.key)}" type="button">${ico("plus",14)}inserir</button>`}</div>
     <div class="mini mm">${r.itens.map(d=>murTile(d)).join("")}</div></div>`}
-// ---- quadro livre ----
-const quadro=()=>D.mural.get("quadro")||{};
-async function quadroSalvar(patch){const q=quadro(); await db.doc("mural/quadro").set({pos:q.pos||{},notas:q.notas||{},...patch})}
-const QW=104, QH=170;
-function quadroAuto(rows){
-  const pos={}, rot=[]; let x=0, maxY=0;
-  const m=new Map(); rows.forEach(r=>{const k=gkey(gomDe(r),r.com); if(!m.has(k))m.set(k,[]); m.get(k).push(r)});
-  [...m].sort((a,b)=>b[1].reduce((s,r)=>s+r.itens.length,0)-a[1].reduce((s,r)=>s+r.itens.length,0)).forEach(([g,rs])=>{
-    rot.push({t:g,h:gomTag(gomDe(rs[0]),rs[0].com),x,y:0,k:"gom"}); let y=46;
-    rs.sort((a,b)=>b.ativos-a.ativos).forEach(r=>{rot.push({t:r.lbl||r.nome,x,y,k:"ceg"}); y+=30; r.itens.forEach((d,i)=>{pos[d.id]={x:x+(i%4)*QW,y:y+Math.floor(i/4)*QH}}); y+=Math.ceil(r.itens.length/4)*QH+18});
-    maxY=Math.max(maxY,y); x+=4*QW+56});
-  return {pos,rot,w:x,h:maxY};
-}
-function quadroHtml(rowsTodas){
-  const A=quadroAuto(rowsTodas), q=quadro(), P=q.pos||{}, N=q.notas||{}, z=ui.mz||1;
-  const itens=rowsTodas.flatMap(r=>r.itens).filter(murFiltra);
-  let w=A.w+200, h=A.h+200;
-  const tiles=itens.map(d=>{const p=P[d.id]||A.pos[d.id]||{x:0,y:0}; w=Math.max(w,p.x+QW+200); h=Math.max(h,p.y+QH+200); return `<div class="qi" style="left:${p.x}px;top:${p.y}px" data-qid="${esc(d.id)}">${murTile(d,null,"qt")}</div>`}).join("");
-  const notas=Object.entries(N).map(([id,n])=>{w=Math.max(w,n.x+260);h=Math.max(h,n.y+200); return `<div class="qn" style="left:${n.x}px;top:${n.y}px" data-qid="n:${esc(id)}"><div class="qn-h"><span>nota</span><button type="button" data-qdel="${esc(id)}" aria-label="apagar nota">×</button></div><textarea class="qn-t" data-qnota="${esc(id)}" rows="4" placeholder="escreva aqui">${esc(n.t||"")}</textarea></div>`}).join("");
-  const rot=Object.keys(P).length?"":A.rot.map(l=>`<div class="ql ${l.k}" style="left:${l.x}px;top:${l.y}px">${l.h||esc(l.t)}</div>`).join("");
-  return `<div class="qbar"><button class="btn sm" data-qzoom="-" type="button" aria-label="menos zoom">−</button><span class="qz">${Math.round(z*100)}%</span><button class="btn sm" data-qzoom="+" type="button" aria-label="mais zoom">+</button><button class="btn sm" data-qnovanota type="button">${ico("plus",14)}nota</button><button class="btn sm" data-qarr type="button">Arrumar por GOM</button></div>
-  <div class="qd" id="qd"><div class="qs" style="width:${w*z}px;height:${h*z}px"><div class="qin" style="width:${w}px;height:${h}px;transform:scale(${z})">${rot}${tiles}${notas}</div></div></div>`;
-}
 function renderMural(){
-  const mode=ui.mg||"gom", vw=ui.mv||"lista", todos=list("itens").filter(d=>faseDe(d.status)!=="fora"), vis=todos.filter(murFiltra);
+  const mode=ui.mg||"gom", vw="lista", todos=list("itens").filter(d=>faseDe(d.status)!=="fora"), vis=todos.filter(murFiltra);
   const rowsTodas=cegs().map(r=>({...r,itens:r.itens.filter(murFiltra)})).filter(r=>r.itens.length);
   const cnt=f=>todos.filter(d=>faseDe(d.status)===f).length;
   const todasEt=[...new Set(todos.flatMap(etiquetasDe))].sort((a,b)=>a.localeCompare(b,"pt-BR"));
   const membros=MEMBROS.filter(m=>todos.some(d=>membro(d.membro)===m));
   const chip=(att,val,lab,n,on)=>`<button class="chip" data-${att}="${esc(val)}" aria-pressed="${on}" type="button">${esc(lab)}${n!=null?` <span class="c">${n}</span>`:""}</button>`;
   let corpo="";
-  if(vw==="quadro")corpo=quadroHtml(cegs().map(r=>({...r})).filter(r=>r.itens.length));
-  else if(mode==="fase"){
+  if(mode==="fase"){
     corpo=MUR_FASES.map(f=>{const xs=vis.filter(d=>faseDe(d.status)===f); return `<section class="mgrp" data-dz="fase:${f}"><div class="mgh"><h2>${FLBL[f]} <span class="n">${xs.length}</span></h2>${ui.msel?`<button class="btn sm" data-selids="${esc(xs.map(d=>d.id).join(","))}" type="button">todos</button>`:""}</div><div class="mini mm">${xs.map(d=>murTile(d,[d.membro,cegLbl(d)||d.ceg].filter(Boolean).join(" · "))).join("")||`<p class="note" style="grid-column:1/-1">${ui.msel||!murFino()?"Nada nesta fase.":"Solte aqui pra mudar a fase."}</p>`}</div></section>`}).join("");
   }else{
     const m=new Map(); rowsTodas.forEach(r=>{const k=mode==="comunidade"?(nomeCom(r.com)||"Sem comunidade"):gkey(gomDe(r),r.com); if(!m.has(k))m.set(k,[]); m.get(k).push(r)});
     const gs=[...m].sort((a,b)=>b[1].reduce((s,r)=>s+r.itens.length,0)-a[1].reduce((s,r)=>s+r.itens.length,0));
     corpo=gs.map(([k,rs])=>{const n=rs.reduce((s,r)=>s+r.itens.length,0), lib=rs.reduce((s,r)=>s+r.itens.filter(d=>faseDe(d.status)==="lib").length,0), deve=rs.reduce((s,r)=>s+r.deve,0), ids=rs.flatMap(r=>r.itens.map(d=>d.id)).join(",");
-      return `<section class="mgrp"><div class="mgh"><h2>${mode==="comunidade"?av("com",rs[0].com,"xs")+" "+esc(k):gomBtn(gomDe(rs[0]),rs[0].com)} <span class="n">${n}</span></h2>${lib?`<span class="pill ok">${lib} com envio liberado</span>`:""}${deve?`<span class="pill late">devo ${brl(deve)}</span>`:""}${ui.msel?`<button class="btn sm" data-selids="${esc(ids)}" type="button">todos</button>`:""}</div>${rs.sort((a,b)=>b.ativos-a.ativos).map(murCeg).join("")}</section>`}).join("");
+      return `<section class="mgrp"><div class="mgh">${av("com",rs[0].com,"lg")}<h2>${mode==="comunidade"?esc(k):gomBtn(gomDe(rs[0]),rs[0].com)} <span class="n">${n}</span></h2>${lib?`<span class="pill ok">${lib} com envio liberado</span>`:""}${deve?`<span class="pill late">devo ${brl(deve)}</span>`:""}${ui.msel?`<button class="btn sm" data-selids="${esc(ids)}" type="button">todos</button>`:`<button class="btn sm" data-qopen="${esc(gkey(gomDe(rs[0]),rs[0].com))}" type="button">${ico("plus",14)}inserir</button>`}</div>${rs.sort((a,b)=>b.ativos-a.ativos).map(murCeg).join("")}</section>`}).join("");
   }
   const filtros=ui.mf||ui.mm||ui.me||ui.mq;
   $("#main").innerHTML=`${head("Mural",`${plural(vis.length,"item","itens")}${filtros?` de ${todos.length}`:""}${vw==="lista"&&murFino()?" · arraste pra mudar de CEG ou fase":""} · ${ui.msel?"toque nos cards pra selecionar":"toque pra editar, segure pra selecionar"}`)}
-  <div class="srow"><div class="search">${ico("search")}<input id="mq" type="search" placeholder="Buscar card, membro, CEG, etiqueta" value="${esc(ui.mq||"")}" aria-label="Buscar no mural"></div><button class="btn sm ${ui.msel?"pri":""}" data-msel type="button">${ui.msel?"Sair da seleção":"Selecionar"}</button><button class="btn pri sm" data-prb="" type="button">${ico("plus",16)}Print</button></div>
-  <div class="mbar"><div class="seg" role="group" aria-label="Visão">${[["lista","Lista"],["quadro","Quadro"]].map(([k,l])=>`<button data-mvw="${k}" aria-pressed="${vw===k}" type="button">${l}</button>`).join("")}</div>${vw==="lista"?`<div class="seg" role="group" aria-label="Agrupar">${[["gom","GOM"],["comunidade","Comunidade"],["fase","Fase"]].map(([k,l])=>`<button data-mg="${k}" aria-pressed="${mode===k}" type="button">${l}</button>`).join("")}</div>`:""}</div>
+  <div class="srow"><div class="search">${ico("search")}<input id="mq" type="search" placeholder="Buscar card, membro, CEG, etiqueta" value="${esc(ui.mq||"")}" aria-label="Buscar no mural"></div><button class="btn sm ${ui.msel?"pri":""}" data-msel type="button">${ui.msel?"Sair da seleção":"Selecionar"}</button><button class="btn pri sm" data-qhome type="button">${ico("plus",16)}Inserir</button></div>
+  <div class="mbar"><div class="seg" role="group" aria-label="Agrupar">${[["gom","GOM"],["comunidade","Comunidade"],["fase","Fase"]].map(([k,l])=>`<button data-mg="${k}" aria-pressed="${mode===k}" type="button">${l}</button>`).join("")}</div></div>
   <div class="chips scroll">${chip("mfs","","todas as fases",null,!ui.mf)}${MUR_FASES.filter(cnt).map(f=>chip("mfs",f,FLBL[f],cnt(f),ui.mf===f)).join("")}</div>
   ${membros.length>1?`<div class="chips scroll">${chip("mfm","","todos os membros",null,!ui.mm)}${membros.map(m=>chip("mfm",m,m,todos.filter(d=>membro(d.membro)===m).length,ui.mm===m)).join("")}</div>`:""}
   ${todasEt.length?`<div class="chips scroll">${chip("me","","sem etiqueta",null,!ui.me)}${todasEt.map(x=>chip("me",x,x,todos.filter(d=>etiquetasDe(d).includes(x)).length,ui.me===x)).join("")}</div>`:""}
   ${corpo||`<p class="empty">${filtros?"Nada com esses filtros.":"Nada por aqui ainda. Cole um print pra começar."}</p>`}
   ${ui.msel?selBar():""}`;
-  const qd=$("#qd"); if(qd){qd.scrollLeft=qs.x;qd.scrollTop=qs.y;qd.addEventListener("scroll",()=>{qs.x=qd.scrollLeft;qs.y=qd.scrollTop},{passive:true})}
 }
 // ---- seleção e edição em lote ----
 function selBar(){const n=[...sel].filter(id=>D.itens.has(id)).length;
@@ -1254,36 +1249,143 @@ async function bulkAplicar(b){
   b.disabled=true; if(await setMany(ch,`${plural(ch.length,"item mudou","itens mudaram")}`)){closeSheet();sel.clear();ui.msel=false;render()} else b.disabled=false;
 }
 function murToggle(id){sel.has(id)?sel.delete(id):sel.add(id); selAtualiza()}
-// ---- quadro: arrastar com o dedo ou o mouse, soltar e guardar ----
-let qdrag=null, lp=null;
-document.addEventListener("pointerdown",e=>{
-  const alvo=e.target.closest&&e.target.closest(".mtile,.qn-h"); if(!alvo||e.button>0)return;
-  const q=e.target.closest(".qi,.qn");
-  if(alvo.classList.contains("mtile")&&!ui.msel){clearTimeout(lp);const id=alvo.dataset.mi,x=e.clientX,y=e.clientY; lp=setTimeout(()=>{if(qdrag&&qdrag.moved)return; suprimir=true; ui.msel=true; sel.add(id); if(navigator.vibrate)try{navigator.vibrate(15)}catch(err){} render()},550); alvo._lp={x,y}}
-  if(!q)return;
-  const z=ui.mz||1, id=q.dataset.qid, grupo=[q];
-  if(ui.msel&&sel.has(id))document.querySelectorAll(".qi").forEach(o=>{if(o!==q&&sel.has(o.dataset.qid))grupo.push(o)});
-  qdrag={sx:e.clientX,sy:e.clientY,z,moved:false,els:grupo.map(el=>({el,x:parseFloat(el.style.left)||0,y:parseFloat(el.style.top)||0}))};
-});
-document.addEventListener("pointermove",e=>{
-  if(lp&&Math.hypot(e.movementX||0,e.movementY||0)>0){const a=e.target.closest&&e.target.closest(".mtile"); if(a&&a._lp&&Math.hypot(e.clientX-a._lp.x,e.clientY-a._lp.y)>8){clearTimeout(lp);lp=null}}
-  if(!qdrag)return; const dx=(e.clientX-qdrag.sx)/qdrag.z, dy=(e.clientY-qdrag.sy)/qdrag.z;
-  if(!qdrag.moved){if(Math.hypot(dx*qdrag.z,dy*qdrag.z)<5)return; qdrag.moved=true; clearTimeout(lp);lp=null; qdrag.els.forEach(o=>o.el.classList.add("arrastando"))}
-  e.preventDefault(); qdrag.els.forEach(o=>{o.el.style.left=Math.max(0,o.x+dx)+"px";o.el.style.top=Math.max(0,o.y+dy)+"px"});
-},{passive:false});
-async function qFim(){
-  clearTimeout(lp);lp=null; const d=qdrag; qdrag=null; if(!d||!d.moved)return;
-  suprimir=true; setTimeout(()=>{suprimir=false},0);
-  d.els.forEach(o=>o.el.classList.remove("arrastando"));
-  const q=quadro(), pos={...(q.pos||{})}, notas={...(q.notas||{})};
-  // a primeira vez que ela mexe, o arranjo automático vira o arranjo dela
-  if(!Object.keys(pos).length){document.querySelectorAll(".qi").forEach(el=>{pos[el.dataset.qid]={x:parseFloat(el.style.left)||0,y:parseFloat(el.style.top)||0}})}
-  d.els.forEach(o=>{const id=o.el.dataset.qid, p={x:Math.round(parseFloat(o.el.style.left)||0),y:Math.round(parseFloat(o.el.style.top)||0)}; if(id.startsWith("n:"))notas[id.slice(2)]={...notas[id.slice(2)],...p}; else pos[id]=p});
-  try{await quadroSalvar({pos,notas})}catch(e){toast("Não deu pra guardar a posição; tente de novo")}
-}
-document.addEventListener("pointerup",qFim); document.addEventListener("pointercancel",qFim);
+// ---- segurar um card pra selecionar ----
+let lp=null;
+document.addEventListener("pointerdown",e=>{const alvo=e.target.closest&&e.target.closest(".mtile"); if(!alvo||e.button>0||ui.msel||ui.tab!=="mural")return; clearTimeout(lp); const id=alvo.dataset.mi; alvo._lp={x:e.clientX,y:e.clientY}; lp=setTimeout(()=>{suprimir=true; ui.msel=true; sel.add(id); if(navigator.vibrate)try{navigator.vibrate(15)}catch(err){} render()},550)});
+document.addEventListener("pointermove",e=>{if(!lp)return; const a=e.target.closest&&e.target.closest(".mtile"); if(a&&a._lp&&Math.hypot(e.clientX-a._lp.x,e.clientY-a._lp.y)>8){clearTimeout(lp);lp=null}});
+const lpFim=()=>{clearTimeout(lp);lp=null}; document.addEventListener("pointerup",lpFim); document.addEventListener("pointercancel",lpFim);
 document.addEventListener("contextmenu",e=>{if(e.target.closest&&e.target.closest(".mtile"))e.preventDefault()});
-document.addEventListener("focusout",e=>{const t=e.target; if(t.matches&&t.matches(".qn-t")){const id=t.dataset.qnota, n=(quadro().notas||{})[id]; if(n&&n.t!==t.value)quadroSalvar({notas:{...(quadro().notas||{}),[id]:{...n,t:t.value}}}).catch(()=>toast("Não deu pra guardar a nota"))}});
+
+// ---------- Quadro: onde ela insere coisas novas ----------
+// Um quadro por GOM (dentro de uma comunidade). Cada tag (CEG) é um frame. Ela
+// cola ou solta o print inteiro no frame, escreve o nome do card (segunda camada)
+// e registra: vira item da coleção, com a foto, ligado ao catálogo.
+let qcur=null, qact="", qdragR="", qscroll={x:0,y:0};
+const qIdOf=(gom,com)=>iconKey("quadro",gomNome(gom)+"|"+(com||""));
+const qDoc=()=>(qcur&&D.quadros.get(qcur.id))||{};
+const qRasc=()=>qDoc().rasc||{};
+async function qSave(patch){const cur=D.quadros.get(qcur.id)||{}; await db.doc("quadros/"+qcur.id).set({gom:qcur.gom,com:qcur.com,...cur,...patch})}
+function qAbrir(gom,com,frame){
+  const g=gomNome(gom)==="Sem GOM"?"":gom; qcur={gom:g,com:com||"",id:qIdOf(g,com)}; qact=frame||""; qscroll={x:0,y:0}; ui.msel=false; sel.clear();
+  try{const r=JSON.parse(localStorage.getItem("novo-qrec")||"[]").filter(x=>x!==qcur.id); r.unshift(qcur.id); localStorage.setItem("novo-qrec",JSON.stringify(r.slice(0,12)))}catch(e){}
+  go("quadro");
+}
+function qHome(){qcur=null; go("quadro")}
+const qFinal=r=>r.doc&&/conclu|finaliz/i.test(r.doc.status||"")&&!r.itens.length;
+// ---- lista de quadros (GOMs), com ícone: nada de escolher em lista de texto ----
+function qBoards(){
+  const m=new Map(), cegsAll=cegs();
+  cegsAll.forEach(r=>{if(!r.nome)return; const g=gomDe(r), k=gkey(g,r.com); if(!m.has(k))m.set(k,{gom:g,com:r.com,cegs:0,itens:0,rasc:0}); const b=m.get(k); b.cegs++; b.itens+=r.itens.length});
+  list("comunidades").forEach(c=>{if(!c.nome)return; if(![...m.values()].some(b=>b.com===c.nome))m.set(gkey("",c.nome),{gom:"Sem GOM",com:c.nome,cegs:0,itens:0,rasc:0})});
+  m.forEach(b=>{const q=D.quadros.get(qIdOf(b.gom==="Sem GOM"?"":b.gom,b.com)); b.rasc=q?Object.keys(q.rasc||{}).length:0; b.id=qIdOf(b.gom==="Sem GOM"?"":b.gom,b.com)});
+  let rec=[]; try{rec=JSON.parse(localStorage.getItem("novo-qrec")||"[]")}catch(e){}
+  return [...m.values()].sort((a,b)=>(rec.indexOf(a.id)<0?99:rec.indexOf(a.id))-(rec.indexOf(b.id)<0?99:rec.indexOf(b.id))||b.rasc-a.rasc||b.itens-a.itens);
+}
+function renderQuadros(){
+  const q=norm(ui.qq||""), bs=qBoards().filter(b=>!q||norm([b.gom,b.com,nomeCom(b.com)].join(" ")).includes(q));
+  $("#main").innerHTML=`${head("Quadros","Escolha a GOM e cole ou solte os seus prints nos quadros dela.")}
+  <div class="srow"><div class="search">${ico("search")}<input id="qq" type="search" placeholder="Buscar GOM ou comunidade" value="${esc(ui.qq||"")}" aria-label="Buscar quadro" autofocus></div><button class="btn sm" data-go="mural" type="button">${ico("back",16)}Mural</button></div>
+  <div class="qhome">${bs.map(b=>`<button class="qb" data-qopen="${esc(gkey(b.gom,b.com))}" type="button">${av("com",b.com,"xl")}<span class="tx"><b>${esc(gomNome(b.gom))}</b><span>${esc(nomeCom(b.com)||"sem comunidade")}</span><small>${esc([plural(b.cegs,"tag","tags"),plural(b.itens,"card","cards"),b.rasc?plural(b.rasc,"imagem a registrar","imagens a registrar"):""].filter(Boolean).join(" · "))}</small></span></button>`).join("")||`<p class="empty">Nenhuma GOM com esse nome.</p>`}</div>`;
+}
+// ---- sugestão de card do catálogo pelo nome que ela digitou ----
+const QSTOP=new Set(["de","da","do","com","pc","ver","card","set","e","a","o"]);
+function qSug(x){
+  if(!COL||!x.nome||x.nome.trim().length<3)return [];
+  const mem=membro(x.membro), tk=norm(x.nome).split(/[^a-z0-9]+/).filter(t=>t.length>=2&&!QSTOP.has(t)); if(!tk.length)return [];
+  const out=[];
+  for(const c of COL.items){ if(mem&&membro(c.m)!==mem)continue;
+    const hay=" "+norm([c.m,c.v,c.e,c.t,c.o,c.s].join(" ")).replace(/[^a-z0-9]+/g," ")+" ";
+    let p=0; for(const t of tk)if(hay.includes(" "+t)||(/^\d+$/.test(t)&&c.s&&String(parseInt(c.s,10))===String(parseInt(t,10))))p++;
+    if(p&&(p>=2||tk.length===1))out.push([p,c.i])}
+  out.sort((a,b)=>b[0]-a[0]); return out.slice(0,4).map(o=>o[1]);
+}
+function qSugHtml(rid,x){
+  const ids=qSug(x); if(x.cardId&&!ids.includes(x.cardId))ids.unshift(x.cardId);
+  return ids.slice(0,4).map(id=>{const c=CIDX.get(id); return c?`<button class="qpick ${x.cardId===id?"on":""}" type="button" data-qpick="${esc(rid)}|${esc(id)}" title="${esc([c.m,c.e,c.v].filter(Boolean).join(" · "))}">${ph(cardBg(c),"","")}</button>`:""}).join("")+(ids.length?`<span class="qsl">${x.cardId?"ligado ao catálogo":"é algum desses?"}</span>`:"");
+}
+function qRascTile(rid,x,r){
+  const u=window.stay&&window.stay.blobUrl(x.asset), bg=okUrl(u)?`background-image:url('${u}')`:"";
+  return `<div class="rt" data-rid="${esc(rid)}" ${murFino()?`draggable="true" data-drr="${esc(rid)}"`:""}><div class="rimg" style="${bg}"></div>
+    <input class="qnome" data-rid="${esc(rid)}" value="${esc(x.nome||"")}" placeholder="nome do card" aria-label="nome do card" enterkeyhint="next">
+    <select class="qmem" data-rid="${esc(rid)}" aria-label="membro">${["",...MEMBROS].map(m=>`<option value="${esc(m)}" ${m===membro(x.membro)?"selected":""}>${esc(m||"membro")}</option>`).join("")}</select>
+    <div class="qsug" data-rid="${esc(rid)}">${qSugHtml(rid,x)}</div>
+    <div class="ract"><button class="btn sm pri" data-qreg="${esc(rid)}" type="button" ${r?"":"disabled"} title="${r?"":"Arraste pra uma tag"}">Registrar</button><button class="btn sm" data-qsep="${esc(rid)}" type="button" title="Achar os cards dentro desta imagem">Separar</button><button class="btn sm" data-qrdel="${esc(rid)}" type="button" aria-label="remover imagem">×</button></div></div>`;
+}
+function qFrame(f){
+  const r=f.r, nr=f.rs.length;
+  return `<section class="qf ${qact===(r?r.key:"")?"act":""}" data-qfr="${esc(r?r.key:"")}" data-dz="ceg:${esc(r?r.key:"")}">
+    <div class="qfh">${r?grpAv(r.doc,r.com,"sm"):`<span class="qsem">?</span>`}<button class="qft" ${r?`data-ceg="${esc(r.key)}"`:"disabled"} type="button">${esc(r?(r.lbl||r.nome):"Sem tag")}</button><span class="s">${esc(plural(f.its.length,"card","cards"))}</span>${r&&r.devN?`<span class="pill late">devo ${r.deve?brl(r.deve):"sem valor"}</span>`:""}</div>
+    <div class="qfa"><label class="btn sm">${ico("plus",14)}imagem<input type="file" class="qfile" data-qf="${esc(r?r.key:"")}" accept="image/*" multiple hidden></label>${nr&&r?`<button class="btn sm pri" data-qregall="${esc(r.key)}" type="button">Registrar ${nr}</button>`:""}</div>
+    ${!r&&nr?`<p class="note" style="margin:6px 0">Arraste estas imagens pra uma tag.</p>`:""}
+    <div class="qfg">${f.rs.map(x=>qRascTile(x.id,x,r)).join("")}${f.its.map(d=>murTile(d)).join("")}</div>
+    ${!f.its.length&&!nr?`<p class="qvazio">Cole (Ctrl+V), solte ou escolha as imagens desta tag.</p>`:""}
+  </section>`;
+}
+function renderQuadro(){
+  if(!qcur)return renderQuadros();
+  const gk=gkey(qcur.gom,qcur.com), rows=cegs().filter(r=>r.nome&&gkey(gomDe(r),r.com)===gk&&!qFinal(r));
+  const rasc=Object.entries(qRasc()).map(([id,x])=>({id,...x})).sort((a,b)=>(a.ts||0)-(b.ts||0));
+  const frames=rows.map(r=>({r,its:r.itens,rs:rasc.filter(x=>x.frame===r.key)}));
+  const sem=rasc.filter(x=>!x.frame||!rows.some(r=>r.key===x.frame));
+  if(sem.length||!frames.length)frames.unshift({r:null,its:[],rs:sem});
+  const est=f=>90+Math.ceil(f.its.length/4)*172+Math.ceil(f.rs.length/4)*330+(!f.its.length&&!f.rs.length?40:0);
+  const nc=window.innerWidth<820?1:Math.min(window.innerWidth>=1500?3:2,Math.max(1,frames.length)), cols=Array.from({length:nc},()=>({h:0,fs:[]}));
+  [...frames].sort((a,b)=>(b.rs.length>0)-(a.rs.length>0)||b.its.length-a.its.length).forEach(f=>{const c=cols.reduce((m,x)=>x.h<m.h?x:m); c.fs.push(f); c.h+=est(f)});
+  const notas=Object.entries(qDoc().notas||{});
+  const z=ui.qz||(window.innerWidth<820?.82:1);
+  const notasHtml=`<section class="qf qnotas"><div class="qfh"><span class="qsem">✎</span><b class="qft" style="cursor:default">Notas</b></div>${notas.map(([id,n])=>`<div class="qn2"><textarea class="qnota" data-qnota="${esc(id)}" rows="3" placeholder="escreva aqui">${esc(n.t||"")}</textarea><button type="button" data-qndel="${esc(id)}" aria-label="apagar nota">×</button></div>`).join("")}<div class="qfa"><button class="btn sm" data-qnnota type="button">${ico("plus",14)}nota</button></div></section>`;
+  cols[cols.length-1].fs.push({nota:true});
+  $("#main").innerHTML=`<div class="qtop"><button class="btn sm" data-qhome type="button">${ico("back",16)}Quadros</button><button class="btn sm" data-go="mural" type="button">Mural</button><span class="qtit">${gomTag(qcur.gom,qcur.com,"lg")}</span></div>
+  <div class="qbar"><form class="qnew" data-qform><input id="qtag" placeholder="Nova tag (nome da CEG)" aria-label="nova tag" autocomplete="off"><button class="btn sm pri" type="submit">${ico("plus",14)}tag</button></form><span class="g"><button class="btn sm" data-qzoom="-" type="button" aria-label="menos zoom">−</button><span class="qz">${Math.round(z*100)}%</span><button class="btn sm" data-qzoom="+" type="button" aria-label="mais zoom">+</button></span></div>
+  <p class="note" style="margin:0 0 8px">Cole (Ctrl+V) ou solte um print na tag que está marcada. Escreva o nome de cada card e toque em Registrar: ele entra na coleção com a foto.</p>
+  <div class="qcanvas" id="qcv"><div class="qcols" style="zoom:${z}">${cols.map(c=>`<div class="qcol">${c.fs.map(f=>f.nota?notasHtml:qFrame(f)).join("")}</div>`).join("")}</div></div>`;
+  const cv=$("#qcv"); if(cv){cv.scrollLeft=qscroll.x;cv.scrollTop=qscroll.y;cv.addEventListener("scroll",()=>{qscroll.x=cv.scrollLeft;qscroll.y=cv.scrollTop},{passive:true})}
+}
+// ---- gravar ----
+async function qSet(rid,patch){const x=qRasc()[rid]; if(!x)return; await qSave({rasc:{...qRasc(),[rid]:{...x,...patch}}})}
+async function qAddFiles(files,frame){
+  const imgs=[...files].filter(f=>/^image\//.test(f.type)); if(!imgs.length||!qcur)return;
+  if(!db||!canWrite){toast("Sem permissão pra gravar");return}
+  const novos=[]; toast(`Enviando ${plural(imgs.length,"imagem","imagens")}…`);
+  try{for(const f of imgs){const {blob}=await reduzir(f,900); const asset=await subirFoto(blob); const rid="r"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+      await qSave({rasc:{...qRasc(),[rid]:{asset,frame:frame||qact||"",nome:"",membro:"",cardId:"",ts:Date.now()}}}); novos.push([rid,asset])}}
+  catch(e){toast("Não deu pra enviar tudo; as anteriores ficaram"); return}
+  toast(`${plural(novos.length,"imagem adicionada","imagens adicionadas")}`,async()=>{const rs={...qRasc()}; novos.forEach(([rid])=>delete rs[rid]); await qSave({rasc:rs}); const a=await window.claude.use("assets"); for(const [,as] of novos)a.delete(as).catch(()=>{})});
+}
+async function qMoverR(rid,frame){const x=qRasc()[rid]; if(!x||x.frame===frame)return; await qSet(rid,{frame}); qact=frame}
+async function qRegistrar(rid){
+  const x=qRasc()[rid]; if(!x)return null; const r=cegs().find(c=>c.key===x.frame); if(!r){toast("Arraste a imagem pra uma tag antes de registrar");return null}
+  const card=x.cardId&&CIDX.get(x.cardId); const nome=(x.nome||"").trim()||(card?[card.m,card.v].filter(Boolean).join(" "):"")||"card sem nome";
+  const {id}=await db.collection("itens").add({item:nome,membro:x.membro||(card&&card.m)||"",comunidade:r.com,ceg:r.nome,valor:null,status:"Garantido",origem:"Quadro",tipo:"Photocard / set",pago:"Ainda não cobrado",criadoEm:isoToday(),obs:"",etiquetas:"",cards:card?[x.cardId]:[]});
+  if(!card)await db.doc("fotos/"+id).set({asset:x.asset});
+  const rs={...qRasc()}; delete rs[rid]; await qSave({rasc:rs}); return {id,rid,x};
+}
+async function qDesfazerReg(feitos){for(const f of feitos){await db.doc("itens/"+f.id).delete(); await db.doc("fotos/"+f.id).delete().catch(()=>{}); await qSave({rasc:{...qRasc(),[f.rid]:f.x}})}}
+async function qSeparar(rid,b){
+  const x=qRasc()[rid]; if(!x)return; b.disabled=true; toast("Procurando os cards na imagem…");
+  try{
+    const u=window.stay.blobUrl(x.asset), blob=await (await fetch(u)).blob(); const {canvas}=await reduzir(blob,1600,.85), url=canvas.toDataURL("image/jpeg",.85);
+    const s=await window.stay.getSession(); const r=await fetch("/api/print",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+(s&&s.access_token)},body:JSON.stringify({imagem:{tipo:"image/jpeg",dados:url.split(",")[1]}})});
+    const j=await r.json().catch(()=>({})); if(!r.ok)throw new Error(j.erro||"Não consegui ler a imagem.");
+    if((j.cards||[]).length<2){toast(j.cards&&j.cards.length?"Achei só 1 card nessa imagem":"Não achei cards separados nessa imagem");b.disabled=false;return}
+    const rs={...qRasc()}; delete rs[rid]; const W=canvas.width,H=canvas.height, novos=[]; let n=0;
+    for(const c of j.cards){const [y0,x0,y1,x1]=c.caixa, pad=.004, sx=Math.max(0,x0/1000-pad)*W, sy=Math.max(0,y0/1000-pad)*H, sw=Math.min(W-sx,(x1-x0)/1000*W+pad*2*W), sh=Math.min(H-sy,(y1-y0)/1000*H+pad*2*H);
+      const cv=document.createElement("canvas"), k=Math.min(1,520/Math.max(sw,sh)); cv.width=Math.max(1,Math.round(sw*k)); cv.height=Math.max(1,Math.round(sh*k)); cv.getContext("2d").drawImage(canvas,sx,sy,sw,sh,0,0,cv.width,cv.height);
+      const cb=await new Promise(ok=>cv.toBlob(ok,"image/jpeg",.9)); const asset=await subirFoto(cb), id="r"+Date.now().toString(36)+(n++);
+      const top=(c.candidatos||[])[0]; rs[id]={asset,frame:x.frame,nome:[c.nome,c.numero&&("nº "+c.numero)].filter(Boolean).join(" · "),membro:membro(c.membro)||"",cardId:top&&top.nota>=.5?top.i:"",ts:Date.now()+n}; novos.push(id)}
+    await qSave({rasc:rs}); window.claude.use("assets").then(a=>a.delete(x.asset)).catch(()=>{}); toast(`${plural(novos.length,"card separado","cards separados")}. Confira os nomes.`);
+  }catch(e){toast(e.message||"Não deu pra separar");b.disabled=false}
+}
+async function qNovaTag(nome){
+  nome=String(nome||"").trim(); if(!nome||!qcur||!db)return;
+  const ja=cegs().find(r=>r.com===qcur.com&&norm(r.nome)===norm(nome)); if(ja){qact=ja.key;render();toast("Essa tag já existe: marquei ela");return}
+  const r=await addMany([["cegs",{nome,comunidade:qcur.com,gom:qcur.gom,status:"Em andamento"}]],"Tag criada: "+nome);
+  if(r){qact=(qcur.com||"")+"\u0001"+nome; render()}
+}
+// ---- eventos do quadro ----
+document.addEventListener("pointerdown",e=>{const f=e.target.closest&&e.target.closest("[data-qfr]"); if(!f||ui.tab!=="quadro")return; qact=f.dataset.qfr; document.querySelectorAll(".qf.act").forEach(x=>x.classList.remove("act")); f.classList.add("act")});
+document.addEventListener("submit",e=>{if(e.target.matches&&e.target.matches("[data-qform]")){e.preventDefault(); const i=$("#qtag"); const v=i.value; i.value=""; qNovaTag(v)}});
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.classList&&e.target.classList.contains("qnome")){e.preventDefault(); const all=[...document.querySelectorAll(".qnome")], i=all.indexOf(e.target); (all[i+1]||e.target).focus(); if(!all[i+1])e.target.blur()}});
 // ---- mover e trocar foto ----
 async function murMover(id,zona){
   const d=D.itens.get(id); if(!d||!zona)return;
@@ -1393,18 +1495,20 @@ async function printSalvar(b){
 }
 // ---- arrastar, soltar e colar ----
 const temArquivo=e=>[...(e.dataTransfer&&e.dataTransfer.types||[])].includes("Files");
-document.addEventListener("dragstart",e=>{const t=e.target.closest&&e.target.closest("[data-dr]"); if(!t)return; drag=t.dataset.dr; e.dataTransfer.setData("text/plain",drag); e.dataTransfer.effectAllowed="move"; t.classList.add("dragging")});
-document.addEventListener("dragend",()=>{drag="";document.querySelectorAll(".dragging,.over").forEach(x=>x.classList.remove("dragging","over"))});
+document.addEventListener("dragstart",e=>{const rr=e.target.closest&&e.target.closest("[data-drr]"); if(rr){qdragR=rr.dataset.drr;e.dataTransfer.setData("text/plain",qdragR);e.dataTransfer.effectAllowed="move";rr.classList.add("dragging");return} const t=e.target.closest&&e.target.closest("[data-dr]"); if(!t)return; drag=t.dataset.dr; e.dataTransfer.setData("text/plain",drag); e.dataTransfer.effectAllowed="move"; t.classList.add("dragging")});
+document.addEventListener("dragend",()=>{drag="";qdragR="";document.querySelectorAll(".dragging,.over").forEach(x=>x.classList.remove("dragging","over"))});
 let overEl=null;
-document.addEventListener("dragover",e=>{const z=e.target.closest&&(e.target.closest("[data-dr]")&&temArquivo(e)?e.target.closest("[data-dr]"):e.target.closest("[data-dz]")); if(!z||(!drag&&!temArquivo(e)))return; e.preventDefault(); if(overEl!==z){overEl&&overEl.classList.remove("over");overEl=z;z.classList.add("over")}});
+document.addEventListener("dragover",e=>{const z=e.target.closest&&(e.target.closest("[data-dr]")&&temArquivo(e)?e.target.closest("[data-dr]"):e.target.closest("[data-dz]")); if(!z||(!drag&&!qdragR&&!temArquivo(e)))return; e.preventDefault(); if(overEl!==z){overEl&&overEl.classList.remove("over");overEl=z;z.classList.add("over")}});
 document.addEventListener("drop",async e=>{
   const alvoTile=e.target.closest&&e.target.closest("[data-dr]"), z=e.target.closest&&e.target.closest("[data-dz]"); overEl&&overEl.classList.remove("over"); overEl=null;
   const file=e.dataTransfer&&[...e.dataTransfer.files].find(f=>/^image\//.test(f.type));
   if(file&&alvoTile){e.preventDefault(); await murFoto(alvoTile.dataset.dr,file); return}
-  if(file&&z){e.preventDefault(); abrirPrint(z.dataset.dz.startsWith("ceg:")?z.dataset.dz.slice(4):"",file); return}
+  if(file&&z){e.preventDefault(); const kz=z.dataset.dz.startsWith("ceg:")?z.dataset.dz.slice(4):""; if(ui.tab==="quadro")await qAddFiles([...e.dataTransfer.files],kz); else abrirPrint(kz,file); return}
+  if(qdragR&&z){e.preventDefault(); const id=qdragR; qdragR=""; await qMoverR(id,z.dataset.dz.startsWith("ceg:")?z.dataset.dz.slice(4):""); return}
   if(drag&&z){e.preventDefault(); const id=drag; drag=""; await murMover(id,z.dataset.dz)}
 });
 document.addEventListener("paste",e=>{
+  if(ui.tab==="quadro"&&qcur&&sheetFn!==printSheet){const fs=[...(e.clipboardData&&e.clipboardData.files||[])].filter(x=>/^image\//.test(x.type)); if(fs.length){e.preventDefault();qAddFiles(fs,qact)} return}
   if(ui.tab!=="mural"&&sheetFn!==printSheet)return; if(e.target.matches&&e.target.matches("input,textarea"))return;
   const f=[...(e.clipboardData&&e.clipboardData.files||[])].find(x=>/^image\//.test(x.type)); if(!f)return; e.preventDefault();
   if(sheetFn===printSheet){pr.step=0;lerPrint(f)}else abrirPrint("",f);
@@ -1474,7 +1578,7 @@ function render(){
   nav();
   if(!ready){$("#main").innerHTML=`<p class="empty">Carregando…</p>`;return}
   if(!db){$("#main").innerHTML=`${head("STAY collection")}<p class="note">Entre com a sua conta para ver os dados.</p>`;return}
-  ({agora:renderAgora,mural:renderMural,colecao:renderColecao,contas:renderContas,cegs:renderCegs})[ui.tab]();
+  ({agora:renderAgora,mural:renderMural,quadro:renderQuadro,colecao:renderColecao,contas:renderContas,cegs:renderCegs})[ui.tab]();
   if(sheetFn&&sheetFn!==formSheet&&!$("#shB").contains(document.activeElement)){const sc=$("#shB").scrollTop;$("#shB").innerHTML=sheetFn();$("#shB").scrollTop=sc}
   lazy();
 }
@@ -1509,7 +1613,6 @@ document.addEventListener("click",async e=>{
   if(ds.me!=null){ui.me=ds.me;render();return}
   if(ds.mfs!=null){ui.mf=ds.mfs;render();return}
   if(ds.mfm!=null){ui.mm=ds.mfm;render();return}
-  if(ds.mvw){ui.mv=ds.mvw;render();return}
   if(ds.msel!=null){ui.msel=!ui.msel;if(!ui.msel)sel.clear();render();return}
   if(ds.selids){ds.selids.split(",").forEach(i=>sel.add(i));selAtualiza();return}
   if(ds.mall!=null){const ids=list("itens").filter(murFiltra).map(d=>d.id);ids.forEach(i=>sel.add(i));selAtualiza();return}
@@ -1517,10 +1620,16 @@ document.addEventListener("click",async e=>{
   if(ds.mrec!=null){const ids=[...sel].filter(i=>D.itens.has(i)); if(await setMany(ids.map(i=>["itens",i,{status:"Recebido",...travar(D.itens.get(i),["status"])}]),`${plural(ids.length,"item recebido","itens recebidos")}`)){sel.clear();ui.msel=false;render()} return}
   if(ds.mbulk!=null){openSheet("Mudar em lote",bulkSheet);return}
   if(ds.mbapply!=null){await bulkAplicar(b);return}
-  if(ds.qzoom){ui.mz=Math.max(.4,Math.min(1.6,Math.round(((ui.mz||1)+(ds.qzoom==="+"?.15:-.15))*100)/100));render();return}
-  if(ds.qarr!=null){await quadroSalvar({pos:{}});toast("Arrumado por GOM");return}
-  if(ds.qnovanota!=null){const qd=$("#qd"),z=ui.mz||1,id="n"+Date.now().toString(36),n={...(quadro().notas||{}),[id]:{x:Math.round(((qd?qd.scrollLeft+qd.clientWidth-250:0))/z),y:Math.round(((qd?qd.scrollTop:0)+20)/z),t:""}}; await quadroSalvar({notas:n}); return}
-  if(ds.qdel){const n={...(quadro().notas||{})}; delete n[ds.qdel]; await quadroSalvar({notas:n}); return}
+  if(ds.qzoom){ui.qz=Math.max(.4,Math.min(1.6,Math.round(((ui.qz||(window.innerWidth<820?.82:1))+(ds.qzoom==="+"?.1:-.1))*100)/100));render();return}
+  if(ds.qopen!=null){const [g,c]=ds.qopen.split("\u0001"); qAbrir(g==="Sem GOM"?"":g,c,ds.qf||"");return}
+  if(ds.qhome!=null){qHome();return}
+  if(ds.qreg){const r=await qRegistrar(ds.qreg); if(r)toast("Registrado na coleção",()=>qDesfazerReg([r])); return}
+  if(ds.qregall){const ids=Object.entries(qRasc()).filter(([,x])=>x.frame===ds.qregall).map(([id])=>id); const feitos=[]; for(const id of ids){const r=await qRegistrar(id); if(r)feitos.push(r)} if(feitos.length)toast(`${plural(feitos.length,"card registrado","cards registrados")}`,()=>qDesfazerReg(feitos)); return}
+  if(ds.qrdel){const x=qRasc()[ds.qrdel]; if(!x)return; const rs={...qRasc()}; delete rs[ds.qrdel]; await qSave({rasc:rs}); toast("Imagem removida",async()=>{await qSave({rasc:{...qRasc(),[ds.qrdel]:x}})}); return}
+  if(ds.qsep){await qSeparar(ds.qsep,b);return}
+  if(ds.qpick){const [rid,cid]=ds.qpick.split("|"), x=qRasc()[rid]; if(!x)return; const c=CIDX.get(cid); await qSet(rid,{cardId:x.cardId===cid?"":cid,...(c&&!x.membro?{membro:membro(c.m)}:{})}); return}
+  if(ds.qnnota!=null){await qSave({notas:{...(qDoc().notas||{}),["n"+Date.now().toString(36)]:{t:""}}});return}
+  if(ds.qndel){const n={...(qDoc().notas||{})}; delete n[ds.qndel]; await qSave({notas:n}); return}
   if(ds.mi){if(suprimir){suprimir=false;return} if(ui.msel){murToggle(ds.mi);return} const id=ds.mi;openSheet("Item",()=>muralSheet(id));return}
   if(ds.msave){await murSalvar(b);return}
   if(ds.prb!=null){abrirPrint(ds.prb);return}
@@ -1587,6 +1696,7 @@ let qt=null;
 document.addEventListener("input",e=>{
   const id=e.target.id;
   if(id==="cq"||id==="gq"){clearTimeout(qt);qt=setTimeout(()=>{ui[id]=e.target.value;const pos=e.target.selectionStart;render();const el=$("#"+id);if(el){el.focus();try{el.setSelectionRange(pos,pos)}catch(err){}}},180);return}
+  if(id==="qq"){clearTimeout(qt);qt=setTimeout(()=>{ui.qq=e.target.value;const pos=e.target.selectionStart;render();const el=$("#qq");if(el){el.focus();try{el.setSelectionRange(pos,pos)}catch(err){}}},160);return}
   if(id==="mq"){clearTimeout(qt);qt=setTimeout(()=>{ui.mq=e.target.value;const pos=e.target.selectionStart;render();const el=$("#mq");if(el){el.focus();try{el.setSelectionRange(pos,pos)}catch(err){}}},180);return}
   if(id==="ncq"){clearTimeout(qt);qt=setTimeout(()=>{nc.q=e.target.value;$("#shB").innerHTML=novaSheet();lazy();const el=$("#ncq");el.focus();el.setSelectionRange(nc.q.length,nc.q.length)},200);return}
   if(id==="ncv"){nc.valor=e.target.value}
@@ -1598,6 +1708,10 @@ document.addEventListener("change",e=>{const f=e.target.id;
   if(e.target.dataset&&e.target.dataset.comp&&e.target.files[0]){const fl=e.target.files[0]; e.target.value=""; compBaixa(e.target.dataset.comp,fl); return}
   if(f==="mif"&&e.target.files[0]){murFoto(e.target.dataset.for,e.target.files[0]);return}
   if(f==="prcg"){pr.ceg=e.target.value;return}
+  const cl=e.target.classList;
+  if(cl&&cl.contains("qfile")){qAddFiles([...e.target.files],e.target.dataset.qf);e.target.value="";return}
+  if(cl&&(cl.contains("qnome")||cl.contains("qmem"))){const rid=e.target.dataset.rid, x=qRasc()[rid]; if(!x)return; const patch=cl.contains("qnome")?{nome:e.target.value}:{membro:e.target.value}; const nx={...x,...patch}; const box=document.querySelector(`.qsug[data-rid="${rid}"]`); if(box)box.innerHTML=qSugHtml(rid,nx); qSet(rid,patch); return}
+  if(cl&&cl.contains("qnota")){const id=e.target.dataset.qnota, n=(qDoc().notas||{})[id]; if(n)qSave({notas:{...(qDoc().notas||{}),[id]:{...n,t:e.target.value}}}); return}
   if(e.target.classList&&e.target.classList.contains("prc")){pr.items[+e.target.dataset.i].on=e.target.checked;const n=pr.items.filter(i=>i.on).length,bt=$("[data-prsave]");if(bt){bt.disabled=!n;bt.textContent="Criar "+plural(n,"item","itens")}return}
  if(f==="fco"){ui.cco=e.target.value;ui.cce="";ui.cn=240;render();return} if(f==="fce"){ui.cce=e.target.value;ui.cn=240;render();return} if(f==="fso"){ui.cs=e.target.value;ui.cn=240;render();return}
   if(e.target.id==="ncpg")nc.pago=e.target.checked; if(e.target.id==="ncp")nc.prazo=e.target.value});

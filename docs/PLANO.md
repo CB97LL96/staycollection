@@ -221,6 +221,21 @@ Na dúvida sobre um termo, usar o que aparece nas mensagens das GOMs e perguntar
 4. **Binder, faltantes e caça de fotos.**
 5. **Rodada assistida.**
 
+### Mural e Quadro refeitos (27/11/2026)
+Feedback da dona: o Mural tinha um quadro livre dentro dele, e colar print numa lista de CEGs era tedioso.
+- **Mural = só lista.** Cabeçalho da GOM com a foto da comunidade; cabeçalho de cada CEG com a
+  foto do grupo do WhatsApp (as fotos de `icon-com-*` e `icon-grp-*`). Botão **Inserir** abre os Quadros.
+- **Quadros** (aba Mural > Inserir; coleção `quadros`): um quadro por GOM dentro de uma comunidade.
+  Tela inicial = grade de GOMs com ícone e busca, recentes primeiro (nada de lista em texto).
+  Cada **tag = CEG** é um frame; os cards que já existem aparecem lá. Ela **cola (Ctrl+V), solta ou
+  escolhe** o print inteiro no frame marcado (imagem fica como rascunho com foto), escreve o
+  **nome do card** (segunda camada) e o membro, o app sugere cards do catálogo (ela toca no certo) e
+  **Registrar** cria o item na CEG, com a foto e ligado ao catálogo (desfazer). **Separar** usa a IA
+  pra dividir um print em vários cards. Nova tag cria a CEG na GOM. Notas soltas por quadro.
+- Fora do desenho por ora: frames arrastáveis livremente (hoje arrumam sozinhos em colunas);
+  quadro "maior" que junta todas as GOMs de uma comunidade.
+- Testes: `npm test` (30) e `npm run e2e` (mural 34, quadro 44, compartilhar 12, agora 52).
+
 ## App novo do zero (01/11/2026)
 
 O `index.html` agora é um app novo, feito do zero. O antigo está em `/antigo.html`, e `/novo.html` só redireciona para `/`.

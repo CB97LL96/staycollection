@@ -67,49 +67,6 @@ const srv = http.createServer((q, r) => { let p = decodeURIComponent(q.url.split
     await pg.click(".undo"); await pg.waitForTimeout(300);
     const desf = await pg.evaluate((ids) => ids.slice(0, 2).map(i => window.__store.itens.get(i).status), todosIds);
     ok(desf.every(x => x !== "Enviado"), `${nome}: desfazer o lote`);
-    // quadro livre
-    await pg.click('[data-mvw="quadro"]'); await pg.waitForSelector(".qt");
-    ok(await pg.locator(".qt").count() === 4, `${nome}: quadro mostra os 4 cards`);
-    const tq = pg.locator(".qi").first(); const b0 = await tq.boundingBox(); const id0 = await tq.getAttribute("data-qid");
-    await pg.mouse.move(b0.x + 30, b0.y + 40); await pg.mouse.down(); await pg.mouse.move(b0.x + 130, b0.y + 90, { steps: 6 }); await pg.mouse.up(); await pg.waitForTimeout(400);
-    const posSalva = await pg.evaluate((i) => (window.__store.mural.get("quadro") || {}).pos?.[i], id0);
-    ok(posSalva && Math.abs(posSalva.x - ((await pg.locator(`[data-qid="${id0}"]`).evaluate(e => parseFloat(e.style.left))))) < 2, `${nome}: arrastar no quadro guarda a posição (${JSON.stringify(posSalva)})`);
-    await pg.click('[data-qzoom="-"]'); ok((await pg.locator(".qz").innerText()) === "85%", `${nome}: zoom 85%`);
-    await pg.click("[data-qnovanota]"); await pg.waitForSelector(".qn-t");
-    await pg.fill(".qn-t", "ligar pra Gabi"); await pg.locator(".qn-t").blur(); await pg.waitForTimeout(300);
-    ok(Object.values((await pg.evaluate(() => window.__store.mural.get("quadro").notas))).some(n => n.t === "ligar pra Gabi"), `${nome}: nota solta guarda o texto`);
-    await pg.screenshot({ path: `/tmp/e2e-quadro-${nome}.png` });
-    await pg.click("[data-qarr]"); await pg.waitForTimeout(300);
-    ok(Object.keys((await pg.evaluate(() => window.__store.mural.get("quadro").pos))).length === 0, `${nome}: arrumar por GOM limpa as posições`);
-    await pg.click('[data-mvw="lista"]');
-    // colar print
-    const antes = await pg.evaluate(() => window.__store.itens.size);
-    await pg.click('[data-prb=""]'); await pg.waitForSelector("#prf", { state: "attached" });
-    await pg.setInputFiles("#prf", __dirname + "/print.png"); await pg.waitForSelector(".prrow", { timeout: 8000 });
-    ok(await pg.locator(".prrow").count() === 3, `${nome}: 3 cards achados no print`);
-    ok(await pg.locator(".prc:checked").count() === 2, `${nome}: o borrado vem desmarcado`);
-    const w = await pg.locator(".prrow img").first().evaluate(i => [i.naturalWidth, i.naturalHeight]);
-    ok(w[0] > 20 && w[1] > w[0], `${nome}: recorte tem forma de card em pé (${w})`);
-    await pg.screenshot({ path: `/tmp/e2e-print-${nome}.png` });
-    ok(await pg.locator('[data-prc="0|0"].on').count() === 1 && await pg.locator('[data-prc="0|1"]').count() === 1, `${nome}: 1ª linha mostra o melhor candidato e o 2º`);
-    ok(await pg.locator('[data-prc^="1|"]').count() === 0, `${nome}: sem candidato, sem seletor`);
-    await pg.click('[data-prc="0|1"]'); ok(await pg.locator('[data-prc="0|1"].on').count() === 1, `${nome}: tocar troca de candidato`);
-    await pg.click('[data-prc="0|-1"]'); ok(await pg.locator('[data-prc="0|-1"].on').count() === 1, `${nome}: "nenhum" funciona`);
-    await pg.click('[data-prc="0|0"]');
-    await pg.screenshot({ path: `/tmp/e2e-print-${nome}.png` });
-    await pg.selectOption("#prcg", { label: "Comunidade Azul · Variados 7" });
-    await pg.click("[data-prsave]"); await pg.waitForTimeout(800);
-    const novos = await pg.evaluate(() => [...window.__store.itens].filter(([k, v]) => v.origem === "Print"));
-    ok(novos.length === 2 && novos.every(([, v]) => v.ceg === "Variados 7" && v.status === "Garantido"), `${nome}: criou 2 itens do print na CEG`);
-    ok(novos.filter(([, v]) => (v.cards || []).join() === "mixtape-bangchan-01").length === 1 && novos.filter(([, v]) => !v.cards).length === 1, `${nome}: item com card grava cards:[id]; o outro fica sem card`);
-    ok((await pg.evaluate(() => window.__store.fotos.size)) === 1, `${nome}: foto do recorte só para o item sem card`);
-    // segundo print com o mesmo card: avisa "repetido"
-    await pg.click('[data-prb=""]'); await pg.setInputFiles("#prf", __dirname + "/print.png"); await pg.waitForSelector(".prrow", { timeout: 8000 });
-    ok(await pg.locator(".prrep").count() === 1, `${nome}: avisa repetido quando o card já tem pedido ativo`);
-    await pg.click('[data-prc="0|1"]'); ok(await pg.locator(".prrep").count() === 0, `${nome}: outro candidato não é repetido`);
-    await pg.keyboard.press("Escape"); await pg.waitForTimeout(300);
-    await pg.click(".undo"); await pg.waitForTimeout(500);
-    ok((await pg.evaluate(() => window.__store.itens.size)) === antes, `${nome}: desfazer apaga os criados`);
     ok(erros.length === 0, `${nome}: sem erro no console ${erros.join(" | ")}`);
     await ctx.close();
   }
