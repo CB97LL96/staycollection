@@ -7,6 +7,8 @@ const seed={
  cobrancas:{k1:{referente:"frete",ceg:"Caixa 2 PHP",comunidade:"Comunidade Azul",valor:18.4,status:"Pendente",prazo:"2026-12-01"}},
  fotos:{},colecao:{},cardsnovos:{},cegs2:{}
 };
+// testes podem somar dados com window.__seedExtra = {colecao:{id:{...}}} antes de carregar este arquivo
+const ex=window.__seedExtra||{}; for(const c in ex)seed[c]={...(seed[c]||{}),...ex[c]};
 const store={}; const subs={};
 for(const c in seed){store[c]=new Map(Object.entries(seed[c]).map(([k,v])=>[k,JSON.parse(JSON.stringify(v))]));subs[c]=new Set()}
 const fire=c=>{(subs[c]||[]).forEach(f=>f())};

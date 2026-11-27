@@ -19,7 +19,7 @@ const srv = http.createServer((q, r) => { let p = decodeURIComponent(q.url.split
     await pg.addInitScript({ path: __dirname + "/banco-falso.js" });
     await pg.goto(base + "/#mural"); await pg.waitForSelector(".mgrp");
     ok(await pg.locator(".mgh h2").count() === 2, `${nome}: 2 grupos de GOM (Gabi, Ana)`);
-    ok((await pg.locator(".mgh h2").first().innerText()).toLowerCase().startsWith("gabi"), `${nome}: Gabi vem primeiro (mais itens)`);
+    { const h = (await pg.locator(".mgh h2").first().innerText()).toLowerCase(); ok(h.includes("gabi") && h.includes("comunidade azul"), `${nome}: Gabi (com a comunidade) vem primeiro (mais itens)`); }
     await pg.screenshot({ path: `/tmp/e2e-mural-${nome}.png`, fullPage: true });
     // arrastar i1 pra CEG Variados 7
     await pg.setViewportSize({ width: vp.width, height: 2400 });

@@ -200,6 +200,24 @@ Na dúvida sobre um termo, usar o que aparece nas mensagens das GOMs e perguntar
    - Regra da dona: GOM nunca aparece sozinha; sempre com o ícone e o nome da comunidade
      (no Telegram, só o nome, porque texto não leva ícone).
 3. **Agora e pagamento** (o app novo substitui o atual aqui).
+3. **Agora e pagamento** (pronto em 24/11/2026 no branch `claude/fork-agora-gom`, falta publicar):
+   - Aba **Agora** (antes Início): fila de uma ação por vez, com "deixar pra depois". Ordem:
+     cobrança vencida, cobrança que vence em até 7 dias, "envio liberado: pedir pra casa" por
+     GOM (com os cards), "sem conferir há N dias" (CEG com planilha, 7 dias ou mais). Sem pix e
+     sem caminho de comprovante; diz só em qual grupo olhar. "Paguei" usa `data-cst`/`setMany`
+     (com desfazer).
+   - **Baixa pelo comprovante**: "Paguei: mandar comprovante" aceita a imagem (PicPay), sobe como
+     asset (igual `murFoto`), grava `comprovanteAsset` + `pagoProva` + `conferidoEm` e marca paga.
+     Não lê valor por IA. Desfazer volta o status; o arquivo subido fica órfão no armazenamento.
+   - **Tela da GOM** (folha `gomSheet`): ícone e nome da comunidade, nome da GOM, CEGs, o que
+     está liberado, quanto devo, onde olhar e "montar envio" (reaproveita `envioItens`,
+     só com os itens liberados daquela GOM). Abre pelo Mural, pela CEG e pela Agora.
+   - **Regra da dona**: GOM nunca aparece sozinha. `gomTag(gom, comunidade)` é o único jeito de
+     mostrar uma GOM (ícone + comunidade + GOM). O Mural agora agrupa por (GOM, comunidade).
+   - Testes: `scripts/e2e/agora.cjs` (52 checagens, desktop e celular); `mural.cjs` ajustado
+     ao cabeçalho novo. `banco-falso.js` aceita `window.__seedExtra` pra somar dados de teste.
+   - Desfazer o comprovante apaga o arquivo subido; "montar envio" só cria o envio ao confirmar (desfazer apaga).
+   - Falta: ler o valor do comprovante (decidido adiar); conferir tudo com o banco e os assets reais.
 4. **Binder, faltantes e caça de fotos.**
 5. **Rodada assistida.**
 
