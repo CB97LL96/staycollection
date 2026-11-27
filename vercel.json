@@ -14,7 +14,8 @@
       "maxDuration": 60
     },
     "api/print.js": {
-      "maxDuration": 120
+      "maxDuration": 120,
+      "includeFiles": "colecao.json"
     },
     "api/investigar.js": {
       "maxDuration": 120

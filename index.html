@@ -243,6 +243,7 @@ h2 .r{margin-left:auto;font-size:14px;font-weight:700}
 .mini.mm{margin-top:12px}.mtile{cursor:grab}.mtile.dragging{opacity:.4}
 [data-dz].over,.mtile.over{outline:3px dashed var(--accent);outline-offset:3px}
 .prl{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px}.prrow{display:grid;grid-template-columns:auto 56px minmax(0,1fr);gap:10px;align-items:center}
+.prcat{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.prcat .ph{width:44px;aspect-ratio:55/85;border-radius:6px;flex:none}.prcat .btn.sm{min-height:36px;padding:2px 10px}.prcat .btn.on{outline:2px solid var(--accent)}.prrep{color:var(--late);font-size:12px}.prrow{grid-template-columns:auto 56px minmax(0,1fr)}.prrow .prcatw{grid-column:2/-1}
 .prrow img{width:56px;aspect-ratio:55/85;object-fit:cover;border-radius:7px;box-shadow:0 0 0 1px var(--line)}
 .prf{display:grid;gap:4px;min-width:0}.prf input,.prf select{width:100%;min-width:0}.prrow input[type=checkbox]{width:22px;height:22px;accent-color:var(--accent)}
 .mbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.mbar .seg{margin-bottom:0}.srow{margin-bottom:6px}
@@ -1266,9 +1267,21 @@ function printSheet(){
   const on=pr.items.filter(i=>i.on).length;
   return `<p class="lede" style="margin:0 0 10px">${esc(pr.resumo||"")} ${plural(pr.items.length,"card achado","cards achados")}. Desmarque o que não é seu e corrija o que precisar.</p>
     <div class="form"><div class="field wide"><label for="prcg">CEG</label><select id="prcg"><option value="">sem CEG</option>${cegOptsHtml(pr.ceg)}</select></div></div>
-    <ul class="rows prl">${pr.items.map((x,i)=>`<li class="prrow"><input type="checkbox" class="prc" data-i="${i}" ${x.on?"checked":""} aria-label="incluir"><img src="${x.crop}" alt=""><span class="prf"><input class="prn" data-i="${i}" value="${esc([x.nome,x.numero&&("nº "+x.numero)].filter(Boolean).join(" · "))}" placeholder="nome / versão" aria-label="nome"><select class="prm" data-i="${i}" aria-label="membro">${["",...MEMBROS].map(m=>`<option value="${esc(m)}" ${m===membro(x.membro)?"selected":""}>${esc(m||"sem membro")}</option>`).join("")}</select>${x.legivel===false?`<small style="color:var(--late)">borrado ou cortado</small>`:""}</span></li>`).join("")}</ul>
+    <ul class="rows prl">${pr.items.map((x,i)=>`<li class="prrow"><input type="checkbox" class="prc" data-i="${i}" ${x.on?"checked":""} aria-label="incluir"><img src="${x.crop}" alt=""><span class="prf"><input class="prn" data-i="${i}" value="${esc([x.nome,x.numero&&("nº "+x.numero)].filter(Boolean).join(" · "))}" placeholder="nome / versão" aria-label="nome"><select class="prm" data-i="${i}" aria-label="membro">${["",...MEMBROS].map(m=>`<option value="${esc(m)}" ${m===membro(x.membro)?"selected":""}>${esc(m||"sem membro")}</option>`).join("")}</select>${x.legivel===false?`<small style="color:var(--late)">borrado ou cortado</small>`:""}</span>${prCatHtml(x,i)}</li>`).join("")}</ul>
     <div class="actions stick"><button class="btn" data-prreset type="button">Outro print</button><button class="btn pri" data-prsave type="button" ${on?"":"disabled"}>Criar ${plural(on,"item","itens")}</button></div>`;
 }
+// card do catálogo escolhido para a linha (null = nenhum)
+const prCard=x=>{const c=x&&x.cand&&x.cand[x.sel]; return c&&COL?CIDX.get(c.i)||null:null};
+// já existe pedido ativo com esse card?
+const prRepetido=cid=>list("itens").some(d=>faseDe(d.status)!=="fora"&&Array.isArray(d.cards)&&d.cards.includes(cid));
+function prCatHtml(x,i){
+  const cs=(x.cand||[]).map((c,k)=>({c,k,card:COL?CIDX.get(c.i):null})).filter(o=>o.card);
+  if(!cs.length)return "";
+  const cur=prCard(x);
+  return `<div class="prcatw"><div class="prcat">${cs.map(({c,k,card})=>`<button class="btn sm ${x.sel===k?"on":""}" data-prc="${i}|${k}" type="button" aria-label="${esc(card.v||card.i)}, nota ${Math.round(c.nota*100)}%">${ph(cardBg(card),"",cardBg(card)?"":esc(card.v||""))}</button>`).join("")}<button class="btn sm ${x.sel<0?"on":""}" data-prc="${i}|-1" type="button">nenhum</button></div>
+    <small>${cur?esc([cur.v,cur.m,cur.e,cur.t,cur.s&&("nº "+cur.s)].filter(Boolean).join(" · "))+` · ${Math.round(x.cand[x.sel].nota*100)}%`:"sem card do catálogo"}${cur&&prRepetido(cur.i)?` <b class="prrep">repetido: já tem pedido ativo desse card</b>`:""}</small></div>`;
+}
+function prLerCampos(){document.querySelectorAll("#shB .prn").forEach(el=>{const x=pr.items[+el.dataset.i]; if(x)x.texto=el.value.trim()}); document.querySelectorAll("#shB .prm").forEach(el=>{const x=pr.items[+el.dataset.i]; if(x)x.membro=el.value}); document.querySelectorAll("#shB .prc").forEach(el=>{const x=pr.items[+el.dataset.i]; if(x)x.on=el.checked})}
 async function lerPrint(file){
   if(!/^image\//.test(file.type)){pr.erro="Isso não é uma imagem.";pr.step=0;$("#shB").innerHTML=printSheet();return}
   pr.busy=true; pr.erro=""; $("#shB").innerHTML=printSheet();
@@ -1279,21 +1292,22 @@ async function lerPrint(file){
     const W=canvas.width,H=canvas.height;
     pr.items=(j.cards||[]).map(c=>{const [y0,x0,y1,x1]=c.caixa, pad=.004, sx=Math.max(0,x0/1000-pad)*W, sy=Math.max(0,y0/1000-pad)*H, sw=Math.min(W-sx,(x1-x0)/1000*W+pad*2*W), sh=Math.min(H-sy,(y1-y0)/1000*H+pad*2*H);
       const cv=document.createElement("canvas"), k=Math.min(1,520/Math.max(sw,sh)); cv.width=Math.max(1,Math.round(sw*k)); cv.height=Math.max(1,Math.round(sh*k)); cv.getContext("2d").drawImage(canvas,sx,sy,sw,sh,0,0,cv.width,cv.height);
-      return {...c,on:c.legivel!==false,crop:cv.toDataURL("image/jpeg",.9)}});
+      return {...c,on:c.legivel!==false,crop:cv.toDataURL("image/jpeg",.9),cand:Array.isArray(c.candidatos)?c.candidatos:[],sel:(Array.isArray(c.candidatos)&&c.candidatos.length)?0:-1}});
     pr.resumo=j.resumo||""; pr.step=pr.items.length?1:0; if(!pr.items.length)pr.erro="Não achei nenhum card nesse print.";
   }catch(e){pr.erro=e.message||"Não consegui ler o print."; pr.step=0}
-  pr.busy=false; if(sheetFn===printSheet)$("#shB").innerHTML=printSheet();
+  pr.busy=false; if(sheetFn===printSheet){$("#shB").innerHTML=printSheet(); lazy()}
 }
 async function printSalvar(b){
   const r=cegs().find(x=>x.key===pr.ceg), sel=pr.items.map((x,i)=>({x,i})).filter(({x})=>x.on); if(!sel.length||!db||!canWrite)return;
-  document.querySelectorAll("#shB .prn").forEach(el=>{pr.items[+el.dataset.i].texto=el.value.trim()}); document.querySelectorAll("#shB .prm").forEach(el=>{pr.items[+el.dataset.i].membro=el.value});
+  prLerCampos();
   b.disabled=true; const feitos=[]; let n=0;
   try{
     for(const {x} of sel){
       b.textContent=`Criando ${++n} de ${sel.length}…`;
-      const nome=(x.texto!=null?x.texto:x.nome)||"card do print";
-      const doc={item:nome,membro:x.membro||"",comunidade:r?r.com:"",ceg:r?r.nome:"",valor:null,status:"Garantido",origem:"Print",tipo:x.tipo==="merch"?"Merch":"Photocard / set",pago:"Ainda não cobrado",criadoEm:isoToday(),obs:x.numero?"número "+x.numero:"",etiquetas:""};
+      const card=prCard(x), nome=(x.texto!=null?x.texto:x.nome)||(card&&card.v)||"card do print";
+      const doc={item:nome,membro:x.membro||(card&&membro(card.m))||"",...(card?{cards:[card.i]}:{}),comunidade:r?r.com:"",ceg:r?r.nome:"",valor:null,status:"Garantido",origem:"Print",tipo:x.tipo==="merch"?"Merch":"Photocard / set",pago:"Ainda não cobrado",criadoEm:isoToday(),obs:x.numero?"número "+x.numero:"",etiquetas:""};
       const {id}=await db.collection("itens").add(doc); const f={id,asset:null}; feitos.push(f);
+      if(card)continue; // com card, vale a foto do catálogo
       const blob=await (await fetch(x.crop)).blob(); f.asset=await subirFoto(blob); await db.doc("fotos/"+id).set({asset:f.asset});
     }
   }catch(e){toast(`Parou no ${n}º card; os anteriores ficaram salvos`);b.disabled=false;b.textContent="Tentar de novo";return}
@@ -1426,6 +1440,7 @@ document.addEventListener("click",async e=>{
   if(ds.msave){await murSalvar(b);return}
   if(ds.prb!=null){abrirPrint(ds.prb);return}
   if(ds.prreset!=null){pr.step=0;pr.items=[];pr.erro="";$("#shB").innerHTML=printSheet();return}
+  if(ds.prc!=null){const [i,k]=ds.prc.split("|").map(Number); prLerCampos(); if(pr.items[i])pr.items[i].sel=k; $("#shB").innerHTML=printSheet(); lazy(); return}
   if(ds.prsave!=null){await printSalvar(b);return}
   if(ds.destravar){const [id,f]=ds.destravar.split("|"),d=D.itens.get(id); if(d)await setMany([["itens",id,{travado:travadosDe(d).filter(x=>x!==f)}]],"Destravado: "+f); return}
   if(ds.conta){openSheet("Conta",()=>contaSheet(ds.conta));return}
