@@ -501,6 +501,8 @@ h2>.n:last-child{margin-left:auto}
 .meta .mm{font-size:13px;color:var(--ink2);overflow-wrap:anywhere}
 .meta.on .mb b{text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:4px}
 .bar{display:block;height:8px;border-radius:99px;background:var(--surface2);overflow:hidden}.bar i{display:block;height:100%;background:var(--ink)}
+.selbar{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:var(--bg);border:2px solid var(--ink);border-radius:12px;padding:8px 10px;margin:0 0 12px}.selbar b{width:100%;font-size:13px}
+.tile.sel .ph{box-shadow:0 0 0 3px var(--accent)}
 .copias{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:6px 0 8px;font-weight:650}
 .copias .step{display:inline-flex;gap:8px}.copias .step .btn{min-width:44px;min-height:44px;font-size:20px;line-height:1}
 .inl{display:flex;gap:8px;align-items:center}.inl input{flex:1;min-width:0}
@@ -772,7 +774,7 @@ function cegs(){
 
 // ---------- estado da tela ----------
 const TABS=[["agora","Agora","home"],["mural","Mural","box"],["colecao","Coleção","cards"],["contas","Contas","wallet"],["cegs","CEGs","users"]];
-const ui={tab:"agora",cf:"falta",cera:"",cve:"",ctr:false,cmeta:"",cm:"",ct:"",cq:"",cn:240,kv:"prazo",gf:"abertas",gc:"",gq:"",cco:"",cce:"",cs:"era"};
+const ui={tab:"agora",cf:"falta",cera:"",cve:"",ctr:false,cmeta:"",csm:false,csel:new Set(),cm:"",ct:"",cq:"",cn:240,kv:"prazo",gf:"abertas",gc:"",gq:"",cco:"",cce:"",cs:"era"};
 try{Object.assign(ui,JSON.parse(localStorage.getItem("novo-ui")||"{}"))}catch(e){}
 const CFALIAS0={comigo:"tenho",vindo:"cam",esperando:"claim",repetidos:"rep"}; ui.cf=CFALIAS0[ui.cf]||ui.cf;
 const ALIAS={inicio:"agora"};
@@ -931,8 +933,8 @@ function renderColecao(){
     const b=e.fase==="rec"||e.fase==="falta"?"":`<span class="pill ${FTONE[e.fase]} bdg">${FLBL[e.fase]}</span>`;
     const rep=e.copias>1?`<span class="cp">repetido ×${e.copias}</span>`:"";
     const tr=ehTroca(e)?`<span class="tr">troca</span>`:"";
-    const quick=e.card&&!e.itens.length&&e.fase!=="rec"&&e.fase!=="nao"?`<button class="qt" data-pst="${esc(e.cid)}|tenho" type="button" aria-label="Recebi: ${esc(e.nome)}" title="recebi">✓</button>`:"";
-    return `<div class="tw"><button class="tile st-${e.fase}" data-card="${esc(e.key)}" type="button">${ph(bgOf(e),e.tipo==="Photocard / set"?"":"wide",(e.card||bgOf(e)?"":esc(e.nome))+b+rep+tr)}<span class="cap">${esc(e.nome)}<small>${esc(e.membro||e.era)}${e.card&&e.card.t&&ui.cs!=="era"?" · "+esc(tlbl(e.card.t)):""}${e.semCard?" · sem card":""}${ui.cf==="semfoto"?" · sem foto boa":""}</small></span></button>${quick}</div>`};
+    const quick=!ui.csm&&e.card&&!e.itens.length&&e.fase!=="rec"&&e.fase!=="nao"?`<button class="qt" data-pst="${esc(e.cid)}|tenho" type="button" aria-label="Recebi: ${esc(e.nome)}" title="recebi">✓</button>`:"";
+    return `<div class="tw"><button class="tile st-${e.fase} ${ui.csel.has(e.key)?"sel":""}" data-card="${esc(e.key)}" type="button">${ph(bgOf(e),e.tipo==="Photocard / set"?"":"wide",(e.card||bgOf(e)?"":esc(e.nome))+b+rep+tr)}<span class="cap">${esc(e.nome)}<small>${esc(e.membro||e.era)}${e.card&&e.card.t&&ui.cs!=="era"?" · "+esc(tlbl(e.card.t)):""}${e.semCard?" · sem card":""}${ui.cf==="semfoto"?" · sem foto boa":""}</small></span></button>${quick}</div>`};
   const gs=(g,es)=>{const tem=es.filter(e=>e.fases.includes("rec")).length, fl=es.filter(e=>e.fase==="falta").length; return `<div class="erah" style="--e:${eraCor(g)}"><b>${esc(g)}</b><span>${plural(es.length,"card","cards")}${tem?`<br>${tem} tenho`:""}${fl?`<br>${fl} faltam`:""}</span></div>`};
   const metas=(mt.g||[]).map(metaProg);
   const metaHtml=`<details class="metas" ${ui.cmeta?"open":""}><summary>Metas${metas.length?` <span class="n">${metas.length}</span>`:""}${metas.length?`<span class="ms">${esc(metas.slice(0,2).map(m=>m.rotulo+": "+m.tem+" de "+m.total).join(" · "))}</span>`:""}</summary>
@@ -949,6 +951,8 @@ function renderColecao(){
   <div class="fsel"><label>Era<select id="fer"><option value="">Todas</option>${eraOpts.map(o=>`<option value="${esc(o)}" ${ui.cera===o?"selected":""}>${esc(o)} (${eraM.get(o)})</option>`).join("")}</select></label><label>Loja / versão<select id="fve"><option value="">Todas</option>${verOpts.map(o=>`<option value="${esc(o)}" ${ui.cve===o?"selected":""}>${esc(o)} (${verM.get(o)})</option>`).join("")}</select></label></div>
   <div class="fsel"><label>Comunidade<select id="fco"><option value="">Todas</option>${comOpts.map(o=>`<option value="${esc(o)}" ${ui.cco===o?"selected":""}>${esc(nomeCom(o))}</option>`).join("")}</select></label><label>CEG<select id="fce"><option value="">Todas</option>${cegOpts.map(o=>`<option value="${esc(o)}" ${ui.cce===o?"selected":""}>${esc(o)}</option>`).join("")}</select></label></div></details>
   <div class="fsel"><label>Ordenar por<select id="fso">${[["era","Era"],["nome","Nome"],["membro","Membro"],["status","Status"],["comunidade","Comunidade"]].map(([k,l])=>`<option value="${k}" ${(ui.cs||"era")===k?"selected":""}>${l}</option>`).join("")}</select></label></div>
+  <div class="chips"><button class="chip" data-csm aria-pressed="${ui.csm}" type="button">${ui.csm?"Sair da seleção":"Selecionar vários"}</button></div>
+  ${ui.csm?`<div class="selbar" role="group" aria-label="Marcar os selecionados"><b>${ui.csel.size} selecionados</b>${ESTADOS.map(([k,l])=>`<button class="btn sm" data-cselst="${k}" type="button" ${ui.csel.size?"":"disabled"}>${l}</button>`).join("")}<button class="btn sm" data-cselst="x" type="button" ${ui.csel.size?"":"disabled"}>tirar marca</button></div>`:""}
   ${ui.cmeta?`<div class="chips"><button class="chip" data-meta="" aria-pressed="true" type="button">Só a meta: ${esc(metaProg(ui.cmeta).rotulo)} ✕</button></div>`:""}
   ${ui.cf==="rep"?`<div class="chips"><button class="chip" data-ctr aria-pressed="${!!ui.ctr}" type="button">Só pra troca</button><button class="chip" data-act="copiartroca" type="button">${ico("copy",14)}copiar lista de troca</button></div><p class="note">Repetido é um selo: o card tem mais de uma cópia ativa (recebida, a caminho ou claim). Abra o card e marque <b>pra troca</b> a cópia que sobra; ela ganha a etiqueta "troca".</p>`:""}
   ${ui.cf==="semfoto"?`<p class="note">Cards seus sem foto boa (só a folha borrada do catálogo). Abra o card e troque a foto: sobe uma imagem sua ou guarda só o link.</p>`:""}
@@ -1077,6 +1081,12 @@ function contaSheet(id){const c0=D.cobrancas.get(id); if(!c0)return "<p class='e
 // ---- gravar o binder (tudo com desfazer) ----
 const ESTADOS=[["tenho","recebido"],["caminho","a caminho"],["claim","claim"],["quero","quero"],["nao","não coleciono"]];
 async function posseSet(cid,st){
+  const r0=rowDe(cid); if(r0&&r0.itens.length){
+    if(r0.itens.length>1||!["tenho","caminho","claim"].includes(st)){toast("Este card tem pedido: edite o pedido");return false}
+    const d=r0.itens[0], ns={tenho:"Recebido",caminho:"Na WH / proxy",claim:"Garantido"}[st];
+    if(d.status===ns)return true;
+    return setMany([["itens",d.id,{status:ns,...travar(d,["status"])}]],"Pedido: "+ns);
+  }
   const c=CIDX.get(cid); if(!c||!db||!canWrite){if(!canWrite)toast("Sem permissão pra gravar");return false}
   const slug=MSLUG(c.m), antes={...(posse[slug]||{})}, cur={...antes}, novo=cur[cid]===st?"":st;
   if(novo)cur[cid]=novo; else delete cur[cid];
@@ -1122,6 +1132,18 @@ async function fotoLink(cid,url){
   try{await db.doc("fotos/"+cid).set({url}); toast("Foto trocada (só o link fica guardado)",async()=>{if(antes)await db.doc("fotos/"+cid).set(antes); else await db.doc("fotos/"+cid).delete()})}
   catch(e){toast("Não deu pra salvar o link")}
 }
+// fila de fotos: o próximo card dela sem foto boa, na ordem da tela
+function proximoSemFoto(cid){const l=binder().rows.filter(e=>passa(e,"semfoto")&&e.cid!==cid); return l.length?l[0].cid:""}
+async function posseLote(cids,st){
+  if(!db||!canWrite){toast("Sem permissão pra gravar");return false}
+  const alvo=cids.map(id=>CIDX.get(id)).filter(c=>c&&!(rowDe(c.i)||{itens:[]}).itens.length), pulados=cids.length-alvo.length;
+  if(!alvo.length){toast("Estes cards têm pedido: edite o pedido");return false}
+  const por=new Map(); alvo.forEach(c=>{const sl=MSLUG(c.m); if(!por.has(sl))por.set(sl,{antes:{...(posse[sl]||{})},cur:{...(posse[sl]||{})}}); const o=por.get(sl); if(st)o.cur[c.i]=st; else delete o.cur[c.i]});
+  try{for(const [sl,o] of por)await db.doc("colecao/"+sl).set({s:o.cur})}catch(e){toast("Não deu pra salvar; tente de novo");return false}
+  const l=st?(ESTADOS.find(x=>x[0]===st)||[])[1]:"marca tirada";
+  toast(`${plural(alvo.length,"card","cards")}: ${l}${pulados?` (${pulados} com pedido ficou de fora)`:""}`,async()=>{for(const [sl,o] of por)await db.doc("colecao/"+sl).set({s:o.antes})});
+  return true;
+}
 async function fotoTirar(cid){
   const antes=fotos[cid]; if(!antes||!db||!canWrite)return;
   try{await db.doc("fotos/"+cid).delete(); toast("Voltou à foto do catálogo",async()=>{await db.doc("fotos/"+cid).set(antes)})}catch(e){toast("Não deu pra tirar a foto")}
@@ -1148,14 +1170,14 @@ function cardSheet(key){const e=rowDe(key); if(!e)return "<p class='empty'>Card 
   const c=e.card, cid=e.cid, ped=e.itens.length>0, mine=c?posseDe(c):"", mt=metaDoc(), gs=mt.g||[];
   const setId=c?metaId.set(c):"", eraId=c?metaId.era(c.e):"";
   const estado=c?`<h2>Estado <span class="n">${esc(FLBL[e.fase])}</span></h2>
-    <div class="chips" role="group" aria-label="Estado do card">${ESTADOS.map(([k,l])=>`<button class="chip" data-pst="${esc(cid)}|${k}" aria-pressed="${ped?(POSSE_F[k]===e.fase||(k==="caminho"&&GRP_CAM.includes(e.fase))):mine===k}" type="button" ${ped?"disabled":""}>${l}</button>`).join("")}</div>
-    ${ped?`<p class="note" style="margin-top:0">O estado vem ${e.itens.length>1?"dos "+e.itens.length+" pedidos":"do pedido"} abaixo. Pra mudar, edite o pedido.</p>`:""}
+    <div class="chips" role="group" aria-label="Estado do card">${ESTADOS.map(([k,l])=>`<button class="chip" data-pst="${esc(cid)}|${k}" aria-pressed="${ped?(POSSE_F[k]===e.fase||(k==="caminho"&&GRP_CAM.includes(e.fase))):mine===k}" type="button" ${ped&&!(e.itens.length===1&&["tenho","caminho","claim"].includes(k))?"disabled":""}>${l}</button>`).join("")}</div>
+    ${ped?`<p class="note" style="margin-top:0">O estado vem ${e.itens.length>1?"dos "+e.itens.length+" pedidos":"do pedido"} abaixo. ${e.itens.length===1?"Recebido, a caminho e claim mudam o status do pedido (fica travado).":"Pra mudar, edite o pedido."}</p>`:""}
     ${e.fase!=="falta"&&e.fase!=="nao"?`<div class="copias"><span>${plural(e.copias,"cópia","cópias")}${e.copias>1?` <span class="pill">repetido</span>`:""}</span><span class="step"><button class="btn sm" data-ncop="${esc(cid)}|-1" type="button" aria-label="uma cópia a menos" ${e.copias<=e.base?"disabled":""}>−</button><button class="btn sm" data-ncop="${esc(cid)}|1" type="button" aria-label="uma cópia a mais">+</button></span></div>
     ${e.copias>1?`<div class="chips"><button class="chip" data-troca="${esc(cid)}" aria-pressed="${ehTroca(e)}" type="button">pra troca</button></div>`:""}`:""}
     <h2>Metas</h2><div class="chips"><button class="chip" data-metat="${esc(setId)}" aria-pressed="${gs.includes(setId)}" type="button">set ${esc(c.v)}</button><button class="chip" data-metat="${esc(eraId)}" aria-pressed="${gs.includes(eraId)}" type="button">era ${esc(c.e)}</button></div>
     <h2>Foto <span class="n">${fotoBoa(c)?"boa":"fraca"}</span></h2>
     <p class="lede" style="margin:0 0 8px">${fotoBoa(c)?"Este card já tem foto boa.":"Só tem a folha borrada do catálogo."} Guardo só a imagem que você sobe ou o link, nunca cópia de site.</p>
-    <div class="actions"><label class="btn sm fileb">Trocar foto<input id="mif" data-for="${esc(cid)}" type="file" accept="image/*"></label>${fotos[cid]?`<button class="btn sm" data-fotodel="${esc(cid)}" type="button">voltar à do catálogo</button>`:""}</div>
+    <div class="actions"><label class="btn sm fileb">Trocar foto<input id="mif" data-for="${esc(cid)}" type="file" accept="image/*"></label>${proximoSemFoto(cid)?`<button class="btn sm" data-fproximo="${esc(cid)}" type="button">próximo sem foto</button>`:""}${fotos[cid]?`<button class="btn sm" data-fotodel="${esc(cid)}" type="button">voltar à do catálogo</button>`:""}</div>
     <div class="field"><label for="fl-url">ou o link de uma imagem (https)</label><div class="inl"><input id="fl-url" inputmode="url" placeholder="https://…"><button class="btn sm" data-flink="${esc(cid)}" type="button">usar link</button></div></div>`:"";
   return `<div class="cardhero">${ph(bgOf(e),e.tipo==="Photocard / set"?"":"wide",e.card||bgOf(e)?"":esc(e.nome))}<div><div style="font-size:20px;font-weight:700">${esc(e.nome)}</div><div style="color:var(--ink2)">${esc([e.membro,e.era,c&&tlbl(c.t)].filter(Boolean).join(" · "))}</div><div class="actions">${e.fase!=="falta"?`<span class="pill ${FTONE[e.fase]}">${FLBL[e.fase]}</span>`:`<span class="pill guess">falta</span>`}${e.copias>1?`<span class="pill">repetido ×${e.copias}</span>`:""}${ehTroca(e)?`<span class="pill">troca</span>`:""}</div>${e.semCard?`<p class="note">Este pedido ainda não está ligado a um card do catálogo.</p><button class="btn sm pri" data-link="${esc(e.item.id)}" type="button">ligar ao catálogo</button>`:""}</div></div>
   ${estado}
@@ -1655,7 +1677,7 @@ function prCatHtml(x,i){
   if(!cs.length)return "";
   const cur=prCard(x);
   return `<div class="prcatw"><div class="prcat">${cs.map(({c,k,card})=>`<button class="btn sm ${x.sel===k?"on":""}" data-prc="${i}|${k}" type="button" aria-label="${esc(card.v||card.i)}, nota ${Math.round(c.nota*100)}%">${ph(cardBg(card),"",cardBg(card)?"":esc(card.v||""))}</button>`).join("")}<button class="btn sm ${x.sel<0?"on":""}" data-prc="${i}|-1" type="button">nenhum</button></div>
-    <small>${cur?esc([cur.v,cur.m,cur.e,cur.t,cur.s&&("nº "+cur.s)].filter(Boolean).join(" · "))+` · ${Math.round(x.cand[x.sel].nota*100)}%`:"sem card do catálogo"}${cur&&prRepetido(cur.i)?` <b class="prrep">repetido: já tem pedido ativo desse card</b>`:""}</small></div>`;
+    <small>${cur?esc([cur.v,cur.m,cur.e,cur.t,cur.s&&("nº "+cur.s)].filter(Boolean).join(" · "))+` · ${Math.round(x.cand[x.sel].nota*100)}%`:"sem card do catálogo"}${cur&&(prRepetido(cur.i)||jaTem(cur.i))?` <b class="prrep">${esc(jaTem(cur.i)?jaTem(cur.i).txt+"; registrar vira repetido":"repetido: já tem pedido ativo desse card")}</b>`:""}</small></div>`;
 }
 function prLerCampos(){document.querySelectorAll("#shB .prn").forEach(el=>{const x=pr.items[+el.dataset.i]; if(x)x.texto=el.value.trim()}); document.querySelectorAll("#shB .prm").forEach(el=>{const x=pr.items[+el.dataset.i]; if(x)x.membro=el.value}); document.querySelectorAll("#shB .prc").forEach(el=>{const x=pr.items[+el.dataset.i]; if(x)x.on=el.checked})}
 async function lerPrint(file){
@@ -1806,6 +1828,9 @@ document.addEventListener("click",async e=>{
   if(ds.meta!=null){ui.cmeta=ui.cmeta===ds.meta?"":ds.meta; if(ui.cmeta)ui.cf="todos"; ui.cn=240; render(); return}
   if(ds.ctr!=null){ui.ctr=!ui.ctr;render();return}
   if(ds.flink){await fotoLink(ds.flink,$("#fl-url").value); sheetAtualiza(); return}
+  if(ds.fproximo){const n=proximoSemFoto(ds.fproximo); if(n){sheetFn=()=>cardSheet(n); $("#shB").innerHTML=sheetFn(); lazy(); $("#shB").scrollTop=0} return}
+  if(ds.csm!=null){ui.csm=!ui.csm; ui.csel=new Set(); render(); return}
+  if(ds.cselst!=null){const ids=[...ui.csel]; if(!ids.length)return; if(await posseLote(ids,ds.cselst==="x"?"":ds.cselst)){ui.csel=new Set(); ui.csm=false; render()} return}
   if(ds.fotodel){await fotoTirar(ds.fotodel); sheetAtualiza(); return}
   if(ds.mgadd!=null){const id=mg.s||(mg.e?metaId.era(mg.e):""); if(!id)return; if(!(metaDoc().g||[]).includes(id))await metaToggle(id); closeSheet(); return}
   if(ds.cm!=null){ui.cm=ds.cm;ui.cn=240;render();return}
@@ -1846,7 +1871,7 @@ document.addEventListener("click",async e=>{
   if(ds.prsave!=null){await printSalvar(b);return}
   if(ds.destravar){const [id,f]=ds.destravar.split("|"),d=D.itens.get(id); if(d)await setMany([["itens",id,{travado:travadosDe(d).filter(x=>x!==f)}]],"Destravado: "+f); return}
   if(ds.conta){openSheet("Conta",()=>contaSheet(ds.conta));return}
-  if(ds.card){openSheet("Card",()=>cardSheet(ds.card));return}
+  if(ds.card){if(ui.csm){ui.csel.has(ds.card)?ui.csel.delete(ds.card):ui.csel.add(ds.card); render(); return} openSheet("Card",()=>cardSheet(ds.card));return}
   if(ds.ceg){const k=ds.ceg;openSheet("CEG",()=>cegSheet(k));return}
   if(ds.cegk!=null){const k=ds.cegk;if(cegs().some(r=>r.key===k)){$("#shT").textContent="CEG";sheetFn=()=>cegSheet(k);$("#shB").innerHTML=sheetFn();lazy();$("#shB").scrollTop=0}return}
   if(ds.envio){const id=ds.envio; if(sheetFn){$("#shT").textContent="Envio";sheetFn=()=>envioSheet(id);$("#shB").innerHTML=sheetFn();lazy();$("#shB").scrollTop=0}else openSheet("Envio",()=>envioSheet(id));return}

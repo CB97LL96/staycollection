@@ -244,8 +244,9 @@ A aba Coleção virou o binder dela: o catálogo inteiro com o estado dela em ca
 - **Aviso de recompra:** "você já tem (recebido / a caminho)" no Quadro (sugestões de card) e em Nova compra, antes de registrar/salvar. Não bloqueia; vira repetido.
 - **Metas:** um set (era + tipo + origem + versão) ou uma era inteira, em `binder/meta.g`. Mostra "3 de 8, 1 a caminho, faltam Changbin, Hyunjin e I.N".
 - **Caça de fotos (começo):** filtro "Sem foto" lista os cards dela que só têm a folha borrada do catálogo; na folha ela sobe uma imagem (murFoto) ou cola um link https. Guarda só o asset ou o link, em `fotos/<id do card>`.
-- Fora por ora: aviso de recompra no fluxo de print (`prCard`); fila automática de busca de fotos; metas por vários sets de uma vez; estado em lote.
-- Testes: `npm test` (30) e `npm run e2e` (mural 34, quadro 44, compartilhar 12, agora 52, binder 110, os dois tamanhos de tela).
+- **Fechado depois:** aviso "você já tem" também na leitura de print; "próximo sem foto" na folha (fila de fotos manual, só link ou imagem que ela sobe, nunca busca em site); card com 1 pedido muda o status do pedido (e trava) pelos botões de estado; "Selecionar vários" marca o estado de vários cards de uma vez, com um desfazer só.
+- Ainda fora: card com 2 ou mais pedidos muda só por "editar pedido"; quero e não coleciono não valem pra card com pedido.
+- Testes: `npm test` (30) e `npm run e2e` (mural 34, quadro 44, compartilhar 12, agora 52, binder 128, os dois tamanhos de tela).
 
 ## App novo do zero (01/11/2026)
 

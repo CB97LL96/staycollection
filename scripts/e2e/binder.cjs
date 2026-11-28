@@ -27,7 +27,7 @@ const extra = {
     const ctx = await b.newContext({ viewport: vp, deviceScaleFactor: 1 }); const pg = await ctx.newPage();
     const erros = []; pg.on("pageerror", (e) => erros.push(e.message)); pg.on("console", (m) => { if (m.type() === "error" && !/Failed to load resource/.test(m.text())) erros.push(m.text()); });
     await pg.route("**/backend.js", (r) => r.fulfill({ body: "" })); await pg.route("**/@supabase/**", (r) => r.fulfill({ body: "" })); await pg.route("**/fonts.g*/**", (r) => r.abort());
-    await pg.route("**/api/print", (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ resumo: "x", cards: [] }) }));
+    await pg.route("**/api/print", (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ resumo: "x", cards: [{ caixa: [100, 50, 600, 250], tipo: "photocard", membro: "HAN", nome: "Withfans", numero: "", legivel: true, candidatos: [{ i: "golivepob-han-01", nota: 0.9 }] }] }) }));
     await pg.addInitScript(`window.__seedExtra=${JSON.stringify(extra)}`);
     await pg.addInitScript({ path: path.join(__dirname, "banco-falso.js") });
     const st = (col, id) => pg.evaluate(([c, i]) => window.__store[c].get(i), [col, id]);
@@ -163,6 +163,39 @@ const extra = {
     ok(/^[0-9a-f]{16,32}$/.test(((await st("fotos", "karma-han-02")) || {}).asset || ""), `${nome}: subir foto guarda o asset`);
     await pg.keyboard.press("Escape"); await pg.waitForTimeout(200);
 
+    // estado de card que já tem 1 pedido: muda o status do pedido e trava
+    await pg.click('[data-cf="tenho"]'); await pg.fill("#cq", "go live withfans"); await pg.waitForTimeout(400);
+    await pg.click('[data-card="golivepob-han-01"]'); await pg.waitForSelector('[data-pst="golivepob-han-01|caminho"]');
+    await pg.click('[data-pst="golivepob-han-01|caminho"]'); await pg.waitForTimeout(300);
+    let b1 = await st("itens", "b1");
+    ok(b1.status === "Na WH / proxy" && b1.travado.includes("status"), `${nome}: card com 1 pedido muda o status do pedido e trava (${b1.status})`);
+    await pg.click(".undo"); await pg.waitForTimeout(300);
+    b1 = await st("itens", "b1");
+    ok(b1.status === "Recebido", `${nome}: desfazer devolve o status`);
+    ok(await pg.locator('#sheet [data-pst$="|quero"]').isDisabled(), `${nome}: quero continua travado em card com pedido`);
+    await pg.keyboard.press("Escape"); await pg.fill("#cq", ""); await pg.waitForTimeout(300);
+
+    // estado em lote
+    await pg.click('[data-cf="falta"]'); await pg.fill("#cq", "go live withfans"); await pg.waitForTimeout(400);
+    await pg.click("[data-csm]"); await pg.waitForSelector(".selbar");
+    ok(await n(".tw .qt") === 0, `${nome}: seleção esconde o ✓ rápido`);
+    for (const c of ["changbin", "hyunjin", "in"]) await pg.click(`[data-card="golivepob-${c}-01"]`);
+    ok(/3 selecionados/.test(await pg.locator(".selbar b").innerText()), `${nome}: seleção conta os cards`);
+    await pg.click('[data-cselst="quero"]'); await pg.waitForTimeout(400);
+    ok((await st("colecao", "changbin")).s["golivepob-changbin-01"] === "quero" && (await st("colecao", "hyunjin")).s["golivepob-hyunjin-01"] === "quero" && (await st("colecao", "in")).s["golivepob-in-01"] === "quero", `${nome}: lote marca os 3 como quero`);
+    await pg.click(".undo"); await pg.waitForTimeout(400);
+    ok(!((await st("colecao", "in")) || { s: {} }).s["golivepob-in-01"], `${nome}: um desfazer desfaz o lote todo`);
+    await pg.fill("#cq", "");
+
+    // fila de fotos: próximo sem foto
+    await pg.click('[data-cf="semfoto"]'); await pg.waitForTimeout(300);
+    const primeiro = await pg.locator(".grid .tile").first().getAttribute("data-card");
+    await pg.click(`[data-card="${primeiro}"]`); await pg.waitForSelector("[data-fproximo]");
+    const antesT = await pg.locator("#sheet .cardhero").innerText();
+    await pg.click("[data-fproximo]"); await pg.waitForTimeout(200);
+    ok((await pg.locator("#sheet .cardhero").innerText()) !== antesT, `${nome}: "próximo sem foto" pula pro seguinte da fila`);
+    await pg.keyboard.press("Escape"); await pg.waitForTimeout(200);
+
     // (d) aviso de recompra: Nova compra
     await pg.locator('[data-act="nova"]:visible').first().click(); await pg.waitForSelector("[data-ncceg]");
     await pg.click("[data-ncceg]"); await pg.waitForSelector("[data-ncc]");
@@ -172,6 +205,13 @@ const extra = {
     ok(/Você já tem/.test(await pg.locator("#sheet .note.ja").innerText()) && /recebido/.test(await pg.locator("#sheet .note.ja").innerText()), `${nome}: aviso "você já tem" ao escolher card recebido`);
     await pg.click("[data-ncnext]"); await pg.waitForTimeout(200);
     ok(await n("#sheet .note.ja") === 1, `${nome}: o aviso continua antes de salvar a compra`);
+    await pg.keyboard.press("Escape"); await pg.waitForTimeout(200);
+
+    // (d) aviso de recompra: leitura de print
+    await pg.goto(base + "/#mural"); await pg.waitForSelector(".mgrp");
+    await pg.evaluate(async (d) => { const f = new File([Uint8Array.from(atob(d), (c) => c.charCodeAt(0))], "p.png", { type: "image/png" }); const dt = new DataTransfer(); dt.items.add(f); document.dispatchEvent(new ClipboardEvent("paste", { clipboardData: dt, bubbles: true, cancelable: true })); }, b64);
+    await pg.waitForSelector(".prcatw", { timeout: 8000 });
+    ok(/você já tem/i.test(await pg.locator(".prcatw .prrep").innerText()), `${nome}: leitura de print avisa "você já tem"`);
     await pg.keyboard.press("Escape"); await pg.waitForTimeout(200);
 
     // (d) aviso de recompra: Quadro
