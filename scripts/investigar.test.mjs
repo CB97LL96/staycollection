@@ -1,6 +1,8 @@
 // node --test scripts/investigar.test.mjs   (dados inventados)
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { criarBanco } from "./v2/banco-falso-servidor.mjs";
+import { abrirStore } from "./v2/store.mjs";
 import { mapear } from "./v2/mapear.mjs";
 import { acharCeg, dossie, montar, respostaTelegram, grupoDoArquivo } from "./investigar.mjs";
 import { aceitarTodas, registroParaDoc } from "./aceitar.mjs";
@@ -63,33 +65,31 @@ test("montar sem CEG devolve a pergunta", () => {
   assert.equal(respostaTelegram(r), "É da Caixa 2 ou da Variados 7?");
 });
 
-test("aceitar pelo Telegram grava no app como o botão do app, sem pix", async () => {
-  const banco = {
-    caixa: { recebidoEm: "2026-11-24T10:00:00Z", registros: [
+for (const modelo of ["docs", "v2"]) test(`[${modelo}] aceitar pelo Telegram grava no app como o botão do app, sem pix, e respeita o que ela travou`, async () => {
+  process.env.DATA_MODEL = modelo;
+  const banco = criarBanco(modelo, [
+    { col: "caixa", id: "tg-1", data: { recebidoEm: "2026-11-24T10:00:00Z", registros: [
       { acao: "nova", destino: "cobrancas", referente: "frete inter", valor: 18.4, confianca: "alta", estado: "pendente", comunidade: "Comunidade Azul", ceg: "Caixa 2 PHP" },
       { acao: "paga", alvo: "k2", destino: "cobrancas", estado: "pendente" },
       { acao: "status", alvo: "i1", destino: "itens", status: "Com a GOM no Brasil", estado: "pendente" },
       { acao: "valor", alvo: "sumiu", destino: "cobrancas", valor: 3, estado: "pendente" },
-    ] },
-    k2: { referente: "taxa", status: "Pendente", valor: 5 }, i1: { item: "caixa 2", status: "Na WH / proxy" },
-  };
-  const gravados = [];
-  const rest = async (path, opts = {}) => {
-    const id = decodeURIComponent((path.match(/&id=eq\.([^&]+)/) || [])[1] || "");
-    if (!opts.method) return banco[id === "tg-1" ? "caixa" : id] ? [{ data: banco[id === "tg-1" ? "caixa" : id] }] : [];
-    gravados.push({ path, metodo: opts.method, corpo: JSON.parse(opts.body) });
-    return null;
-  };
-  const r = await aceitarTodas(rest, "dono", "tg-1");
-  assert.deepEqual(r, { ok: 3, falhas: 1 });
-  const nova = gravados.find((g) => g.metodo === "POST").corpo;
-  assert.equal(nova.col, "cobrancas");
-  assert.equal(nova.data.status, "Pendente");
-  assert.ok(!("pix" in nova.data));
-  assert.equal(gravados.find((g) => g.path.includes("id=eq.k2")).corpo.data.status, "Paga");
-  assert.equal(gravados.find((g) => g.path.includes("id=eq.i1")).corpo.data.status, "Com a GOM no Brasil");
-  const cx = gravados.at(-1).corpo.data.registros;
-  assert.deepEqual(cx.map((x) => x.estado), ["aceito", "aceito", "aceito", "pendente"]);
+      { acao: "status", alvo: "i2", destino: "itens", status: "Recebido", estado: "pendente" },
+    ] } },
+    { col: "cobrancas", id: "k2", data: { referente: "taxa", status: "Pendente", valor: 5, pix: "segredo" } },
+    { col: "itens", id: "i1", data: { item: "caixa 2", status: "Na WH / proxy" } },
+    { col: "itens", id: "i2", data: { item: "Han", status: "Garantido", travado: ["status"] } },
+  ]);
+  banco.instalar(() => { throw new Error("rede"); });
+  const s = abrirStore({ url: "https://sb", key: "k", owner: "dono" });
+  const r = await aceitarTodas(s, "tg-1");
+  assert.deepEqual(r, { ok: 3, falhas: 2 }); // a que sumiu e a que ela travou ficam na aba pra ela decidir
+  const nova = [...banco.docs].find(([k]) => k.startsWith("cobrancas/") && k !== "cobrancas/k2")[1];
+  assert.equal(nova.status, "Pendente");
+  assert.ok(!("pix" in nova));
+  assert.equal(banco.docs.get("cobrancas/k2").status, "Paga");
+  assert.equal(banco.docs.get("itens/i1").status, "Com a GOM no Brasil");
+  assert.equal(banco.docs.get("itens/i2").status, "Garantido"); // travado: o robô não muda
+  assert.deepEqual(banco.docs.get("caixa/tg-1").registros.map((x) => x.estado), ["aceito", "aceito", "aceito", "pendente", "pendente"]);
 });
 
 test("registro de confiança média entra como 'A confirmar'", () => {

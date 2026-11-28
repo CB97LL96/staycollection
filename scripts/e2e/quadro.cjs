@@ -17,7 +17,7 @@ const iconKey = (t, n) => { let h = 5381; const x = String(n || "").toLowerCase(
     await pg.route("**/api/print", (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ resumo: "x", cards: [
       { caixa: [100, 50, 600, 250], tipo: "photocard", membro: "HAN", nome: "Karma", numero: "", legivel: true, candidatos: [{ i: "x-cand", nota: 0.8 }] },
       { caixa: [100, 300, 600, 500], tipo: "photocard", membro: "", nome: "", numero: "", legivel: true, candidatos: [] } ] }) }));
-    await pg.addInitScript({ path: path.join(__dirname, "banco-falso.js") });
+    await pg.addInitScript(require("./banco.cjs"));
     await pg.goto(base + "/#mural"); await pg.waitForSelector(".mgrp");
     const A = "a".repeat(32);
     await pg.evaluate(([k, a, g, ga]) => { window.__store.fotos.set(k, { asset: a }); window.__store.fotos.set(g, { asset: ga }); window.__fire("fotos"); }, [iconKey("com", "Comunidade Azul"), A, iconKey("grp", "Azul • Caixa 2 PHP"), "b".repeat(32)]);

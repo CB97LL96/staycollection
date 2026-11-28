@@ -17,7 +17,7 @@ const srv = http.createServer((q, r) => { let p = decodeURIComponent(q.url.split
   let corpo = null;
   await pg.route("**/api/investigar", async (r) => { corpo = JSON.parse(r.request().postData()); await new Promise((x) => setTimeout(x, 200)); r.fulfill({ contentType: "application/json", body: JSON.stringify({ id: "app-x", resumo: "frete liberado", ceg: { id: "g1", nome: "Caixa 2 PHP", comunidade: "Comunidade Azul", gom: "Gabi", ondeOlhar: "Avisos", planilha: { abas: ["Frete"], erro: "" } }, totalDevido: 18.4, semValor: 0, candidatas: [], pergunta: "", registros: [{ destino: "cobrancas", acao: "nova", referente: "frete inter", tipo: "Frete internacional", valor: 18.4, comunidade: "Comunidade Azul", ceg: "Caixa 2 PHP", confianca: "alta", trecho: "frete inter 18,40", duvidas: "", estado: "pendente" }] }) }); });
   await pg.route("**/api/print", (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ resumo: "tabela", cards: [{ caixa: [100, 50, 600, 250], tipo: "photocard", membro: "HAN", nome: "Aladin", numero: "26", legivel: true }] }) }));
-  await pg.addInitScript({ path: path.join(__dirname, "banco-falso.js") });
+  await pg.addInitScript(require("./banco.cjs"));
   await pg.goto(base + "/"); await pg.waitForSelector(".app, #main");
   await pg.evaluate(() => navigator.serviceWorker.ready); await pg.reload(); await pg.waitForFunction(() => navigator.serviceWorker.controller);
   ok(true, "service worker registrado e controlando a página");

@@ -35,7 +35,7 @@ const PLANILHA = { cadastrada: true, temPlanilha: true, lida: true, achouNome: t
     await pg.route("**/api/rodada", async r => { const c = JSON.parse(r.request().postData()); pedidos.push(c); await new Promise(x => setTimeout(x, 150)); r.fulfill({ contentType: "application/json", body: JSON.stringify(PLANILHA) }); });
     await pg.route("**/api/investigar", async r => { invCorpo = JSON.parse(r.request().postData()); r.fulfill({ contentType: "application/json", body: JSON.stringify({ id: "app-1", resumo: "frete pago", ceg: { nome: "Caixa 2 PHP", comunidade: "Comunidade Azul", gom: "Gabi", ondeOlhar: "Grupo Azul Caixa 2" }, totalDevido: 0, semValor: 0, candidatas: [], pergunta: "", registros: [{ destino: "cobrancas", acao: "paga", alvo: "k1", referente: "frete", valor: 18.4, estado: "pendente", confianca: "alta", trecho: "Lari pago" }] }) }); });
     await pg.addInitScript(`window.__seedExtra=${JSON.stringify(extra)}`);
-    await pg.addInitScript({ path: __dirname + "/banco-falso.js" });
+    await pg.addInitScript(require("./banco.cjs"));
     await pg.goto(base + "/#agora"); await pg.waitForSelector(".rdbtn");
     const g = async (col, id) => pg.evaluate(([c, i]) => window.__store[c].get(i), [col, id]);
     const btxt = await pg.locator(".rdbtn").innerText();

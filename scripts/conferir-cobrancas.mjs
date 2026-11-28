@@ -15,6 +15,7 @@
 // Roda dentro do cron diário (api/cron/sync-catalogo.js). Variáveis de ambiente:
 //   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, GEMINI_API_KEY, MEUS_NOMES
 //   OWNER_ID  uuid da sua conta: Supabase > Authentication > Users > User UID
+import { abrirStore } from "./v2/store.mjs";
 import { createHash } from "node:crypto";
 import { gerarJson } from "./ia.mjs";
 
@@ -120,15 +121,6 @@ export function linhasDela(abas, nomes) {
   }).filter((a) => a.dela.length);
 }
 
-async function rest(url, key, path, opts = {}) {
-  const r = await fetch(`${url}/rest/v1/${path}`, {
-    ...opts,
-    headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json", ...(opts.headers || {}) },
-  });
-  if (!r.ok) throw new Error(`Supabase: HTTP ${r.status} ${await r.text()}`);
-  return opts.method === "PATCH" ? null : r.json();
-}
-
 async function conferirCeg({ nomeCeg, planilha, cobs, nomes }) {
   const abas = linhasDela(await baixarPlanilha(planilha), nomes);
   const abertas = cobs.filter((c) => ABERTAS.includes(c.data.status));
@@ -155,7 +147,8 @@ export async function conferirCobrancas(url, key, ownerId, { nomes, hoje = hojeB
   if (!ownerId) throw new Error("Falta OWNER_ID (uuid da sua conta no Supabase).");
   if (!nomes?.length) throw new Error("Falta MEUS_NOMES.");
   if (!process.env.GEMINI_API_KEY) throw new Error("Falta GEMINI_API_KEY.");
-  const docs = await rest(url, key, `docs?owner=eq.${ownerId}&col=in.(cobrancas,cegs,caixa)&select=col,id,data&limit=10000`);
+  const st = abrirStore({ url, key, owner: ownerId }); // docs ou v2, conforme DATA_MODEL
+  const docs = await st.lerDocs(["cobrancas", "cegs", "caixa"]);
   const cegDocs = docs.filter((d) => d.col === "cegs" && d.data.planilha);
   const planilhas = new Map(cegDocs.map((d) => [d.data.nome, d.data.planilha]));
   const comunidadeDa = new Map(cegDocs.map((d) => [d.data.nome, d.data.comunidade || ""]));
@@ -210,22 +203,17 @@ export async function conferirCobrancas(url, key, ownerId, { nomes, hoje = hojeB
   resumo.faltando = novas.length;
   if (novas.length) {
     const agora = new Date().toISOString();
-    await rest(url, key, "docs?on_conflict=owner,col,id", {
-      method: "POST", headers: { Prefer: "resolution=ignore-duplicates,return=minimal" },
-      body: JSON.stringify(novas.map((x) => ({ owner: ownerId, col: "caixa", id: x.id, data: { origem: "planilha", recebidoEm: agora, estado: "lida", resumo: `Na planilha e não no app: ${x.registro.referente}`, ceg: { nome: x.registro.ceg }, registros: [x.registro] } }))),
-    });
+    await st.semear("caixa", novas.map((x) => ({ id: x.id, data: { origem: "planilha", recebidoEm: agora, estado: "lida", resumo: `Na planilha e não no app: ${x.registro.referente}`, ceg: { nome: x.registro.ceg }, registros: [x.registro] } })));
   }
 
   // Relê cada cobrança logo antes de gravar e só mexe nos campos da conferência,
   // pra não apagar uma edição que a usuária tenha feito enquanto a IA lia as
   // planilhas. Se ela marcou como paga nesse meio tempo, não mexe.
   for (const p of patches) {
-    const filtro = `docs?owner=eq.${ownerId}&col=eq.cobrancas&id=eq.${encodeURIComponent(p.id)}`;
-    const [atual] = await rest(url, key, `${filtro}&select=data`);
-    if (!atual || !ABERTAS.includes(atual.data.status)) continue;
-    await rest(url, key, filtro, {
-      method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ data: { ...atual.data, ...p.muda(atual.data) } }),
-    });
+    const atual = await st.pegar("cobrancas", p.id);
+    if (!atual || !ABERTAS.includes(atual.status)) continue;
+    // robo: o que ela travou não é mexido
+    await st.mesclar("cobrancas", p.id, p.muda(atual), { robo: true });
   }
   return resumo;
 }

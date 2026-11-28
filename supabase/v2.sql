@@ -326,9 +326,9 @@ create table if not exists public.quadros (
 -- Binder: as metas dela, as cópias que contou à mão e os cards pra troca.
 create table if not exists public.binder_meta (
   owner uuid primary key default auth.uid() references auth.users (id) on delete cascade,
-  copias jsonb not null default '{}'::jsonb, -- n: {card_id: cópias contadas}
-  troca jsonb not null default '[]'::jsonb,  -- tr: cards pra troca
-  metas jsonb not null default '[]'::jsonb,  -- g: metas (set ou era)
+  copias jsonb,                     -- n: {card_id: cópias contadas}
+  troca jsonb,                      -- tr: {card_id: 1} cards pra troca
+  metas jsonb,                      -- g: lista de metas (set ou era)
   legado jsonb,
   atualizado_em timestamptz not null default now()
 );

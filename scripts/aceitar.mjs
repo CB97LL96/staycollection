@@ -1,6 +1,6 @@
 // Aceitar sugestões da caixa fora do app (pelos botões do Telegram).
 // Faz o mesmo que o "aceitar" da aba de sugestões do app (index.html,
-// caixaAcao), gravando na tabela docs, sem campos de pix.
+// caixaAcao), gravando no modelo de dados escolhido (DATA_MODEL: docs ou v2), sem campos de pix.
 import { randomBytes } from "node:crypto";
 
 const hoje = () => new Date(Date.now() - 3 * 3600 * 1000).toISOString().slice(0, 10);
@@ -30,37 +30,37 @@ export function patchDe(r) {
   return null;
 }
 
-// rest(path, opts) já autenticado; devolve quantas foram gravadas
-export async function aceitarTodas(rest, owner, caixaId) {
-  const [cx] = await rest(`docs?owner=eq.${owner}&col=eq.caixa&id=eq.${encodeURIComponent(caixaId)}&select=data`);
-  if (!cx) return { ok: 0, falhas: 0, sumiu: true };
-  const c = cx.data, regs = (c.registros || []).map((r) => ({ ...r }));
+// "s" é o store (scripts/v2/store.mjs): lê e grava no modelo certo (docs ou v2).
+// Devolve quantas foram gravadas. O robô nunca muda um campo que ela travou: nesse caso o
+// registro conta como falha e fica na aba de sugestões pra ela decidir.
+export async function aceitarTodas(s, caixaId) {
+  const c = await s.pegar("caixa", caixaId);
+  if (!c) return { ok: 0, falhas: 0, sumiu: true };
+  const regs = (c.registros || []).map((r) => ({ ...r }));
   let ok = 0, falhas = 0;
   for (const r of regs) {
     if (r.estado !== "pendente") continue;
     try {
       if (r.acao && r.acao !== "nova") {
         const col = r.acao === "status" ? "itens" : "cobrancas";
-        const filtro = `docs?owner=eq.${owner}&col=eq.${col}&id=eq.${encodeURIComponent(r.alvo)}`;
-        const [atual] = await rest(`${filtro}&select=data`);
-        if (!atual) { falhas++; continue; }
-        await rest(filtro, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ data: { ...atual.data, ...patchDe(r) } }) });
+        const res = await s.mesclar(col, r.alvo, patchDe(r), { robo: true });
+        if (!res.ok || res.ignorados.length) { falhas++; continue; }
       } else {
         const col = ["cobrancas", "itens", "envios", "repasses"].includes(r.destino) ? r.destino : "cobrancas";
         const novo = r.novo ? { ...r.novo, aviso: hoje(), conferidoEm: hoje() } : registroParaDoc(r, c);
-        await rest("docs", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ owner, col, id: id10(), data: novo }) });
+        await s.criar(col, novo, id10());
       }
       r.estado = "aceito"; ok++;
     } catch (e) { falhas++; }
   }
-  await rest(`docs?owner=eq.${owner}&col=eq.caixa&id=eq.${encodeURIComponent(caixaId)}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ data: { ...c, registros: regs } }) });
+  await s.gravar("caixa", caixaId, { ...c, registros: regs });
   return { ok, falhas };
 }
 
-export async function descartarTodas(rest, owner, caixaId) {
-  const [cx] = await rest(`docs?owner=eq.${owner}&col=eq.caixa&id=eq.${encodeURIComponent(caixaId)}&select=data`);
-  if (!cx) return 0;
-  const regs = (cx.data.registros || []).map((r) => (r.estado === "pendente" ? { ...r, estado: "descartado" } : r));
-  await rest(`docs?owner=eq.${owner}&col=eq.caixa&id=eq.${encodeURIComponent(caixaId)}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ data: { ...cx.data, registros: regs } }) });
+export async function descartarTodas(s, caixaId) {
+  const c = await s.pegar("caixa", caixaId);
+  if (!c) return 0;
+  const regs = (c.registros || []).map((r) => (r.estado === "pendente" ? { ...r, estado: "descartado" } : r));
+  await s.gravar("caixa", caixaId, { ...c, registros: regs });
   return regs.length;
 }

@@ -2,6 +2,7 @@
 // nome dela). NÃO grava nada e não devolve pix nem caminho de comprovante.
 // Variáveis: SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, OWNER_ID,
 // ALLOWED_EMAILS, MEUS_NOMES.
+import { abrirStore } from "../scripts/v2/store.mjs";
 import { baixarPlanilha, linhasDela } from "../scripts/conferir-cobrancas.mjs";
 import { baixarCobrancasPabo } from "../scripts/conferir-paboracha.mjs";
 import { resumoPlanilha, abasPabo, ehForms } from "../scripts/rodada-core.mjs";
@@ -16,13 +17,6 @@ async function permitido(req) {
   return emails.includes((u.email || "").toLowerCase());
 }
 
-async function rest(path) {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const r = await fetch(`${process.env.SUPABASE_URL}/rest/v1/${path}`, { headers: { apikey: key, Authorization: `Bearer ${key}` } });
-  if (!r.ok) throw new Error(`Supabase: HTTP ${r.status}`);
-  return r.json();
-}
-
 const ABERTAS = ["Pendente", "A confirmar", "Aguardando a GOM", "Não liberado"];
 
 export default async function handler(req, res) {
@@ -34,7 +28,7 @@ export default async function handler(req, res) {
   if (!String(ceg).trim()) return res.status(400).json({ erro: "Diga qual CEG." });
   const nomes = (process.env.MEUS_NOMES || "").split(",").map((s) => s.trim()).filter(Boolean);
   try {
-    const docs = await rest(`docs?owner=eq.${owner}&col=in.(cegs,cobrancas)&select=col,id,data&limit=10000`);
+    const docs = await abrirStore({ owner }).lerDocs(["cegs", "cobrancas"]); // docs ou v2, conforme DATA_MODEL
     const doc = docs.find((d) => d.col === "cegs" && d.data.nome === ceg && (d.data.comunidade || "") === comunidade);
     if (!doc) return res.status(200).json({ cadastrada: false, temPlanilha: false });
     const link = String(doc.data.planilha || "").trim();

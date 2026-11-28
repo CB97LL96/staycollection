@@ -16,7 +16,7 @@ const srv = http.createServer((q, r) => { let p = decodeURIComponent(q.url.split
       { caixa: [100, 50, 600, 250], tipo: "photocard", membro: "HAN", nome: "Aladin", numero: "26", legivel: true, candidatos: [{ i: "mixtape-bangchan-01", nota: 0.9 }, { i: "mixtape-bangchan-02", nota: 0.5 }] },
       { caixa: [100, 300, 600, 500], tipo: "photocard", membro: "", nome: "", numero: "", legivel: false },
       { caixa: [100, 550, 600, 750], tipo: "merch", membro: "", nome: "keyring", numero: "", legivel: true, candidatos: [] } ] }) }); });
-    await pg.addInitScript({ path: __dirname + "/banco-falso.js" });
+    await pg.addInitScript(require("./banco.cjs"));
     await pg.goto(base + "/#mural"); await pg.waitForSelector(".mgrp");
     ok(await pg.locator(".mgh h2").count() === 2, `${nome}: 2 grupos de GOM (Gabi, Ana)`);
     { const h = (await pg.locator(".mgh h2").first().innerText()).toLowerCase(); ok(h.includes("gabi") && h.includes("comunidade azul"), `${nome}: Gabi (com a comunidade) vem primeiro (mais itens)`); }
@@ -36,7 +36,7 @@ const srv = http.createServer((q, r) => { let p = decodeURIComponent(q.url.split
     ok(JSON.stringify(await ordemDom()) === JSON.stringify(["i2", "i1"]), `${nome}: desfazer volta a ordem`);
     await pg.click('[data-mi="i2"]'); await pg.waitForSelector("[data-mand]"); await pg.click('[data-mand="i2|1"]'); await pg.waitForTimeout(400);
     ok(JSON.stringify(await ordemDom()) === JSON.stringify(["i1", "i2"]), `${nome}: botão "depois" também muda (sem arrastar, pro celular)`);
-    await pg.keyboard.press("Escape"); await pg.setViewportSize(vp);
+    await pg.keyboard.press("Escape"); await pg.waitForTimeout(300); await pg.setViewportSize(vp);
     // arrastar i1 pra CEG Variados 7
     await pg.setViewportSize({ width: vp.width, height: 2400 });
     const alvo = pg.locator('.mceg', { hasText: "Variados 7" });

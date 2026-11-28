@@ -31,7 +31,7 @@ const extra = {
     await pg.route("**/@supabase/**", r => r.fulfill({ contentType: "application/javascript", body: "" }));
     await pg.route("**/fonts.g*/**", r => r.abort());
     await pg.addInitScript(`window.__seedExtra=${JSON.stringify(extra)}`);
-    await pg.addInitScript({ path: __dirname + "/banco-falso.js" });
+    await pg.addInitScript(require("./banco.cjs"));
     await pg.goto(base + "/#agora"); await pg.waitForSelector(".agq");
     const txt = await pg.locator("#main").innerText();
     // (a) fila: primeiro a cobrança vencida, com valor, grupo e SEM pix

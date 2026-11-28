@@ -6,6 +6,7 @@ import { mapear, valor, separarGoms } from "./mapear.mjs";
 const doc = (col, id, data) => ({ col, id, data });
 const exemplo = [
   doc("comunidades", "c1", { nome: "Comunidade Azul", apelido: "Azul", goms: "Gabi e Duda", pix: "chave-secreta", comprovante: "privado" }),
+  doc("comunidades", "c2", { nome: "Outra" }),
   doc("cegs", "g1", { nome: "Caixa 2 PHP", comunidade: "Comunidade Azul", gom: "Gabi", planilha: "https://exemplo/planilha" }),
   doc("cegs", "g2", { nome: "Variados", comunidade: "Comunidade Azul", gom: "Gabi" }),
   doc("cegs", "g3", { nome: "Variados", comunidade: "Outra", gom: "Ana" }),
@@ -63,9 +64,14 @@ test("repetido: duas cópias ativas do mesmo card", () => {
   assert.equal(r.repetidos, 1);
 });
 
-test("CEG citada sem cadastro é criada e avisada", () => {
-  assert.ok(r.criadas.cegs.some((x) => x.startsWith("CEG sem cadastro")));
+test("CEG citada sem cadastro não vira registro (só avisa); com criar:true vira, por id", () => {
+  assert.ok(r.citadas.cegs.some((x) => x.startsWith("CEG sem cadastro")));
+  assert.equal(um("claims", "claim-i3").ceg_id, null);
+  assert.equal(um("claims", "claim-i3").legado.ceg, "CEG sem cadastro"); // o nome fica no documento
   assert.equal(um("itens", "item-i3").foto, "a".repeat(32));
+  const c = mapear(exemplo, { criar: true });
+  assert.ok(c.relatorio.criadas.cegs.some((x) => x.startsWith("CEG sem cadastro")));
+  assert.ok(c.tabelas.claims.find((x) => x.id === "claim-i3").ceg_id.startsWith("ceg-x-"));
 });
 
 test("CEG com o mesmo nome em duas comunidades, sem comunidade citada, vai pro relatório", () => {
@@ -145,11 +151,16 @@ test("escrever: tirar um card da lista apaga só aquele item; pôr um novo cria 
   assert.equal(r2.up.itens[2].id, "item-i1-3");
 });
 
-test("escrever: documento novo cita CEG que não existe, e ela é criada por id", () => {
+test("escrever: documento novo cita CEG que não existe: fica sem ligação até ela cadastrar", () => {
   const r = escrever("itens", "nov", { item: "Han Aladin", ceg: "CEG nova", comunidade: "Azul", status: "Garantido", cards: ["karma-han-01"] }, T);
-  assert.equal(r.up.cegs.length, 1);
-  assert.equal(r.up.claims[0].ceg_id, r.up.cegs[0].id);
+  assert.ok(!r.up.cegs); // não cria cadastro sozinho
+  assert.equal(r.up.claims[0].ceg_id, null);
   assert.ok(!r.up.comunidades); // a comunidade já existia: não recria nem sobrescreve
+  // ela cadastra a CEG: quem citava o nome passa a ligar por id
+  const T2 = JSON.parse(JSON.stringify(T)); T2.claims.push(r.up.claims[0]); T2.itens.push(r.up.itens[0]);
+  const cad = escrever("cegs", "novaceg", { nome: "CEG nova", comunidade: "Comunidade Azul" }, T2);
+  assert.ok(cad.up.claims.some((x) => x.id === "claim-nov" && x.ceg_id === "ceg-novaceg"));
+  assert.ok(cad.up.itens.some((x) => x.id === "item-nov" && x.ceg_id === "ceg-novaceg"));
 });
 
 test("escrever nunca grava pix e apagar leva as provas junto", () => {
@@ -161,10 +172,18 @@ test("escrever nunca grava pix e apagar leva as provas junto", () => {
 });
 
 test("colecao: tirar o estado de um card apaga só aquela linha", () => {
-  const r = escrever("colecao", "han", { s: { a: "tenho" } }, T);
-  assert.deepEqual(r.del.posse, [{ card_id: "b" }]);
+  const r = escrever("colecao", "han", { s: { "karma-han-01": "tenho" } }, T);
+  assert.deepEqual(r.del.posse, [{ card_id: "karma-han-02" }]);
 });
 
 test("pix some do documento que volta (o app antigo guarda o dele)", () => {
   assert.equal(paraDocs(T).comunidades.get("c1").pix, undefined);
+});
+
+test("apagar a CEG deixa o item sem ligação, com o nome no documento", () => {
+  const r = apagarDoc("cegs", "g1", T);
+  assert.deepEqual(r.del.cegs, [{ id: "ceg-g1" }]);
+  assert.ok(r.up.claims.every((x) => x.ceg_id === null));
+  const T2 = JSON.parse(JSON.stringify(T)); T2.cegs = T2.cegs.filter((c) => c.id !== "ceg-g1"); r.up.claims.forEach((x) => { T2.claims.find((c) => c.id === x.id).ceg_id = null; });
+  assert.equal(paraDocs(T2).itens.get("i1").ceg, "Caixa 2 PHP");
 });

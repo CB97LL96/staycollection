@@ -1,6 +1,12 @@
 // Substitui o banco do artefato do claude.ai (window.claude.use) pelo Supabase,
 // com a mesma interface que o index.html já usa: collection().limit().onSnapshot,
 // collection().add, doc().set/update/delete/onSnapshot, e upload de fotos.
+//
+// Dois modelos de dados, escolhidos em config.js (dataModel):
+//   "docs" (padrão): a tabela genérica "docs", um JSON por registro;
+//   "v2": as tabelas do modelo novo (supabase/v2.sql), ligadas por id. O app
+//         continua vendo os mesmos documentos: v2-codec.js traduz nos dois
+//         sentidos. Pra voltar ao antigo basta tirar dataModel do config.js.
 (function(){
 const cfg = window.STAY_CONFIG || {};
 const sb = cfg.supabaseUrl && cfg.supabaseAnonKey && window.supabase
@@ -90,7 +96,96 @@ const collectionRef = col => {
   };
   return q;
 };
-const db = { collection: collectionRef, doc: docRef };
+
+// ---------- modelo v2: tabelas ligadas por id, mesma interface ----------
+function criarV2(){
+  const C = window.StayV2;
+  const T = {}; C.TABELAS.forEach(t => T[t] = new Map());
+  const lidas = new Map();      // tabela -> Promise (carrega uma vez)
+  const subsV = new Map();      // coleção -> Set(função)
+  let agendado = new Set(), timer = null;
+  const prontas = new Set();    // tabelas já carregadas
+  const colsDe = tab => { const c = Object.keys(C.DEPENDE).filter(x => C.DEPENDE[x].includes(tab)); if (tab === "avulsos") subsV.forEach((_, k) => { if (!C.DEPENDE[k]) c.push(k) }); return c; };
+  const docsDe = col => (C.paraDocs(T, [col])[col]) || new Map();
+  function emitir(col){
+    const fns = subsV.get(col); if (!fns || !fns.size) return;
+    if (!C.tabelasDe(col).every(t => prontas.has(t))) return;
+    const m = docsDe(col);
+    const lista = [...m].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0).map(([id, d]) => ({ id, data: () => d }));
+    fns.forEach(fn => { try { fn(lista) } catch (e) { console.error(e) } });
+  }
+  function agendar(cols){
+    cols.forEach(c => agendado.add(c));
+    if (timer) return;
+    timer = setTimeout(() => { timer = null; const cs = [...agendado]; agendado = new Set(); cs.forEach(emitir) }, 0);
+  }
+  function ouvir(tab){
+    sb.channel("v2-" + tab).on("postgres_changes", { event: "*", schema: "public", table: tab }, p => {
+      const row = p.eventType === "DELETE" ? p.old : p.new; if (!row) return;
+      const k = C.pkVal(tab, row);
+      if (p.eventType === "DELETE") T[tab].delete(k); else T[tab].set(k, { ...(T[tab].get(k) || {}), ...row });
+      agendar(colsDe(tab));
+    }).subscribe();
+  }
+  function lerTab(tab){
+    if (!lidas.has(tab)) lidas.set(tab, (async () => {
+      for (let de = 0; ; de += 1000) {
+        const { data, error } = await sb.from(tab).select("*").range(de, de + 999);
+        if (error) { lidas.delete(tab); fail(error); }
+        data.forEach(r => T[tab].set(C.pkVal(tab, r), r));
+        if (data.length < 1000) break;
+      }
+      prontas.add(tab); ouvir(tab); agendar(colsDe(tab));
+    })());
+    return lidas.get(tab);
+  }
+  const preciso = col => [...new Set([...C.tabelasDe(col), "comunidades", "goms", "cegs", "itens", "provas"])];
+  const carregar = col => Promise.all(preciso(col).map(lerTab));
+  async function aplicar(r){
+    const up = Object.entries(r.up || {}), del = Object.entries(r.del || {});
+    if (!up.length && !del.length) return;
+    const { error } = await sb.rpc("v2_aplicar", { p: { up, del } });
+    if (error) fail(error);
+    const tocadas = new Set();
+    up.forEach(([tab, rows]) => { rows.forEach(row => { const k = C.pkVal(tab, row); T[tab].set(k, { ...(T[tab].get(k) || {}), ...row }); }); colsDe(tab).forEach(c => tocadas.add(c)); });
+    del.forEach(([tab, rows]) => { rows.forEach(row => T[tab].delete(C.pkVal(tab, row))); colsDe(tab).forEach(c => tocadas.add(c)); });
+    agendar([...tocadas]);
+  }
+  async function gravar(col, id, d){ await carregar(col); await aplicar(C.escrever(col, id, d, T)); }
+  const docRefV = path => {
+    const i = path.indexOf("/"), col = path.slice(0, i), id = path.slice(i + 1);
+    return {
+      onSnapshot(cb, onErr){
+        return assinar(col, () => { const d = docsDe(col).get(id); cb({ exists: d !== undefined, data: () => d }) }, onErr);
+      },
+      async set(d){ await gravar(col, id, d); },
+      async update(patch){
+        await carregar(col);
+        const cur = docsDe(col).get(id);
+        if (cur === undefined) { const e = new Error(`documento ${col} / ${id} não existe`); e.code = "P0002"; throw e; }
+        await aplicar(C.escrever(col, id, { ...cur, ...patch }, T));
+      },
+      async delete(){ await carregar(col); await aplicar(C.apagarDoc(col, id, T)); },
+    };
+  };
+  function assinar(col, fn, onErr){
+    if (!subsV.has(col)) subsV.set(col, new Set());
+    subsV.get(col).add(fn);
+    carregar(col).then(() => emitir(col)).catch(e => onErr && onErr(e));
+    return () => subsV.get(col).delete(fn);
+  }
+  const colRefV = col => {
+    const q = {
+      limit(){ return q },
+      onSnapshot(cb, onErr){ return assinar(col, docs => cb({ docs }), onErr) },
+      async add(d){ const id = hex(10); await gravar(col, id, d); return { id }; },
+    };
+    return q;
+  };
+  return { collection: colRefV, doc: docRefV, _T: T };
+}
+const modeloV2 = cfg.dataModel === "v2" && !!window.StayV2 && !!sb;
+const db = modeloV2 ? criarV2() : { collection: collectionRef, doc: docRef };
 
 const assets = {
   async upload(blob, opts){
@@ -136,7 +231,7 @@ window.claude = {
   },
 };
 window.stay = {
-  sb, getSession, showLogin,
+  sb, getSession, showLogin, modelo: modeloV2 ? "v2" : "docs",
   blobUrl: id => sb ? sb.storage.from("fotos").getPublicUrl(id).data.publicUrl : "",
 };
 })();

@@ -29,7 +29,7 @@ const extra = {
     await pg.route("**/backend.js", (r) => r.fulfill({ body: "" })); await pg.route("**/@supabase/**", (r) => r.fulfill({ body: "" })); await pg.route("**/fonts.g*/**", (r) => r.abort());
     await pg.route("**/api/print", (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ resumo: "x", cards: [{ caixa: [100, 50, 600, 250], tipo: "photocard", membro: "HAN", nome: "Withfans", numero: "", legivel: true, candidatos: [{ i: "golivepob-han-01", nota: 0.9 }] }] }) }));
     await pg.addInitScript(`window.__seedExtra=${JSON.stringify(extra)}`);
-    await pg.addInitScript({ path: path.join(__dirname, "banco-falso.js") });
+    await pg.addInitScript(require("./banco.cjs"));
     const st = (col, id) => pg.evaluate(([c, i]) => window.__store[c].get(i), [col, id]);
     const n = (sel) => pg.locator(sel).count();
     const chip = (k) => pg.locator(`[data-cf="${k}"] .c`).innerText().then(Number);

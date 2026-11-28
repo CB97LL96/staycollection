@@ -15,6 +15,7 @@
 // Variáveis de ambiente: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, OWNER_ID
 //   PABORACHA_PERFIL  o fim do link do seu perfil na API (ex.: fulana-2)
 
+import { abrirStore } from "./v2/store.mjs";
 const API = "https://paboracha.com.br/api/v1/profiles";
 const ABERTAS = ["Pendente", "A confirmar", "Aguardando a GOM", "Não liberado"];
 const ABERTA_LA = ["Pending", "Overdue"];
@@ -62,17 +63,6 @@ export function paraCobranca(c, { comunidade, cegs }) {
     paboId: c.id,
     obs: detalhe,
   };
-}
-
-async function rest(url, key, path, opts = {}) {
-  const r = await fetch(`${url}/rest/v1/${path}`, {
-    ...opts,
-    headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json", ...(opts.headers || {}) },
-  });
-  if (!r.ok) throw new Error(`Supabase: HTTP ${r.status} ${await r.text()}`);
-  // Com return=minimal, atualizar um registro que já existe volta 200 sem corpo.
-  const t = await r.text();
-  return t.trim() ? JSON.parse(t) : null;
 }
 
 // Compara e devolve { sugestoes: [{id, registro}], conferidas: [docId] }.
@@ -132,9 +122,10 @@ export function comparar(pabo, docs, { comunidade, cegs }) {
 export async function conferirPaboracha(url, key, ownerId, { perfil, hoje = hojeBR() } = {}) {
   if (!ownerId) throw new Error("Falta OWNER_ID.");
   if (!perfil) throw new Error("Falta PABORACHA_PERFIL.");
+  const st = abrirStore({ url, key, owner: ownerId }); // docs ou v2, conforme DATA_MODEL
   const [pabo, docs] = await Promise.all([
     baixarCobrancasPabo(perfil),
-    rest(url, key, `docs?owner=eq.${ownerId}&col=in.(cobrancas,cegs,comunidades,caixa)&select=col,id,data&limit=10000`),
+    st.lerDocs(["cobrancas", "cegs", "comunidades", "caixa"]),
   ]);
   const comunidade = docs.filter((d) => d.col === "comunidades").map((d) => d.data.nome).find((n) => /pabo/i.test(n || "")) || "Paboracha";
   const cegs = docs.filter((d) => d.col === "cegs" && (d.data.comunidade || "") === comunidade).map((d) => d.data.nome).filter(Boolean);
@@ -144,20 +135,13 @@ export async function conferirPaboracha(url, key, ownerId, { perfil, hoje = hoje
   const novas = sugestoes.filter((s) => !jaNaCaixa.has(s.id));
   if (novas.length) {
     const agora = new Date().toISOString();
-    await rest(url, key, "docs?on_conflict=owner,col,id", {
-      method: "POST", headers: { Prefer: "resolution=ignore-duplicates,return=minimal" },
-      body: JSON.stringify(novas.map((s) => ({
-        owner: ownerId, col: "caixa", id: s.id,
-        data: { origem: "paboracha", recebidoEm: agora, estado: "lida", resumo: s.registro.trecho, registros: [s.registro] },
-      }))),
-    });
+    await st.semear("caixa", novas.map((x) => ({ id: x.id, data: { origem: "paboracha", recebidoEm: agora, estado: "lida", resumo: x.registro.trecho, registros: [x.registro] } })));
   }
   // Só o campo da conferência, relendo antes pra não apagar edição dela.
   for (const id of conferidas) {
-    const filtro = `docs?owner=eq.${ownerId}&col=eq.cobrancas&id=eq.${encodeURIComponent(id)}`;
-    const [atual] = await rest(url, key, `${filtro}&select=data`);
-    if (!atual || !ABERTAS.includes(atual.data.status) || atual.data.conferidoEm === hoje) continue;
-    await rest(url, key, filtro, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ data: { ...atual.data, conferidoEm: hoje } }) });
+    const atual = await st.pegar("cobrancas", id);
+    if (!atual || !ABERTAS.includes(atual.status) || atual.conferidoEm === hoje) continue;
+    await st.mesclar("cobrancas", id, { conferidoEm: hoje }, { robo: true });
   }
   const abertasLa = pabo.filter((c) => ABERTA_LA.includes(c.status));
   return {

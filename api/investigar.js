@@ -2,10 +2,11 @@
 // investiga como o bot do Telegram (scripts/investigar.mjs), guarda as sugestões
 // na caixa (aba de sugestões do app) e devolve o resultado pra mostrar na hora.
 // Variáveis: GEMINI_API_KEY, SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY,
-// OWNER_ID, ALLOWED_EMAILS, MEUS_NOMES.
+// OWNER_ID, ALLOWED_EMAILS, MEUS_NOMES, DATA_MODEL (docs ou v2).
 import { createHash } from "node:crypto";
 import { investigar } from "../scripts/investigar.mjs";
 import { IMAGENS } from "../scripts/ler-core.mjs";
+import { abrirStore } from "../scripts/v2/store.mjs";
 
 async function permitido(req) {
   const token = (req.headers.authorization || "").replace(/^Bearer\s+/i, "");
@@ -15,14 +16,6 @@ async function permitido(req) {
   const u = await r.json();
   const emails = (process.env.ALLOWED_EMAILS || "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
   return emails.includes((u.email || "").toLowerCase());
-}
-
-async function rest(path, opts = {}) {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const r = await fetch(`${process.env.SUPABASE_URL}/rest/v1/${path}`, { ...opts, headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json", ...(opts.headers || {}) } });
-  if (!r.ok) throw new Error(`Supabase: HTTP ${r.status} ${await r.text()}`);
-  const t = await r.text();
-  return t.trim() ? JSON.parse(t) : null;
 }
 
 const hojeBR = () => new Date(Date.now() - 3 * 3600 * 1000).toISOString().slice(0, 10);
@@ -40,18 +33,16 @@ export default async function handler(req, res) {
   try {
     // Mesma mensagem de novo: não lê outra vez (só vale sem escolha manual de CEG).
     const hash = createHash("sha1").update(fonte).update(imagem ? imagem.dados : "").update(String(cegForcada || "")).digest("hex");
-    const igual = await rest(`docs?owner=eq.${owner}&col=eq.caixa&data->>hash=eq.${hash}&data->>estado=eq.lida&select=id,data&limit=1`);
+    const s = abrirStore({ owner }); // docs ou v2, conforme DATA_MODEL
+    const igual = (await s.listar("caixa")).filter((x) => x.data.hash === hash && x.data.estado === "lida").slice(0, 1);
     if (igual.length) return res.status(200).json({ repetido: true, id: igual[0].id, resumo: igual[0].data.resumo || "", ceg: igual[0].data.ceg || null, totalDevido: igual[0].data.totalDevido ?? null, semValor: igual[0].data.semValor || 0, pergunta: "", registros: igual[0].data.registros || [] });
 
-    const docs = await rest(`docs?owner=eq.${owner}&col=in.(comunidades,cegs,gruposwa,cobrancas,itens,envios,repasses)&select=col,id,data&limit=10000`);
+    const docs = await s.lerDocs(["comunidades", "cegs", "gruposwa", "cobrancas", "itens", "envios", "repasses"]);
     const nomes = (process.env.MEUS_NOMES || "").split(",").map((s) => s.trim()).filter(Boolean);
     const r = await investigar({ texto: fonte, nomeArquivo, imagens: imagem ? [imagem] : [] }, docs, { nomes, hoje: hojeBR(), cegForcada });
     const registros = r.registros.map((x) => ({ ...x, estado: "pendente" }));
     const id = "app-" + Date.now().toString(36);
-    await rest("docs?on_conflict=owner,col,id", {
-      method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
-      body: JSON.stringify({ owner, col: "caixa", id, data: { origem: "whatsapp", recebidoEm: new Date().toISOString(), texto: fonte.slice(0, 2000), estado: "lida", hash, resumo: r.resumo, registros, ceg: r.ceg, totalDevido: r.totalDevido, semValor: r.semValor, candidatas: r.candidatas, pergunta: r.pergunta, fonte: imagem ? "" : fonte, arquivo: nomeArquivo } }),
-    });
+    await s.gravar("caixa", id, { origem: "whatsapp", recebidoEm: new Date().toISOString(), texto: fonte.slice(0, 2000), estado: "lida", hash, resumo: r.resumo, registros, ceg: r.ceg, totalDevido: r.totalDevido, semValor: r.semValor, candidatas: r.candidatas, pergunta: r.pergunta, fonte: imagem ? "" : fonte, arquivo: nomeArquivo });
     return res.status(200).json({ id, ...r, registros });
   } catch (e) {
     if (e.codigo === "recusa") return res.status(422).json({ erro: e.message });

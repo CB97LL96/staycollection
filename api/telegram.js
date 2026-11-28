@@ -57,25 +57,13 @@ function encolher(texto, nomes) {
   return out.length > LIMITE_TEXTO ? out.slice(-LIMITE_TEXTO) : out;
 }
 
-async function rest(path, opts = {}) {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const r = await fetch(`${process.env.SUPABASE_URL}/rest/v1/${path}`, {
-    ...opts,
-    headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json", ...(opts.headers || {}) },
-  });
-  if (!r.ok) throw new Error(`Supabase: HTTP ${r.status} ${await r.text()}`);
-  // Com return=minimal, atualizar um registro que já existe volta 200 sem corpo.
-  const t = await r.text();
-  return t.trim() ? JSON.parse(t) : null;
-}
-
 import { createHash } from "node:crypto";
 import { marcarFonte } from "../scripts/fontes.mjs";
+import { abrirStore } from "../scripts/v2/store.mjs";
 const owner = () => process.env.OWNER_ID;
-const salvar = (id, data) => rest(`docs?on_conflict=owner,col,id`, {
-  method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
-  body: JSON.stringify({ owner: owner(), col: "caixa", id, data }),
-});
+// os dados do app, no modelo certo (variável DATA_MODEL: "docs" ou "v2")
+const store = () => abrirStore({ owner: owner() });
+const salvar = (s, id, data) => s.gravar("caixa", id, data);
 
 // Anti-duplicata: a Lari pode mandar o mesmo arquivo/print mais de uma vez.
 // 1) mesmo conteúdo (hash do texto + imagens) já lido => nem chama a IA;
@@ -87,18 +75,19 @@ const chaveRegistro = (r) => { const t = norm(r.trecho); return t.length < 15 ? 
 
 const hojeBR = () => new Date(Date.now() - 3 * 3600 * 1000).toISOString().slice(0, 10);
 // O que o bot precisa pra investigar: comunidades, CEGs, grupos, cobranças, itens.
-const docsDoApp = () => rest(`docs?owner=eq.${owner()}&col=in.(comunidades,cegs,gruposwa,cobrancas,itens,envios,repasses)&select=col,id,data&limit=10000`);
+const docsDoApp = (s) => s.lerDocs(["comunidades", "cegs", "gruposwa", "cobrancas", "itens", "envios", "repasses"]);
 
 // Lê de novo uma mensagem já guardada, agora com a CEG que ela escolheu.
 async function reinvestigar(chatId, caixaId, idx) {
-  const [cx] = await rest(`docs?owner=eq.${owner()}&col=eq.caixa&id=eq.${encodeURIComponent(caixaId)}&select=data`);
-  if (!cx) return responder(chatId, "Não achei mais essa mensagem.");
-  const c = cx.data, escolhida = (c.candidatas || [])[idx];
+  const s = store();
+  const c = await s.pegar("caixa", caixaId);
+  if (!c) return responder(chatId, "Não achei mais essa mensagem.");
+  const escolhida = (c.candidatas || [])[idx];
   if (!escolhida) return responder(chatId, "Essa opção não existe mais.");
   const nomes = (process.env.MEUS_NOMES || "").split(",").map((x) => x.trim()).filter(Boolean);
-  const r = await investigar({ texto: c.fonte || c.texto || "", nomeArquivo: c.arquivo || "" }, await docsDoApp(), { nomes, hoje: hojeBR(), cegForcada: escolhida.id });
+  const r = await investigar({ texto: c.fonte || c.texto || "", nomeArquivo: c.arquivo || "" }, await docsDoApp(s), { nomes, hoje: hojeBR(), cegForcada: escolhida.id });
   const registros = r.registros.map((x) => ({ ...x, estado: "pendente" }));
-  await salvar(caixaId, { ...c, resumo: r.resumo, registros, ceg: r.ceg, totalDevido: r.totalDevido, semValor: r.semValor, pergunta: r.pergunta });
+  await salvar(s, caixaId, { ...c, resumo: r.resumo, registros, ceg: r.ceg, totalDevido: r.totalDevido, semValor: r.semValor, pergunta: r.pergunta });
   await responder(chatId, respostaTelegram({ ...r, registros }), botoesDe(caixaId, { ...r, registros }));
 }
 
@@ -109,12 +98,11 @@ async function botao(q) {
   await tg("answerCallbackQuery", { callback_query_id: q.id, text: tipo === "ok" ? "Gravando…" : tipo === "ceg" ? "Lendo de novo…" : "Ok" });
   // tira os botões da mensagem, pra não tocar duas vezes
   await tg("editMessageReplyMarkup", { chat_id: chatId, message_id: q.message.message_id, reply_markup: { inline_keyboard: [[{ text: "Ver no app", url: APP }]] } });
-  const restOwner = (path, opts) => rest(path, opts);
   if (tipo === "ok") {
-    const { ok, falhas, sumiu } = await aceitarTodas(restOwner, owner(), caixaId);
+    const { ok, falhas, sumiu } = await aceitarTodas(store(), caixaId);
     await responder(chatId, sumiu ? "Não achei mais essa sugestão." : `Gravado no app: ${ok}${falhas ? `. ${falhas} não deram (o registro mudou ou sumiu); confira na aba de sugestões.` : "."}`);
   } else if (tipo === "no") {
-    await descartarTodas(restOwner, owner(), caixaId);
+    await descartarTodas(store(), caixaId);
     await responder(chatId, "Descartado. Nada mudou no app.");
   } else if (tipo === "ceg") {
     try { await reinvestigar(chatId, caixaId, Number(extra)); } catch (e) { await responder(chatId, `Não consegui ler de novo: ${e.message}`); }
@@ -141,12 +129,12 @@ export default async function handler(req, res) {
 
   // Um registro por mensagem. Se o Telegram reenviar a mesma, não lê de novo.
   const id = `tg-${up.update_id}`;
-  const ja = await rest(`docs?owner=eq.${owner()}&col=eq.caixa&id=eq.${id}&select=id`);
-  if (ja.length) return res.status(200).end();
+  const s = store();
+  if (await s.pegar("caixa", id)) return res.status(200).end();
 
   const nomes = (process.env.MEUS_NOMES || "").split(",").map((s) => s.trim()).filter(Boolean);
   const base = { origem: "telegram", recebidoEm: new Date((msg.date || Date.now() / 1000) * 1000).toISOString(), texto: (msg.text || msg.caption || "").slice(0, 2000), estado: "lendo" };
-  await salvar(id, base);
+  await salvar(s, id, base);
 
   try {
     let fonte = msg.text || msg.caption || "";
@@ -168,26 +156,25 @@ export default async function handler(req, res) {
     if (!fonte.trim() && !imagens.length) throw new Error("Não achei texto nem imagem nessa mensagem.");
 
     const hash = createHash("sha1").update(fonte).update(imagens.map((i) => i.dados).join("")).digest("hex");
-    const igual = await rest(`docs?owner=eq.${owner()}&col=eq.caixa&data->>hash=eq.${hash}&data->>estado=eq.lida&id=neq.${id}&select=id&limit=1`);
-    if (igual.length) {
-      await rest(`docs?owner=eq.${owner()}&col=eq.caixa&id=eq.${id}`, { method: "DELETE", headers: { Prefer: "return=minimal" } }).catch(() => {});
+    const caixa = await s.listar("caixa");
+    if (caixa.some((x) => x.id !== id && x.data.hash === hash && x.data.estado === "lida")) {
+      await s.apagar("caixa", id).catch(() => {});
       await responder(chatId, "Já li exatamente isso antes. Não criei sugestão nova, então nada duplicou na aba \"O que devo\".");
       return res.status(200).end();
     }
 
-    const r = await investigar({ texto: fonte, nomeArquivo: (msg.document && msg.document.file_name) || "", imagens }, await docsDoApp(), { nomes, hoje: hojeBR() });
-    const antigas = await rest(`docs?owner=eq.${owner()}&col=eq.caixa&id=neq.${id}&select=data&limit=2000`);
-    const jaTem = new Set(antigas.flatMap((d) => ((d.data && d.data.registros) || []).map(chaveRegistro)).filter(Boolean));
+    const r = await investigar({ texto: fonte, nomeArquivo: (msg.document && msg.document.file_name) || "", imagens }, await docsDoApp(s), { nomes, hoje: hojeBR() });
+    const jaTem = new Set(caixa.filter((x) => x.id !== id).flatMap((d) => ((d.data && d.data.registros) || []).map(chaveRegistro)).filter(Boolean));
     const todos = (r.registros || []).map((x) => ({ ...x, estado: "pendente" }));
     const registros = todos.filter((x) => { const k = chaveRegistro(x); if (!k) return true; if (jaTem.has(k)) return false; jaTem.add(k); return true; });
     const repetidos = todos.length - registros.length;
-    await salvar(id, { ...base, hash, estado: "lida", resumo: r.resumo, registros, ceg: r.ceg, totalDevido: r.totalDevido, semValor: r.semValor, candidatas: r.candidatas, pergunta: r.pergunta,
+    await salvar(s, id, { ...base, hash, estado: "lida", resumo: r.resumo, registros, ceg: r.ceg, totalDevido: r.totalDevido, semValor: r.semValor, candidatas: r.candidatas, pergunta: r.pergunta,
       // guardado pra ler de novo se ela escolher outra CEG (só texto; imagem não é guardada)
       fonte: imagens.length ? "" : fonte.slice(0, 60000), arquivo: (msg.document && msg.document.file_name) || "", ...(repetidos ? { repetidos } : {}) });
     await marcarFonte(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, owner(), "bot", { nota: `${registros.length} sugestão(ões)` });
     if (ultimaMsg) await marcarFonte(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, owner(), "whatsapp", { nota: "conversa enviada ao bot", ate: ultimaMsg });
     if (repetidos && !registros.length) {
-      await rest(`docs?owner=eq.${owner()}&col=eq.caixa&id=eq.${id}`, { method: "DELETE", headers: { Prefer: "return=minimal" } }).catch(() => {});
+      await s.apagar("caixa", id).catch(() => {});
       await responder(chatId, `Li, mas as ${repetidos} sugestões já estavam na aba de sugestões (ou já foram aceitas ou descartadas). Não criei nada repetido.`);
       return res.status(200).end();
     }
@@ -195,7 +182,7 @@ export default async function handler(req, res) {
     await responder(chatId, respostaTelegram(resp) + (repetidos ? `\n(${repetidos} já tinham sido sugeridas antes e ficaram de fora)` : ""), botoesDe(id, resp));
   } catch (e) {
     console.error(e);
-    await salvar(id, { ...base, estado: "erro", erro: e.message }).catch(() => {});
+    await salvar(s, id, { ...base, estado: "erro", erro: e.message }).catch(() => {});
     await responder(chatId, `Não consegui ler: ${e.message} Ficou guardado na caixa de entrada do app.`);
   }
   return res.status(200).end();

@@ -71,7 +71,12 @@ function novoMapeador(T0, op = {}) {
   const hoje = op.hoje || hojeISO();
   const t = vazias();
   const del = Object.fromEntries(TABELAS.map((x) => [x, []]));
-  const rel = { criadas: { comunidades: [], cegs: [], goms: [] }, cegAmbigua: [], semPix: 0, itensSemCard: 0, valoresEstranhos: [] };
+  // Por padrão, nome de comunidade ou CEG citado sem cadastro NÃO vira registro: a ligação por id
+  // fica vazia e o nome fica guardado no documento (igual ao modelo antigo, onde "CEG sem cadastro"
+  // é uma situação que o app mostra). Quando ela cadastrar, as ligações são feitas na hora.
+  // op.criar = true (migrar-v2 --criar-por-citacao) cria o cadastro.
+  const criar = !!op.criar;
+  const rel = { criadas: { comunidades: [], cegs: [], goms: [] }, citadas: { comunidades: [], cegs: [] }, cegAmbigua: [], semPix: 0, itensSemCard: 0, valoresEstranhos: [] };
   const contaPix = (d) => { if (Object.keys(d || {}).some((k) => SEM_PIX.test(k) && txt(d[k]))) rel.semPix++; };
   const valorDe = (v, onde) => { const n = valor(v); if (v != null && v !== "" && n == null) rel.valoresEstranhos.push(`${onde}: ${v}`); return n; };
 
@@ -81,6 +86,7 @@ function novoMapeador(T0, op = {}) {
   const comunidade = (nome) => {
     const k = norm(nome); if (!k) return null;
     if (comPorNome.has(k)) return comPorNome.get(k);
+    if (!criar) { rel.citadas.comunidades.push(String(nome).trim()); return null; }
     const id = `com-x-${curto(k)}`;
     t.comunidades.push({ id, nome: String(nome).trim(), legado: null }); comPorNome.set(k, id); rel.criadas.comunidades.push(String(nome).trim());
     return id;
@@ -114,6 +120,7 @@ function novoMapeador(T0, op = {}) {
       if (!comNome || !existente || !existente.comunidade_id) return soNome;
     }
     if (soNome === "ambigua" && !comNome) rel.cegAmbigua.push(String(nome).trim());
+    if (!criar) { rel.citadas.cegs.push(`${String(nome).trim()}${comNome ? ` (${comNome})` : ""}`); return null; }
     const id = `ceg-x-${curto(`${comId || ""}|${k}`)}`;
     const row = { id, comunidade_id: comId, gom_id: null, nome: String(nome).trim(), legado: null };
     t.cegs.push(row); cegsNovas.set(id, row); guardaCeg(row); rel.criadas.cegs.push(`${String(nome).trim()}${comNome ? ` (${comNome})` : ""}`);
@@ -134,6 +141,24 @@ function novoMapeador(T0, op = {}) {
   const semProva = (x) => { const { comprovanteAsset, ...r } = x; return r; };
   const travadoDe = (x) => arr(x.travado).filter((s) => typeof s === "string");
 
+  // Cadastrou (ou renomeou) uma comunidade ou CEG: quem citava esse nome pelo texto passa a ligar por id.
+  const nomesDaCom = (id) => { const r = T.comunidades.get(id) || t.comunidades.find((x) => x.id === id); return r ? [norm(r.nome), norm(r.apelido)].filter(Boolean) : []; };
+  const religarCeg = (row) => {
+    const k = norm(row.nome), cn = row.comunidade_id ? nomesDaCom(row.comunidade_id) : null;
+    const serve = (leg) => norm(leg && leg.ceg) === k && (!cn || !norm(leg.comunidade) || cn.includes(norm(leg.comunidade)));
+    for (const cl of T.claims.values()) if (!cl.ceg_id && cl.legado && serve(cl.legado)) {
+      t.claims.push({ id: cl.id, ceg_id: row.id });
+      for (const i of T.itens.values()) if (i.claim_id === cl.id) t.itens.push({ id: i.id, ceg_id: row.id });
+    }
+    for (const c of T.cobrancas.values()) if (!c.ceg_id && c.legado && serve(c.legado)) t.cobrancas.push({ id: c.id, ceg_id: row.id });
+  };
+  const religarCom = (row) => {
+    const ns = [norm(row.nome), norm(row.apelido)].filter(Boolean);
+    for (const [tab, campo] of [["cobrancas", "legado"], ["envios", "legado"], ["grupos_wa", "legado"], ["cegs", "legado"]])
+      for (const r of T[tab].values()) if (!r.comunidade_id && r.legado && ns.includes(norm(r.legado.comunidade))) t[tab].push({ id: r.id, comunidade_id: row.id });
+    for (const r of T.quadros.values()) if (!r.comunidade_id && ns.includes(norm(r.comunidade_nome))) t.quadros.push({ id: r.id, comunidade_id: row.id });
+  };
+
   const add = {
     comunidades(d) {
       const x = semPix(d.data); contaPix(d.data);
@@ -142,6 +167,7 @@ function novoMapeador(T0, op = {}) {
       t.comunidades.push({ id, nome: x.nome.trim(), apelido: txt(x.apelido), situacao: txt(x.situacao), sigla: txt(x.sigla), cor: txt(x.cor), notas: txt(x.obs), travado: travadoDe(x), legado: x });
       comPorNome.set(norm(x.nome), id); if (txt(x.apelido)) comPorNome.set(norm(x.apelido), id);
       for (const n of separarGoms(x.goms)) gom(n, id, false);
+      if (T.cobrancas.size || T.cegs.size) religarCom(t.comunidades[t.comunidades.length - 1]);
     },
     gruposwa(d) {
       const x = semPix(d.data); if (!txt(x.nome)) return;
@@ -152,6 +178,7 @@ function novoMapeador(T0, op = {}) {
       const comId = comunidade(x.comunidade), id = `ceg-${d.id}`;
       const row = { id, comunidade_id: comId, gom_id: x.gom ? gom(x.gom, comId) : null, nome: x.nome.trim(), grupo_wa: txt(x.grupo), planilha: txt(x.planilha), forms: txt(x.forms), origem: txt(x.origem), status: txt(x.status), conferido_em: data(x.conferidoEm), notas: txt(x.obs), travado: travadoDe(x), legado: x };
       t.cegs.push(row); guardaCeg(row);
+      if (T.claims.size || T.cobrancas.size) religarCeg(row);
     },
     itens(d) {
       const x = semPix(semProva(d.data)); contaPix(d.data);
@@ -218,7 +245,7 @@ function novoMapeador(T0, op = {}) {
     binder(d) {
       const x = semPix(d.data);
       if (d.id !== "meta") return add.avulsos(d);
-      t.binder_meta.push({ copias: x.n && typeof x.n === "object" ? x.n : {}, troca: arr(x.tr), metas: arr(x.g), legado: x });
+      t.binder_meta.push({ copias: x.n ?? null, troca: x.tr ?? null, metas: x.g ?? null, legado: (({ n, tr, g, ...r }) => r)(x) });
     },
     colecao(d) {
       const grupo = String(d.id), s = d.data && d.data.s && typeof d.data.s === "object" ? d.data.s : {};
@@ -243,9 +270,17 @@ function novoMapeador(T0, op = {}) {
 
   // ---- apagar um documento ----
   const apagar = {
-    comunidades: (id) => del.comunidades.push({ id: `com-${id}` }),
+    comunidades(id) {
+      const cid = `com-${id}`;
+      for (const tab of ["goms", "grupos_wa", "cegs", "cobrancas", "envios", "quadros"]) for (const r of T[tab].values()) if (r.comunidade_id === cid) t[tab].push({ id: r.id, comunidade_id: null });
+      del.comunidades.push({ id: cid });
+    },
     gruposwa: (id) => del.grupos_wa.push({ id: `grp-${id}` }),
-    cegs: (id) => del.cegs.push({ id: `ceg-${id}` }),
+    cegs(id) {
+      const cid = `ceg-${id}`;
+      for (const tab of ["claims", "itens", "cobrancas", "sugestoes"]) for (const r of T[tab].values()) if (r.ceg_id === cid) t[tab].push({ id: r.id, ceg_id: null });
+      del.cegs.push({ id: cid });
+    },
     itens(id) { for (const i of T.itens.values()) if (i.claim_id === `claim-${id}`) del.itens.push({ id: i.id }); del.provas.push({ id: `prova-claims-claim-${id}` }); del.claims.push({ id: `claim-${id}` }); },
     acervo: (id) => del.itens.push({ id: `acervo-${id}` }),
     cobrancas(id) { del.provas.push({ id: `prova-cobrancas-cob-${id}` }, { id: `prova-comp-cob-${id}` }); del.cobrancas.push({ id: `cob-${id}` }); },
@@ -281,9 +316,9 @@ function apagarDoc(col, id, T, op) {
 }
 
 // ---------- lote: a migração ----------
-function mapear(docs) {
+function mapear(docs, op = {}) {
   const by = (col) => docs.filter((d) => d.col === col);
-  const m = novoMapeador({});
+  const m = novoMapeador({}, op);
   const t = m.t, rel = m.rel;
   // fotos (valor de chave) viram card_fotos; as de pedido também vão pro item
   const fotos = new Map(by("fotos").map((d) => [d.id, d.data]));
@@ -466,7 +501,7 @@ function paraDocs(T0, quais) {
   if (quer("binder")) {
     out.binder = new Map();
     const b = T.binder_meta.get("_") || lista("binder_meta")[0];
-    if (b) { const d = { ...(b.legado || {}) }; d.n = b.copias || {}; d.tr = b.troca || []; d.g = b.metas || []; out.binder.set("meta", d); }
+    if (b) { const d = { ...(b.legado || {}) }; if (b.copias != null) d.n = b.copias; if (b.troca != null) d.tr = b.troca; if (b.metas != null) d.g = b.metas; out.binder.set("meta", d); }
     for (const r of lista("avulsos")) if (r.col === "binder") out.binder.set(r.id, r.dados);
   }
   if (quer("colecao")) {
