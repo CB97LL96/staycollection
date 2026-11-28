@@ -253,6 +253,18 @@ Feedback da dona: o Mural tinha um quadro livre dentro dele, e colar print numa 
   quadro "maior" que junta todas as GOMs de uma comunidade.
 - Testes: `npm test` (30) e `npm run e2e` (mural 34, quadro 44, compartilhar 12, agora 52).
 
+### Coleção como binder (28/11/2026, etapa 4)
+A aba Coleção virou o binder dela: o catálogo inteiro com o estado dela em cada card, pra não recomprar e achar o que falta.
+- **Estado por card** (folha do card, 1 toque, com desfazer): recebido, a caminho, claim, quero, não coleciono. Grava em `colecao/<membro>` (campo `s`, mesmo formato do app antigo; `claim` e `nao` são novos). Card com pedido ligado mostra o estado do pedido (muda no "editar pedido"). Nos cards que faltam, o ✓ da tile marca "recebi" em um toque.
+- **Filtros** com contagem: Falta (só o que ela colecionaria), Tenho, A caminho, Claim, Quero, Repetidos, Sem foto, Escondidos (não coleciono), Sem card, Tudo. Mais membro, era, tipo (álbum, POB, LD, fansign...), loja/versão e busca por várias palavras.
+- **Repetidos:** card com mais de uma cópia ativa ganha o selo "repetido ×N". Na folha, "pra troca" põe a etiqueta `troca` no item que sobra (ou marca no binder, se não há pedido) e "copiar lista de troca" monta o texto. Cópias que ela contou à mão ficam em `binder/meta.n`.
+- **Aviso de recompra:** "você já tem (recebido / a caminho)" no Quadro (sugestões de card) e em Nova compra, antes de registrar/salvar. Não bloqueia; vira repetido.
+- **Metas:** um set (era + tipo + origem + versão) ou uma era inteira, em `binder/meta.g`. Mostra "3 de 8, 1 a caminho, faltam Changbin, Hyunjin e I.N".
+- **Caça de fotos (começo):** filtro "Sem foto" lista os cards dela que só têm a folha borrada do catálogo; na folha ela sobe uma imagem (murFoto) ou cola um link https. Guarda só o asset ou o link, em `fotos/<id do card>`.
+- **Fechado depois:** aviso "você já tem" também na leitura de print; "próximo sem foto" na folha (fila de fotos manual, só link ou imagem que ela sobe, nunca busca em site); card com 1 pedido muda o status do pedido (e trava) pelos botões de estado; "Selecionar vários" marca o estado de vários cards de uma vez, com um desfazer só.
+- Ainda fora: card com 2 ou mais pedidos muda só por "editar pedido"; quero e não coleciono não valem pra card com pedido.
+- Testes: `npm test` (30) e `npm run e2e` (mural 34, quadro 44, compartilhar 12, agora 52, binder 128, os dois tamanhos de tela).
+
 ## App novo do zero (01/11/2026)
 
 O `index.html` agora é um app novo, feito do zero. O antigo está em `/antigo.html`, e `/novo.html` só redireciona para `/`.
