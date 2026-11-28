@@ -110,18 +110,7 @@ test("etiquetas, campos travados e notas dela vão pro item novo", () => {
 
 // ---------- ida e volta: documento -> tabelas -> documento ----------
 import { paraDocs, escrever, apagarDoc, mapas, semPix } from "./mapear.mjs";
-const tudo = [
-  ...exemplo,
-  doc("cobrancas", "k2", { referente: "taxa", comunidade: "Azul", valor: "1.234,50", status: "Paga", pagoEm: "2026-11-02", comprovanteAsset: "c".repeat(32), pagoProva: "comprovante PicPay", prova: "chat", travado: ["valor"] }),
-  doc("caixa", "tg-2", { origem: "telegram", recebidoEm: "2026-11-27T10:00:00.000Z", estado: "lida", registros: [{ alvo: "i2", estado: "pendente" }], ceg: { id: "g1", nome: "Caixa 2 PHP" }, totalDevido: 12.5, fonte: "texto" }),
-  doc("quadros", "q1", { gom: "Gabi", com: "Azul", rasc: { r1: { asset: "d".repeat(32) } }, notas: { n1: { t: "x" } } }),
-  doc("binder", "meta", { n: { a: 2 }, tr: ["a"], g: [{ id: 1 }] }),
-  doc("colecao", "han", { s: { a: "tenho", b: "quero" } }),
-  doc("cardsnovos", "n1", { m: "HAN", e: "E", v: "V", t: "POB" }),
-  doc("meta", "fontes", { bot: { em: "2026-11-01" } }),
-  doc("mural", "m1", { qualquer: "coisa" }),
-  doc("gruposwa", "w1", { nome: "Grupo A", comunidade: "Azul", cat: "claim" }),
-];
+import { exemplo as tudo } from "./exemplo.mjs";
 const ordena = (o) => JSON.parse(JSON.stringify(o, (k, v) => (v && typeof v === "object" && !Array.isArray(v) ? Object.fromEntries(Object.entries(v).sort()) : v)));
 const T = mapear(tudo).tabelas;
 
