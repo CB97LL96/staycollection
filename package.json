@@ -11,8 +11,11 @@
     "exportar-catalogo": "node scripts/exportar-catalogo.mjs",
     "melhorar-fotos": "node scripts/melhorar-fotos.mjs",
     "migrar-v2": "node scripts/migrar-v2.mjs",
-    "test": "node --test --experimental-test-module-mocks scripts/v2/mapear.test.mjs scripts/investigar.test.mjs scripts/investigar.fluxo.test.mjs scripts/telegram.fluxo.test.mjs scripts/conferir-cobrancas.test.mjs scripts/print-core.test.mjs scripts/rodada.test.mjs",
-    "e2e": "NODE_PATH=/opt/node-tools/node_modules sh -c 'for t in mural quadro compartilhar agora rodada binder; do node scripts/e2e/$t.cjs || exit 1; done'"
+    "verificar-v2": "node scripts/verificar-v2.mjs",
+    "voltar-v2": "node scripts/voltar-v2.mjs",
+    "test": "node --test --experimental-test-module-mocks scripts/v2/mapear.test.mjs scripts/v2/pg.test.mjs scripts/v2/migracao.test.mjs scripts/investigar.test.mjs scripts/investigar.fluxo.test.mjs scripts/telegram.fluxo.test.mjs scripts/conferir-cobrancas.test.mjs scripts/print-core.test.mjs scripts/rodada.test.mjs",
+    "e2e": "NODE_PATH=/opt/node-tools/node_modules sh -c 'for t in mural quadro compartilhar agora rodada binder; do node scripts/e2e/$t.cjs || exit 1; done'",
+    "e2e:v2": "E2E_MODELO=v2 NODE_PATH=/opt/node-tools/node_modules sh -c 'for t in mural quadro compartilhar agora rodada binder; do node scripts/e2e/$t.cjs || exit 1; done'"
   },
   "dependencies": {
     "@google/genai": "^2.31.0",
