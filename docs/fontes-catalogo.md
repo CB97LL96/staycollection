@@ -107,3 +107,23 @@ do photocard — scan às vezes sai errado): `skzpicsarchive` (tabuleiro
 Um dos links de pasta do Drive que vieram junto (`17YgJyDPdgLISUJMQDK51CCpWcTp_Q5in`,
 "Templates" dentro de "PDV") era uma pasta de trabalho da Agência Moldura
 (cliente "PDV"), sem relação com Stray Kids — removido desta lista.
+
+## Caça de fotos (28/11/2026)
+
+`scripts/sync-fotos.mjs` (dry-run por padrão, `--apply` grava; roda também no
+cron semanal `api/cron/sync-eventos.js`, 150 cards por vez). Só guarda o LINK,
+em `fotosug/<id do card>` (tabela `docs`, sem SQL novo). O app mostra na folha
+do card, ela aceita (vira `fotos/<id>` com `trava:true`) ou descarta. Foto que
+ela escolheu nunca é trocada.
+
+| Fonte | Resultado da checagem | No script |
+|---|---|---|
+| CraftenSKZ | Sem campo de imagem no JSON; a URL é por padrão de id (`catalogo-core.mjs`). Só `.webp`, sem versão maior. Já medido: 1.456 fotos <100px, 401 sem arquivo. Esgotado. | já usado em `colecao.json` (campo `u`) |
+| Irmão no catálogo | mesmo membro+era+versão em outro card com foto boa | sim (`irmao`) |
+| Wiki fandom (API MediaWiki) | Funciona, mas quase não tem photocard avulso (achei só 2 arquivos, DICON JP). Páginas de álbum só têm capa | sim (`wiki`), nota 75 se o nome do arquivo traz membro+era |
+| POCA MALL | 4 produtos da Stray Kids hoje (THIS & THAT x3, SG). Foto de produto, não do card | sim (`poca`), nota 30, só álbum |
+| `data/fotos-extra.json` | links que ela (ou eu) juntar à mão: `{"<id do card>":[{"url":"https://…","w":800,"nota":"de onde veio"}]}` | sim (`extra`), nota 95 |
+| kpopping, kprofiles, namu | 403/redirect pra robô; kprofiles não tem photocard | descartado |
+| skzpclist, @onged95, Pinterest, X | só links de post do X (402, login) | descartado |
+| Drive de templates | precisa de login ou chave Google; templates são folhas com vários cards | fora (ver abaixo) |
+| Mercari | exige conta/API | fora |

@@ -480,6 +480,7 @@ h2>.n:last-child{margin-left:auto}
 .agq .agt{font-weight:800;font-size:19px;line-height:1.25;margin:8px 0 4px}.agq .ags{color:var(--ink2);font-size:14px;margin:0 0 12px}
 .agq .actions{margin:12px 0 0}.agq .tag{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)}
 .agq .strip{display:flex;gap:6px;margin-top:10px}.agq .strip .ph{width:42px}
+.sugit{display:flex;align-items:center;gap:10px;padding:8px 0}.sugit img{width:56px;height:84px;object-fit:cover;border-radius:6px;background:var(--surface2);flex:none}.sugit .tx{flex:1;min-width:0;display:flex;flex-direction:column}.sugit .step{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .fileb{position:relative;overflow:hidden;cursor:pointer}.fileb input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
 .gsheet .sit{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
 
@@ -601,7 +602,7 @@ const ico=(n,sz)=>`<svg viewBox="0 0 24 24" ${sz?`width="${sz}" height="${sz}"`:
 // ---------- dados ----------
 const COLS=["cobrancas","itens","envios","cegs","comunidades","repasses","acervo","caixa","gruposwa","mural","quadros","binder"];
 const D={}; COLS.forEach(k=>D[k]=new Map());
-let fotos={}, posse={}, novos=new Map(), COL=null, CIDX=new Map(), db=null, ready=false, ver=0;
+let fotos={}, fotosug={}, posse={}, novos=new Map(), COL=null, CIDX=new Map(), db=null, ready=false, ver=0;
 const list=k=>[...D[k].entries()].map(([id,d])=>({id,...d}));
 
 const MEMBROS=["Bang Chan","Lee Know","Changbin","Hyunjin","HAN","Felix","Seungmin","I.N"];
@@ -955,7 +956,7 @@ function renderColecao(){
     const rep=e.copias>1?`<span class="cp">repetido ×${e.copias}</span>`:"";
     const tr=ehTroca(e)?`<span class="tr">troca</span>`:"";
     const quick=!ui.csm&&e.card&&!e.itens.length&&e.fase!=="rec"&&e.fase!=="nao"?`<button class="qt" data-pst="${esc(e.cid)}|tenho" type="button" aria-label="Recebi: ${esc(e.nome)}" title="recebi">✓</button>`:"";
-    return `<div class="tw"><button class="tile st-${e.fase} ${ui.csel.has(e.key)?"sel":""}" data-card="${esc(e.key)}" type="button">${ph(bgOf(e),e.tipo==="Photocard / set"?"":"wide",(e.card||bgOf(e)?"":esc(e.nome))+b+rep+tr)}<span class="cap">${esc(e.nome)}<small>${esc(e.membro||e.era)}${e.card&&e.card.t&&ui.cs!=="era"?" · "+esc(tlbl(e.card.t)):""}${e.semCard?" · sem card":""}${ui.cf==="semfoto"?" · sem foto boa":""}</small></span></button>${quick}</div>`};
+    return `<div class="tw"><button class="tile st-${e.fase} ${ui.csel.has(e.key)?"sel":""}" data-card="${esc(e.key)}" type="button">${ph(bgOf(e),e.tipo==="Photocard / set"?"":"wide",(e.card||bgOf(e)?"":esc(e.nome))+b+rep+tr)}<span class="cap">${esc(e.nome)}<small>${esc(e.membro||e.era)}${e.card&&e.card.t&&ui.cs!=="era"?" · "+esc(tlbl(e.card.t)):""}${e.semCard?" · sem card":""}${ui.cf==="semfoto"?(sugDe(e.card.i).length?" · tem sugestão":" · sem foto boa"):""}</small></span></button>${quick}</div>`};
   const gs=(g,es)=>{const tem=es.filter(e=>e.fases.includes("rec")).length, fl=es.filter(e=>e.fase==="falta").length; return `<div class="erah" style="--e:${eraCor(g)}"><b>${esc(g)}</b><span>${plural(es.length,"card","cards")}${tem?`<br>${tem} tenho`:""}${fl?`<br>${fl} faltam`:""}</span></div>`};
   const metas=(mt.g||[]).map(metaProg);
   const metaHtml=`<details class="metas" ${ui.cmeta?"open":""}><summary>Metas${metas.length?` <span class="n">${metas.length}</span>`:""}${metas.length?`<span class="ms">${esc(metas.slice(0,2).map(m=>m.rotulo+": "+m.tem+" de "+m.total).join(" · "))}</span>`:""}</summary>
@@ -976,7 +977,7 @@ function renderColecao(){
   ${ui.csm?`<div class="selbar" role="group" aria-label="Marcar os selecionados"><b>${ui.csel.size} selecionados</b>${ESTADOS.map(([k,l])=>`<button class="btn sm" data-cselst="${k}" type="button" ${ui.csel.size?"":"disabled"}>${l}</button>`).join("")}<button class="btn sm" data-cselst="x" type="button" ${ui.csel.size?"":"disabled"}>tirar marca</button></div>`:""}
   ${ui.cmeta?`<div class="chips"><button class="chip" data-meta="" aria-pressed="true" type="button">Só a meta: ${esc(metaProg(ui.cmeta).rotulo)} ✕</button></div>`:""}
   ${ui.cf==="rep"?`<div class="chips"><button class="chip" data-ctr aria-pressed="${!!ui.ctr}" type="button">Só pra troca</button><button class="chip" data-act="copiartroca" type="button">${ico("copy",14)}copiar lista de troca</button></div><p class="note">Repetido é um selo: o card tem mais de uma cópia ativa (recebida, a caminho ou claim). Abra o card e marque <b>pra troca</b> a cópia que sobra; ela ganha a etiqueta "troca".</p>`:""}
-  ${ui.cf==="semfoto"?`<p class="note">Cards seus sem foto boa (só a folha borrada do catálogo). Abra o card e troque a foto: sobe uma imagem sua ou guarda só o link.</p>`:""}
+  ${ui.cf==="semfoto"?`<p class="note">Cards seus sem foto boa (só a folha borrada do catálogo). Abra o card: o robô sugere fotos que achou (você aceita ou descarta), ou você sobe uma imagem ou guarda só o link.</p>`:""}
   ${ui.cf==="falta"?`<p class="note" style="margin-top:0">Só o que você colecionaria. O que você marcou como <b>não coleciono</b> fica em Escondidos${cnt.nao?` (${cnt.nao})`:""}.</p>`:""}
   ${ui.cf==="semcard"?`<p class="note">Estes pedidos ainda não estão ligados a um card do catálogo. No app novo, toda compra já nasce com o card escolhido, então esta lista só vai encolher.</p>`:""}
   ${!COL?`<p class="empty">Carregando catálogo…</p>`:v.length?groups.map(([g,es])=>`${gs(g,es)}<div class="grid">${es.map(tile).join("")}</div>`).join(""):`<p class="empty">${ui.cf==="falta"?"Nada falta com esses filtros.":"Nada aqui com esses filtros."}</p>`}
@@ -1154,6 +1155,27 @@ async function fotoLink(cid,url){
   catch(e){toast("Não deu pra salvar o link")}
 }
 // fila de fotos: o próximo card dela sem foto boa, na ordem da tela
+// sugestões do robô (fotosug/<id>): ele só sugere; ela aceita (vira fotos/<id>, travada) ou descarta
+const FONTE_LBL={extra:"link guardado",irmao:"mesmo set no catálogo",wiki:"wiki do Stray Kids",poca:"POCA MALL (foto do produto)"};
+const sugDe=cid=>{const s=fotosug[cid]; return s&&Array.isArray(s.c)?s.c.filter(x=>x&&okUrl(x.url)):[]};
+async function sugAceitar(cid,i){
+  const x=sugDe(cid)[i]; if(!x||!db||!canWrite)return; const antes=fotos[cid];
+  try{await db.doc("fotos/"+cid).set({url:x.url,trava:true,fonte:x.fonte,...(x.w?{w:x.w}:{})}); toast("Foto trocada (só o link fica guardado)",async()=>{if(antes)await db.doc("fotos/"+cid).set(antes); else await db.doc("fotos/"+cid).delete()})}
+  catch(e){toast("Não deu pra salvar a foto")}
+}
+async function sugDescartar(cid,i){
+  const s=fotosug[cid], x=sugDe(cid)[i]; if(!x||!db||!canWrite)return;
+  const novo={...s,c:s.c.filter(y=>y.url!==x.url),nao:[...(s.nao||[]),x.url]};
+  try{await db.doc("fotosug/"+cid).set(novo); toast("Sugestão descartada",async()=>{await db.doc("fotosug/"+cid).set(s)})}
+  catch(e){toast("Não deu pra descartar")}
+}
+const sugBox=(c,cid)=>{
+  if(fotoBoa(c))return "";
+  const l=sugDe(cid), s=fotosug[cid];
+  if(!l.length)return `<p class="note" style="margin:0 0 8px">${s&&s.tentouEm?"O robô não achou foto boa pra este card. Ele procura de novo na semana que vem.":"O robô ainda não procurou foto pra este card."}</p>`;
+  return `<p class="lede" style="margin:0 0 6px">${l.length===1?"1 foto que o robô achou":l.length+" fotos que o robô achou"}. Só sugestão: você decide.</p>
+  <ul class="rows sug">${l.map((x,i)=>`<li><div class="sugit"><img src="${esc(x.url)}" alt="" loading="lazy" referrerpolicy="no-referrer"><span class="tx"><span class="t">${esc(FONTE_LBL[x.fonte]||x.fonte)}</span><span class="s">${x.w&&x.h?x.w+"×"+x.h+" px":x.w?x.w+" px de largura":"tamanho não informado"} · nota ${x.nota}/100${x.por?" · "+esc(x.por):""}</span></span><span class="step"><button class="btn sm pri" data-sugok="${esc(cid)}|${i}" type="button">usar</button><button class="btn sm" data-sugno="${esc(cid)}|${i}" type="button">descartar</button></span></div></li>`).join("")}</ul>`;
+};
 function proximoSemFoto(cid){const l=binder().rows.filter(e=>passa(e,"semfoto")&&e.cid!==cid); return l.length?l[0].cid:""}
 async function posseLote(cids,st){
   if(!db||!canWrite){toast("Sem permissão pra gravar");return false}
@@ -1197,7 +1219,8 @@ function cardSheet(key){const e=rowDe(key); if(!e)return "<p class='empty'>Card 
     ${e.copias>1?`<div class="chips"><button class="chip" data-troca="${esc(cid)}" aria-pressed="${ehTroca(e)}" type="button">pra troca</button></div>`:""}`:""}
     <h2>Metas</h2><div class="chips"><button class="chip" data-metat="${esc(setId)}" aria-pressed="${gs.includes(setId)}" type="button">set ${esc(c.v)}</button><button class="chip" data-metat="${esc(eraId)}" aria-pressed="${gs.includes(eraId)}" type="button">era ${esc(c.e)}</button></div>
     <h2>Foto <span class="n">${fotoBoa(c)?"boa":"fraca"}</span></h2>
-    <p class="lede" style="margin:0 0 8px">${fotoBoa(c)?"Este card já tem foto boa.":"Só tem a folha borrada do catálogo."} Guardo só a imagem que você sobe ou o link, nunca cópia de site.</p>
+    <p class="lede" style="margin:0 0 8px">${fotoBoa(c)?"Este card já tem foto boa.":"Só tem a folha borrada do catálogo."} Guardo só a imagem que você sobe ou o link, nunca cópia de site. O que você escolhe fica travado: o robô só sugere.</p>
+    ${sugBox(c,cid)}
     <div class="actions"><label class="btn sm fileb">Trocar foto<input id="mif" data-for="${esc(cid)}" type="file" accept="image/*"></label>${proximoSemFoto(cid)?`<button class="btn sm" data-fproximo="${esc(cid)}" type="button">próximo sem foto</button>`:""}${fotos[cid]?`<button class="btn sm" data-fotodel="${esc(cid)}" type="button">voltar à do catálogo</button>`:""}</div>
     <div class="field"><label for="fl-url">ou o link de uma imagem (https)</label><div class="inl"><input id="fl-url" inputmode="url" placeholder="https://…"><button class="btn sm" data-flink="${esc(cid)}" type="button">usar link</button></div></div>`:"";
   return `<div class="cardhero">${ph(bgOf(e),e.tipo==="Photocard / set"?"":"wide",e.card||bgOf(e)?"":esc(e.nome))}<div><div style="font-size:20px;font-weight:700">${esc(e.nome)}</div><div style="color:var(--ink2)">${esc([e.membro,e.era,c&&tlbl(c.t)].filter(Boolean).join(" · "))}</div><div class="actions">${e.fase!=="falta"?`<span class="pill ${FTONE[e.fase]}">${FLBL[e.fase]}</span>`:`<span class="pill guess">falta</span>`}${e.copias>1?`<span class="pill">repetido ×${e.copias}</span>`:""}${ehTroca(e)?`<span class="pill">troca</span>`:""}</div>${e.semCard?`<p class="note">Este pedido ainda não está ligado a um card do catálogo.</p><button class="btn sm pri" data-link="${esc(e.item.id)}" type="button">ligar ao catálogo</button>`:""}</div></div>
@@ -2013,6 +2036,8 @@ document.addEventListener("click",async e=>{
   if(ds.fproximo){const n=proximoSemFoto(ds.fproximo); if(n){sheetFn=()=>cardSheet(n); $("#shB").innerHTML=sheetFn(); lazy(); $("#shB").scrollTop=0} return}
   if(ds.csm!=null){ui.csm=!ui.csm; ui.csel=new Set(); render(); return}
   if(ds.cselst!=null){const ids=[...ui.csel]; if(!ids.length)return; if(await posseLote(ids,ds.cselst==="x"?"":ds.cselst)){ui.csel=new Set(); ui.csm=false; render()} return}
+  if(ds.sugok){const [k,i]=ds.sugok.split("|"); await sugAceitar(k,+i); sheetAtualiza(); return}
+  if(ds.sugno){const [k,i]=ds.sugno.split("|"); await sugDescartar(k,+i); sheetAtualiza(); return}
   if(ds.fotodel){await fotoTirar(ds.fotodel); sheetAtualiza(); return}
   if(ds.mgadd!=null){const id=mg.s||(mg.e?metaId.era(mg.e):""); if(!id)return; if(!(metaDoc().g||[]).includes(id))await metaToggle(id); closeSheet(); return}
   if(ds.cm!=null){ui.cm=ds.cm;ui.cn=240;render();return}
@@ -2151,6 +2176,7 @@ function mergeNovos(){if(!COL||!COL.base)return;ERA_ORD=new Map();COL.base.forEa
   try{const u=await window.claude.use("user"); const w=u&&u.can?await u.can("data.write"):null; if(w===false)canWrite=false}catch(e){}
   COLS.forEach(k=>db.collection(k).limit(1000).onSnapshot(s=>{const m=new Map();s.docs.forEach(d=>m.set(d.id,d.data()));D[k]=m;schedule()},()=>{}));
   db.collection("fotos").limit(1000).onSnapshot(s=>{const m={};s.docs.forEach(d=>m[d.id]=d.data());fotos=m;schedule()},()=>{});
+  db.collection("fotosug").limit(1000).onSnapshot(s=>{const m={};s.docs.forEach(d=>m[d.id]=d.data());fotosug=m;schedule()},()=>{});
   db.collection("colecao").limit(50).onSnapshot(s=>{const m={};s.docs.forEach(d=>{const x=d.data();m[d.id]=(x&&x.s&&typeof x.s==="object")?x.s:{}});posse=m;schedule()},()=>{});
   db.collection("cardsnovos").limit(1000).onSnapshot(s=>{const m=new Map();s.docs.forEach(d=>m.set(d.id,d.data()));novos=m;mergeNovos();schedule()},()=>{});
   loadCol(); iniciarShare();

@@ -7,12 +7,13 @@
     "migrar-eventos-timeline": "node scripts/migrar-eventos-timeline.mjs",
     "migrar-wiki-skz": "node scripts/migrar-wiki-skz.mjs",
     "migrar-pocamarket": "node scripts/migrar-pocamarket.mjs",
+    "sync-fotos": "node scripts/sync-fotos.mjs",
     "sync-catalogo": "node scripts/sync-catalogo.mjs",
     "exportar-catalogo": "node scripts/exportar-catalogo.mjs",
     "melhorar-fotos": "node scripts/melhorar-fotos.mjs",
     "migrar-v2": "node scripts/migrar-v2.mjs",
-    "test": "node --test --experimental-test-module-mocks scripts/v2/mapear.test.mjs scripts/investigar.test.mjs scripts/investigar.fluxo.test.mjs scripts/telegram.fluxo.test.mjs scripts/conferir-cobrancas.test.mjs scripts/print-core.test.mjs scripts/rodada.test.mjs",
-    "e2e": "NODE_PATH=/opt/node-tools/node_modules sh -c 'for t in mural quadro compartilhar agora rodada binder; do node scripts/e2e/$t.cjs || exit 1; done'"
+    "test": "node --test --experimental-test-module-mocks scripts/v2/mapear.test.mjs scripts/investigar.test.mjs scripts/investigar.fluxo.test.mjs scripts/telegram.fluxo.test.mjs scripts/conferir-cobrancas.test.mjs scripts/print-core.test.mjs scripts/rodada.test.mjs scripts/fotos.test.mjs",
+    "e2e": "NODE_PATH=/opt/node-tools/node_modules sh -c 'for t in mural quadro compartilhar agora rodada binder fotos; do node scripts/e2e/$t.cjs || exit 1; done'"
   },
   "dependencies": {
     "@google/genai": "^2.31.0",

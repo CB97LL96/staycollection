@@ -15,6 +15,7 @@
 import { importarEventosTimeline } from "../../scripts/migrar-eventos-timeline.mjs";
 import { importarWikiSkz } from "../../scripts/migrar-wiki-skz.mjs";
 import { importarPocamarket } from "../../scripts/migrar-pocamarket.mjs";
+import { rodar as cacarFotos } from "../../scripts/sync-fotos.mjs";
 
 export default async function handler(req, res) {
   if (req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) return res.status(401).end();
@@ -27,7 +28,13 @@ export default async function handler(req, res) {
     const wiki = await importarWikiSkz(url, key);
     let loja;
     try { loja = await importarPocamarket(url, key); } catch (e) { loja = { erro: e.message }; }
-    return res.status(200).json({ timeline: totalTimeline, wiki, loja });
+    // caça de fotos (só sugere, nunca troca foto que ela escolheu); precisa de OWNER_ID
+    let fotos;
+    if (process.env.OWNER_ID) {
+      try { const r = await cacarFotos({ apply: true, limite: 150, url, key, owner: process.env.OWNER_ID }); fotos = r.resumo; }
+      catch (e) { fotos = { erro: e.message }; }
+    } else fotos = { pulado: "falta OWNER_ID" };
+    return res.status(200).json({ timeline: totalTimeline, wiki, loja, fotos });
   } catch (e) {
     console.error(e);
     return res.status(500).json({ erro: e.message });

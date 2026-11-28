@@ -11,7 +11,8 @@
       "includeFiles": "data/catalogo-*.json"
     },
     "api/cron/sync-eventos.js": {
-      "maxDuration": 60
+      "maxDuration": 120,
+      "includeFiles": "{colecao.json,data/fotos-extra.json}"
     },
     "api/print.js": {
       "maxDuration": 120,

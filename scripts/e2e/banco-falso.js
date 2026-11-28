@@ -5,7 +5,7 @@ const seed={
  cegs:{g1:{nome:"Caixa 2 PHP",comunidade:"Comunidade Azul",gom:"Gabi"},g2:{nome:"Variados 7",comunidade:"Comunidade Azul",gom:"Gabi"},g3:{nome:"Set Seung",comunidade:"Outra",gom:"Ana"}},
  itens:{i1:{item:"Han Aladin",membro:"HAN",ceg:"Caixa 2 PHP",comunidade:"Comunidade Azul",status:"Garantido"},i2:{item:"Felix LD",membro:"Felix",ceg:"Caixa 2 PHP",comunidade:"Comunidade Azul",status:"Com a GOM no Brasil",etiquetas:"troca"},i3:{item:"Seung set",membro:"Seungmin",ceg:"Set Seung",comunidade:"Outra",status:"Envio liberado"},i4:{item:"Chan pob",membro:"Bang Chan",ceg:"Variados 7",comunidade:"Comunidade Azul",status:"Recebido"}},
  cobrancas:{k1:{referente:"frete",ceg:"Caixa 2 PHP",comunidade:"Comunidade Azul",valor:18.4,status:"Pendente",prazo:"2026-12-01"}},
- fotos:{},colecao:{},cardsnovos:{},cegs2:{}
+ fotos:{},fotosug:{},colecao:{},cardsnovos:{},cegs2:{}
 };
 // testes podem somar dados com window.__seedExtra = {colecao:{id:{...}}} antes de carregar este arquivo
 const ex=window.__seedExtra||{}; for(const c in ex)seed[c]={...(seed[c]||{}),...ex[c]};
