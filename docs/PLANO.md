@@ -232,9 +232,11 @@ Na dúvida sobre um termo, usar o que aparece nas mensagens das GOMs e perguntar
    - Lista de CEGs mostra "conferida hoje / há N dias". Corrigido `cegIdOf` (o botão
      "conferi, está igual" da Agora não gravava, porque `list()` devolve cópias).
    - Testes: `npm test` (33) e `scripts/e2e/rodada.cjs` (31 checagens por tela, desktop e celular).
-   - Fora por ora: CEG sem cadastro não entra na rodada (precisa da doc pra guardar
-     `conferidoEm`); planilha do Paboracha e forms não são lidos; rodada não guarda o ponto
-     onde parou se fechar o app.
+   - CEG que só existe nos itens também entra: "Nada novo" cadastra a CEG (nome, comunidade,
+     `conferidoEm`) e desfazer apaga. Paboracha: `api/rodada.js` lê a API pública (precisa de
+     `PABORACHA_PERFIL`) e mostra as cobranças da CEG. Forms não dá pra ler: a tela avisa e
+     abre o link. A rodada guarda onde parou (neste aparelho, no mesmo dia): "Continuar a rodada".
+   - Fora: ler o conteúdo de forms; testar com planilha, Paboracha e banco reais (só simulados).
 
 ### Mural e Quadro refeitos (27/11/2026)
 Feedback da dona: o Mural tinha um quadro livre dentro dele, e colar print numa lista de CEGs era tedioso.

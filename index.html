@@ -788,7 +788,7 @@ function agoraFila(k){
   const ord=[...f.filter(x=>x===pri),...f.filter(x=>x!==pri&&!ate.has(x.id)),...f.filter(x=>x!==pri&&ate.has(x.id))];
   return ord;
 }
-function rdBotao(){const o=rdOrdem(), n=o.grupos.flat().length; if(!n)return "";
+function rdBotao(){const sv=rdSalva(); if(sv)return `<button class="rdbtn" data-rdini type="button"><span class="tx"><b>Continuar a rodada</b><small>parou na ${sv.i+1}ª de ${sv.ordem.length} CEGs</small></span><span class="go" aria-hidden="true">→</span></button>`; const o=rdOrdem(), n=o.grupos.flat().length; if(!n)return "";
   const coms=o.grupos.length; return `<button class="rdbtn" data-rdini type="button"><span class="tx"><b>Começar a rodada</b><small>${plural(n,"CEG","CEGs")} em ${plural(coms,"comunidade","comunidades")}, uma por vez${o.hojeJa?` · ${o.hojeJa} já conferida${o.hojeJa>1?"s":""} hoje`:""}</small></span><span class="go" aria-hidden="true">→</span></button>`}
 function renderAgora(){
   const k=contas(), col=colecao(), fila=agoraFila(k);
@@ -1539,19 +1539,24 @@ document.addEventListener("paste",e=>{
 // nada muda sem ela tocar. conferidoEm fica na doc da CEG (só esse campo é gravado).
 const rd={ordem:[],i:-1,feitos:{},hist:[],devoIni:new Set(),deveIni:0,plan:{},nov:false,txt:"",img:null,semDoc:0,hojeJa:0};
 const confDias=r=>{const d=pd(r.doc&&r.doc.conferidoEm); return d?Math.round((today()-d)/864e5):null};
-const confTxt=r=>{if(!r.doc)return ""; const n=confDias(r); return n==null?"nunca conferida":n<=0?"conferida hoje":n===1?"conferida ontem":`conferida há ${n} dias`};
+const confTxt=r=>{if(!r.doc)return "sem cadastro"; const n=confDias(r); return n==null?"nunca conferida":n<=0?"conferida hoje":n===1?"conferida ontem":`conferida há ${n} dias`};
 function rdOrdem(){
-  const xs=cegs().filter(r=>r.aberta&&r.doc).map(r=>{
+  const xs=cegs().filter(r=>r.aberta).map(r=>{
     const n=confDias(r), venc=r.contas.some(c=>devo(c)&&vencida(c)), ab=r.contas.some(c=>ABERTA.includes(c.status)), gom=r.itens.some(d=>["br","lib"].includes(faseDe(d.status)));
     return {r,n,score:(venc?4e6:0)+(ab?2e6:0)+(gom?1e6:0)+(n==null?999:Math.max(0,n))}});
   const livres=xs.filter(x=>x.n!==0), m=new Map();
   livres.forEach(x=>{const k=x.r.com||""; if(!m.has(k))m.set(k,[]); m.get(k).push(x)});
   const grupos=[...m.values()].map(g=>g.sort((a,b)=>b.score-a.score)).sort((a,b)=>b[0].score-a[0].score);
-  return {grupos,hojeJa:xs.length-livres.length,semDoc:cegs().filter(r=>r.aberta&&!r.doc).length};
+  return {grupos,hojeJa:xs.length-livres.length};
 }
+const RD_K="novo-rodada";
+function rdSalvar(){try{localStorage.setItem(RD_K,JSON.stringify({dia:isoToday(),ordem:rd.ordem,i:rd.i,feitos:rd.feitos,hist:rd.hist,devoIni:[...rd.devoIni],deveIni:rd.deveIni,hojeJa:rd.hojeJa}))}catch(e){}}
+function rdSalva(){try{const j=JSON.parse(localStorage.getItem(RD_K)||"null"); return j&&j.dia===isoToday()&&Array.isArray(j.ordem)&&j.i>=0&&j.i<j.ordem.length?j:null}catch(e){return null}}
 function rdIniciar(){
+  const sv=rdSalva();
+  if(sv&&sv.ordem.every(k=>cegs().some(x=>x.key===k))){Object.assign(rd,{ordem:sv.ordem,i:sv.i,feitos:sv.feitos||{},hist:sv.hist||[],devoIni:new Set(sv.devoIni),deveIni:sv.deveIni,plan:{},nov:false,txt:"",img:null,hojeJa:sv.hojeJa||0}); openSheet("Rodada",rodadaSheet); return}
   const o=rdOrdem(), k=contas();
-  Object.assign(rd,{ordem:o.grupos.flat().map(x=>x.r.key),i:-1,feitos:{},hist:[],devoIni:new Set(k.devoL.map(c=>c.id)),deveIni:k.soma(k.devoL),plan:{},nov:false,txt:"",img:null,semDoc:o.semDoc,hojeJa:o.hojeJa});
+  Object.assign(rd,{ordem:o.grupos.flat().map(x=>x.r.key),i:-1,feitos:{},hist:[],devoIni:new Set(k.devoL.map(c=>c.id)),deveIni:k.soma(k.devoL),plan:{},nov:false,txt:"",img:null,hojeJa:o.hojeJa});
   openSheet("Rodada",rodadaSheet);
 }
 const rdAtual=()=>rd.i>=0&&rd.i<rd.ordem.length?cegs().find(x=>x.key===rd.ordem[rd.i]):null;
@@ -1567,13 +1572,13 @@ function rdBusca(r){
 }
 const rdOndeOlhar=r=>{const g=r.doc&&r.doc.grupo, n=g||(gruposDe(r.com)[0]||{}).nome; return n?{n,grupo:true}:{n:"grupo da "+nomeCom(r.com),grupo:false}};
 function rdPlanHtml(r,p){
-  if(!r.doc.planilha)return `<p class="note">Esta CEG não tem planilha cadastrada. Olhe no grupo.</p>`;
-  const link=okUrl(r.doc.planilha)?`<a class="btn sm" href="${esc(r.doc.planilha)}" target="_blank" rel="noopener">abrir a planilha</a>`:"";
+  if(!r.doc||!r.doc.planilha)return `<p class="note">${r.doc?"Esta CEG não tem planilha cadastrada.":"Esta CEG ainda não está cadastrada, então não tem planilha."} Olhe no grupo.</p>`;
+  const link=okUrl(r.doc.planilha)?`<a class="btn sm" href="${esc(r.doc.planilha)}" target="_blank" rel="noopener">${/forms/i.test(r.doc.planilha)?"abrir o forms":/paboracha/i.test(r.doc.planilha)?"abrir o Paboracha":"abrir a planilha"}</a>`:"";
   if(!p||p.carregando)return `<p class="note">Lendo a planilha…</p>${link}`;
   if(!p.cadastrada&&p.cadastrada!==undefined)return `<p class="note">Esta CEG não está cadastrada no servidor.</p>`;
   if(p.lida===false)return `<p class="note">${esc(p.motivo||"Não consegui ler a planilha.")}</p>${link}`;
-  if(!p.achouNome)return `<p class="note">Planilha lida, mas o seu nome não aparece nela.</p>${link}`;
-  return `${p.abas.map(a=>`<div class="rdab"><b>${esc(a.aba||"planilha")}</b>${a.cabecalho?`<small>${esc(a.cabecalho)}</small>`:""}${a.linhas.map(l=>`<code>${esc(l)}</code>`).join("")}${a.mais?`<small>+ ${a.mais} ${a.mais===1?"linha":"linhas"}</small>`:""}</div>`).join("")}${link}`;
+  if(!p.achouNome)return `<p class="note">${p.paboracha?"Nenhuma cobrança desta CEG no Paboracha.":"Planilha lida, mas o seu nome não aparece nela."}</p>${link}`;
+  return `${p.paboracha?`<p class="note">Cobranças desta CEG no Paboracha:</p>`:""}${p.abas.map(a=>`<div class="rdab"><b>${esc(a.aba||"planilha")}</b>${a.cabecalho?`<small>${esc(a.cabecalho)}</small>`:""}${a.linhas.map(l=>`<code>${esc(l)}</code>`).join("")}${a.mais?`<small>+ ${a.mais} ${a.mais===1?"linha":"linhas"}</small>`:""}</div>`).join("")}${link}`;
 }
 function rdCega(r){
   const p=rd.plan[r.key], d=r.doc, gom=gomDe(r), ond=rdOndeOlhar(r);
@@ -1611,7 +1616,6 @@ function rodadaSheet(){
     return `<p class="lede" style="margin:0 0 10px">Uma CEG por vez, comunidade por comunidade. As com cobrança, com a GOM no Brasil ou com envio liberado vêm primeiro.</p>
     <div class="rdsum"><b>${plural(rd.ordem.length,"CEG","CEGs")}</b><span>em ${plural(byCom.size,"comunidade","comunidades")} · devo ${brl(k.soma(k.devoL))}</span></div>
     ${rd.hojeJa?`<p class="note">${plural(rd.hojeJa,"CEG já foi conferida hoje e ficou de fora","CEGs já foram conferidas hoje e ficaram de fora")}.</p>`:""}
-    ${rd.semDoc?`<p class="note">${plural(rd.semDoc,"CEG sem cadastro ficou de fora","CEGs sem cadastro ficaram de fora")}. Cadastre na aba CEGs.</p>`:""}
     <div class="panel"><ul class="rows">${[...byCom].map(([com,rs])=>`<li><div class="row" style="cursor:default">${av("com",com,"sm")}<span class="tx"><span class="t">${esc(nomeCom(com)||"Sem comunidade")}</span><span class="s">${esc(rs.map(r=>r.lbl||r.nome).slice(0,3).join(", "))}${rs.length>3?` e mais ${rs.length-3}`:""}</span></span><span class="v">${rs.length}</span></div></li>`).join("")}</ul></div>
     <div class="actions stick"><button class="btn pri" data-rdgo type="button" style="width:100%;min-height:52px">Começar</button></div>`;
   }
@@ -1640,25 +1644,28 @@ async function rdMarcar(como){ // como: nada | novidade | pulou
   const r=rdAtual(); if(!r)return;
   const h={key:r.key,i:rd.i,feito:rd.feitos[r.key],id:"",prev:undefined};
   if(como!=="pulou"){
-    const id=cegIdOf(r.doc); if(!id||!db||!canWrite){toast("Sem permissão pra gravar");return}
-    h.id=id; h.prev=r.doc.conferidoEm===undefined?null:r.doc.conferidoEm;
-    try{await db.doc("cegs/"+id).update({conferidoEm:isoToday()})}catch(e){toast("Não deu pra salvar; tente de novo");return}
+    if(!db||!canWrite){toast("Sem permissão pra gravar");return}
+    if(r.doc){const id=cegIdOf(r.doc); if(!id){toast("Não achei essa CEG pra gravar");return}
+      h.id=id; h.prev=r.doc.conferidoEm===undefined?null:r.doc.conferidoEm;
+      try{await db.doc("cegs/"+id).update({conferidoEm:isoToday()})}catch(e){toast("Não deu pra salvar; tente de novo");return}}
+    else{ // CEG que só existia nos itens: cadastra na hora (desfazer apaga)
+      try{const n=await db.collection("cegs").add({nome:r.nome,comunidade:r.com,conferidoEm:isoToday()}); h.id=n.id; h.criada=true}catch(e){toast("Não deu pra salvar; tente de novo");return}}
   }
-  rd.feitos[r.key]=como; rd.hist.push(h); rd.i++; rd.nov=false; rd.txt=""; rd.img=null; Object.assign(sh,{busy:false,erro:"",res:null});
+  rd.feitos[r.key]=como; rd.hist.push(h); rd.i++; rdSalvar(); rd.nov=false; rd.txt=""; rd.img=null; Object.assign(sh,{busy:false,erro:"",res:null});
   rdRe();
 }
 async function rdDesfazer(){
   const h=rd.hist.pop(); if(!h)return;
-  if(h.id){try{await db.doc("cegs/"+h.id).update({conferidoEm:h.prev})}catch(e){rd.hist.push(h);toast("Não deu pra desfazer");return}}
+  if(h.id){try{if(h.criada)await db.doc("cegs/"+h.id).delete(); else await db.doc("cegs/"+h.id).update({conferidoEm:h.prev})}catch(e){rd.hist.push(h);toast("Não deu pra desfazer");return}}
   if(h.feito===undefined)delete rd.feitos[h.key]; else rd.feitos[h.key]=h.feito;
-  rd.i=h.i; rd.nov=false; toast("Desfeito"); rdRe();
+  rd.i=h.i; rd.nov=false; rdSalvar(); toast("Desfeito"); rdRe();
 }
 async function rdLer(){
   const texto=(rd.txt||"").trim(), r=rdAtual(); if(!r)return;
   if(!texto&&!rd.img){toast("Cole a mensagem ou escolha um print");return}
   Object.assign(sh,{texto,nome:rd.img?rd.img.name:"",imagem:rd.img,busy:false,erro:"",res:null,escolha:null});
-  const id=cegIdOf(r.doc);
-  shEnviar({texto,nomeArquivo:rd.img?rd.img.name:"",cegForcada:"ceg-"+id,...(rd.img?{imagem:await imagemParaIA(rd.img)}:{})});
+  const id=r.doc?cegIdOf(r.doc):"";
+  shEnviar({texto,nomeArquivo:rd.img?rd.img.name:"",cegForcada:id?"ceg-"+id:r.nome,...(rd.img?{imagem:await imagemParaIA(rd.img)}:{})});
 }
 
 // ---------- Compartilhar do WhatsApp (app instalado no celular) ----------
@@ -1745,13 +1752,13 @@ document.addEventListener("click",async e=>{
     const ev=list("envios").find(x=>x.status==="A pedir"&&gomNome(x.gom)===gomNome(g)&&(x.comunidade||"")===(com||"")), id=ev?ev.id:"novo:"+k;
     const f=()=>envioSheet(id,k); if(sheetFn){$("#shT").textContent="Montar envio";sheetFn=f;$("#shB").innerHTML=f();lazy();$("#shB").scrollTop=0}else openSheet("Montar envio",f); return}
   if(ds.rdini!=null){rdIniciar();return}
-  if(ds.rdgo!=null){rd.i=0;rdRe();return}
+  if(ds.rdgo!=null){rd.i=0;rdSalvar();rdRe();return}
   if(ds.rdnada){await rdMarcar(ds.rdnada==="anotei"?"novidade":"nada");return}
   if(ds.rdnov!=null){rd.nov=true;rdRe();setTimeout(()=>{const t=$("#rdt");if(t)t.focus()},50);return}
   if(ds.rdnovx!=null){rd.nov=false;Object.assign(sh,{busy:false,erro:"",res:null});rdRe();return}
   if(ds.rdpular!=null){await rdMarcar("pulou");return}
   if(ds.rddesf!=null){await rdDesfazer();return}
-  if(ds.rdfim!=null){rd.i=rd.ordem.length;rd.nov=false;rdRe();return}
+  if(ds.rdfim!=null){rd.i=rd.ordem.length;rd.nov=false;rdSalvar();rdRe();return}
   if(ds.rdler!=null){await rdLer();return}
   if(ds.rdfechar!=null){closeSheet();return}
   if(ds.conferi){const r=cegs().find(x=>x.key===ds.conferi); if(!r||!r.doc)return; await setMany([["cegs",cegIdOf(r.doc),{conferidoEm:isoToday()}]],"CEG conferida hoje"); return}

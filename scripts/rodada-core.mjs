@@ -14,3 +14,15 @@ export function resumoPlanilha(abas, cobs = []) {
   const cobrancas = cobs.map((c) => ({ id: c.id, achou: typeof c.valor === "number" ? numeros(c.valor).some((n) => todas.some((l) => l.includes(n))) : null }));
   return { achouNome: abas.length > 0, abas: out, cobrancas };
 }
+
+// Paboracha: cobranças da CEG vindas da API pública, no mesmo formato das abas da planilha.
+const dataBR = (utc) => (utc ? new Date(new Date(utc).getTime() - 3 * 3600 * 1000).toISOString().slice(0, 10) : "");
+const ST = { Pending: "a pagar", Overdue: "ATRASADA", Paid: "paga", Cancelled: "cancelada", Canceled: "cancelada" };
+export function abasPabo(charges, cegNome) {
+  const n = String(cegNome || "").trim().toLowerCase();
+  const doCeg = charges.filter((c) => { const l = String((c.origin || {}).cegName || "").trim().toLowerCase(); return l && n && (l === n || l.includes(n) || n.includes(l)); });
+  if (!doCeg.length) return [];
+  const v = (x) => Number(x).toFixed(2).replace(".", ",");
+  return [{ aba: "Paboracha", cabecalho: "cobrança · valor · prazo · situação", dela: doCeg.map((c) => `${c.description || "cobrança"};R$ ${v(c.currentAmount)};${dataBR(c.dueAtUtc).split("-").reverse().slice(0, 2).join("/") || "sem prazo"};${ST[c.status] || c.status || ""}`) }];
+}
+export const ehForms = (link) => /docs\.google\.com\/forms|forms\.gle|forms\.office|typeform\.com/i.test(link);

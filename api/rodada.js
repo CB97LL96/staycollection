@@ -3,7 +3,8 @@
 // Variáveis: SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, OWNER_ID,
 // ALLOWED_EMAILS, MEUS_NOMES.
 import { baixarPlanilha, linhasDela } from "../scripts/conferir-cobrancas.mjs";
-import { resumoPlanilha } from "../scripts/rodada-core.mjs";
+import { baixarCobrancasPabo } from "../scripts/conferir-paboracha.mjs";
+import { resumoPlanilha, abasPabo, ehForms } from "../scripts/rodada-core.mjs";
 
 async function permitido(req) {
   const token = (req.headers.authorization || "").replace(/^Bearer\s+/i, "");
@@ -38,9 +39,14 @@ export default async function handler(req, res) {
     if (!doc) return res.status(200).json({ cadastrada: false, temPlanilha: false });
     const link = String(doc.data.planilha || "").trim();
     if (!/^https:\/\//.test(link)) return res.status(200).json({ cadastrada: true, temPlanilha: false });
-    if (/paboracha\.com/i.test(link)) return res.status(200).json({ cadastrada: true, temPlanilha: true, lida: false, motivo: "A planilha desta CEG é a do Paboracha: confira pelo app deles." });
-    if (!nomes.length) return res.status(200).json({ cadastrada: true, temPlanilha: true, lida: false, motivo: "Falta configurar MEUS_NOMES na Vercel pra achar as suas linhas." });
+    if (ehForms(link)) return res.status(200).json({ cadastrada: true, temPlanilha: true, lida: false, forms: true, motivo: "Esta CEG usa forms: abra pelo link e veja se você já respondeu." });
     const cobs = docs.filter((d) => d.col === "cobrancas" && d.data.ceg === ceg && (d.data.comunidade || "") === comunidade && ABERTAS.includes(d.data.status)).map((d) => ({ id: d.id, valor: d.data.valor }));
+    if (/paboracha\.com/i.test(link)) {
+      if (!process.env.PABORACHA_PERFIL) return res.status(200).json({ cadastrada: true, temPlanilha: true, lida: false, motivo: "Falta configurar PABORACHA_PERFIL na Vercel pra ler o Paboracha." });
+      const abas = abasPabo(await baixarCobrancasPabo(process.env.PABORACHA_PERFIL), ceg);
+      return res.status(200).json({ cadastrada: true, temPlanilha: true, lida: true, paboracha: true, ...resumoPlanilha(abas, cobs) });
+    }
+    if (!nomes.length) return res.status(200).json({ cadastrada: true, temPlanilha: true, lida: false, motivo: "Falta configurar MEUS_NOMES na Vercel pra achar as suas linhas." });
     const abas = linhasDela(await baixarPlanilha(link), nomes);
     return res.status(200).json({ cadastrada: true, temPlanilha: true, lida: true, ...resumoPlanilha(abas, cobs) });
   } catch (e) {

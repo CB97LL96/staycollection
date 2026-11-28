@@ -13,6 +13,7 @@ const extra = {
   },
   itens: {
     i5: { item: "Lua set", membro: "Felix", ceg: "Set Lua", comunidade: "Comunidade Verde", status: "Envio liberado" },
+    i8: { item: "Aninha pc", membro: "Felix", ceg: "Sem Cadastro", comunidade: "Outra", status: "Garantido" },
     i7: { item: "Hoje set", membro: "HAN", ceg: "Hoje Já", comunidade: "Comunidade Verde", status: "Garantido" }
   },
   cobrancas: {
@@ -54,7 +55,7 @@ const PLANILHA = { cadastrada: true, temPlanilha: true, lida: true, achouNome: t
     await pg.click("[data-rdgo]"); await pg.waitForSelector(".rdact");
     // 1ª CEG: a da cobrança vencida (risco), com grupo, GOM + comunidade, planilha, sem pix
     sh = await pg.locator("#shB").innerText();
-    ok(/1 de 3/.test(sh) && /Caixa 2 PHP/.test(sh), `${nome}: 1ª CEG é a da cobrança vencida`);
+    ok(/1 de 4/.test(sh) && /Caixa 2 PHP/.test(sh), `${nome}: 1ª CEG é a da cobrança vencida`);
     const tags = await pg.locator("#shB .gtag").evaluateAll(els => els.map(e => ({ av: !!e.querySelector(".av"), com: e.querySelector(".gtc")?.textContent, gom: e.querySelector(".gtg")?.textContent })));
     ok(tags.length >= 1 && tags.every(t => t.av && t.com && t.gom), `${nome}: GOM sempre com ícone + comunidade`);
     ok(await pg.locator("#shB .origem .av").count() >= 1, `${nome}: foto do grupo/ícone da CEG`);
@@ -67,10 +68,10 @@ const PLANILHA = { cadastrada: true, temPlanilha: true, lida: true, achouNome: t
     ok(!/chave-inventada|caminho secreto|pix/i.test(sh), `${nome}: sem pix nem caminho de comprovante`);
     await pg.screenshot({ path: `/tmp/rodada-ceg-${nome}.png` });
     // Nada novo + desfazer
-    await pg.click('[data-rdnada="nada"]'); await pg.waitForFunction(() => /2 de 3/.test(document.querySelector("#shB").innerText));
+    await pg.click('[data-rdnada="nada"]'); await pg.waitForFunction(() => /2 de 4/.test(document.querySelector("#shB").innerText));
     ok((await g("cegs", "g1")).conferidoEm === iso(0), `${nome}: 'Nada novo' marca conferidoEm = hoje`);
     ok((await g("cegs", "g1")).nome === "Caixa 2 PHP" && (await g("cegs", "g1")).grupo === "Grupo Azul Caixa 2", `${nome}: só mexeu em conferidoEm`);
-    await pg.click(".rdund"); await pg.waitForFunction(() => /1 de 3/.test(document.querySelector("#shB").innerText));
+    await pg.click(".rdund"); await pg.waitForFunction(() => /1 de 4/.test(document.querySelector("#shB").innerText));
     ok((await g("cegs", "g1")).conferidoEm === iso(-12), `${nome}: desfazer volta a data e a CEG`);
     // Tem novidade: colar mensagem, ler (só sugere), aceitar
     await pg.click("[data-rdnov]"); await pg.fill("#rdt", "Lari pagou o frete da caixa 2"); await pg.click("[data-rdler]");
@@ -81,7 +82,7 @@ const PLANILHA = { cadastrada: true, temPlanilha: true, lida: true, achouNome: t
     await pg.screenshot({ path: `/tmp/rodada-novidade-${nome}.png` });
     await pg.click("#shB [data-cxa=aceitar]"); await pg.waitForTimeout(400);
     ok((await g("cobrancas", "k1")).status === "Paga", `${nome}: aceitar grava (fluxo existente)`);
-    await pg.click('[data-rdnada="anotei"]'); await pg.waitForFunction(() => /2 de 3/.test(document.querySelector("#shB").innerText));
+    await pg.click('[data-rdnada="anotei"]'); await pg.waitForFunction(() => /2 de 4/.test(document.querySelector("#shB").innerText));
     ok((await g("cegs", "g1")).conferidoEm === iso(0), `${nome}: 'Pronto, anotei' marca a CEG conferida`);
     // 2ª CEG: Set Lua (cobrança a vencer + envio liberado), sem planilha; Paguei com a conta
     sh = await pg.locator("#shB").innerText();
@@ -92,17 +93,25 @@ const PLANILHA = { cadastrada: true, temPlanilha: true, lida: true, achouNome: t
     await pg.click(".undo"); await pg.waitForTimeout(300);
     ok((await g("cobrancas", "k2")).status === "Pendente", `${nome}: desfazer o Paguei`);
     // Pular não grava
-    await pg.click("[data-rdpular]"); await pg.waitForFunction(() => /3 de 3/.test(document.querySelector("#shB").innerText));
+    await pg.click("[data-rdpular]"); await pg.waitForFunction(() => /3 de 4/.test(document.querySelector("#shB").innerText));
     ok((await g("cegs", "g4")).conferidoEm === iso(-3), `${nome}: 'Pular' não grava nada`);
     // 3ª: Set Seung (Outra): Nada novo -> placar
-    await pg.click('[data-rdnada="nada"]'); await pg.waitForSelector(".rdsum.big");
+    await pg.click('[data-rdnada="nada"]'); await pg.waitForFunction(() => /4 de 4/.test(document.querySelector("#shB").innerText));
     sh = await pg.locator("#shB").innerText();
-    ok(/2 de 3/.test(sh) && /sem novidade/i.test(sh) && /com novidade/i.test(sh) && /ficaram pra depois/i.test(sh) && /Set Lua/.test(sh), `${nome}: placar com conferidas, o que mudou e o que ficou (${sh.replace(/\n/g, " | ").slice(0, 160)})`);
+    ok(/Sem Cadastro/.test(sh) && /ainda não está cadastrada/.test(sh), `${nome}: CEG sem cadastro entra na rodada`);
+    // reabrir: continua de onde parou
+    await pg.click(".x, #sheet .x"); await pg.waitForTimeout(300); const cont = await pg.locator(".rdbtn").innerText(); await pg.click(".rdbtn");
+    ok(/Continuar a rodada/.test(cont) && /parou na 4ª de 4/.test(cont) && /4 de 4/.test(await pg.locator("#shB").innerText()), `${nome}: reabrir continua de onde parou`);
+    await pg.click('[data-rdnada="nada"]'); await pg.waitForSelector(".rdsum.big");
+    const cad = await pg.evaluate(() => [...window.__store.cegs.values()].filter(c => c.nome === "Sem Cadastro"));
+    ok(cad.length === 1 && /^\d{4}-\d{2}-\d{2}$/.test(cad[0].conferidoEm), `${nome}: 'Nada novo' cadastra a CEG com conferidoEm`);
+    sh = await pg.locator("#shB").innerText();
+    ok(/3 de 4/.test(sh) && /sem novidade/i.test(sh) && /com novidade/i.test(sh) && /ficaram pra depois/i.test(sh) && /Set Lua/.test(sh), `${nome}: placar com conferidas, o que mudou e o que ficou (${sh.replace(/\n/g, " | ").slice(0, 160)})`);
     ok(/R\$\s?9,90/.test(sh) && /pagas agora/i.test(sh) && /1 \(R\$\s?18,40\)/.test(sh), `${nome}: placar com quanto devo e o que foi pago`);
     ok(await pg.locator("#shB .gtag .av").count() >= 1, `${nome}: GOM do placar com ícone + comunidade`);
     await pg.screenshot({ path: `/tmp/rodada-placar-${nome}.png` });
-    await pg.click(".sh-b [data-rddesf], #shB [data-rddesf]"); await pg.waitForFunction(() => /3 de 3/.test(document.querySelector("#shB").innerText));
-    ok((await g("cegs", "g3")).conferidoEm === undefined || (await g("cegs", "g3")).conferidoEm === null, `${nome}: desfazer até no placar`);
+    await pg.click(".sh-b [data-rddesf], #shB [data-rddesf]"); await pg.waitForFunction(() => /4 de 4/.test(document.querySelector("#shB").innerText));
+    ok((await pg.evaluate(() => [...window.__store.cegs.values()].filter(c => c.nome === "Sem Cadastro").length)) === 0, `${nome}: desfazer apaga a CEG que foi cadastrada na rodada`);
     ok(erros.length === 0, `${nome}: sem erro no console ${erros.join(" | ")}`);
     await ctx.close();
   }
