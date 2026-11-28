@@ -259,3 +259,190 @@ begin
     execute format('create trigger v2_touch before update on public.%I for each row execute function public.v2_touch()', t);
   end loop;
 end $$;
+
+
+-- =====================================================================
+-- PARTE 2 (migração completa): o que faltava para o app inteiro rodar no
+-- modelo novo. Tudo idempotente (pode rodar de novo).
+-- =====================================================================
+
+-- ligações extras ------------------------------------------------------
+-- foto escolhida por chave: a chave é o id do card, do item ou do acervo
+-- (como o app sempre usou). "foto" = id do arquivo no bucket "fotos";
+-- "url" = foto que é só um link.
+alter table public.card_fotos add column if not exists url text;
+alter table public.card_fotos add column if not exists legado jsonb;
+-- ordem em que ela arrumou os itens no Mural (arrastar)
+alter table public.claims add column if not exists ordem numeric;
+-- o que o envio leva, como ela escreveu ("8 pcs"); as notas ficam só pra obs
+alter table public.envios add column if not exists itens_txt text;
+
+-- sugestões do robô (a "caixa" do app): o que o Telegram, a planilha e o
+-- Paboracha mandam. Nada vira cobrança sem ela aceitar.
+create table if not exists public.sugestoes (
+  id text primary key,
+  owner uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  origem text,                      -- telegram, whatsapp, planilha, paboracha
+  estado text,                      -- lendo, lida, erro, arquivada
+  recebido_em timestamptz,
+  texto text,                       -- começo da mensagem
+  fonte text,                       -- texto inteiro (pra ler de novo com outra CEG)
+  arquivo text,
+  hash text,                        -- anti-duplicata
+  resumo text,
+  ceg_id text references public.cegs (id) on delete set null,
+  ceg jsonb,                        -- {id, nome} como o robô achou
+  total_devido numeric,
+  sem_valor integer,
+  pergunta text,
+  candidatas jsonb,                 -- CEGs em dúvida
+  registros jsonb not null default '[]'::jsonb, -- cada sugestão: destino, valor, alvo, estado...
+  erro text,
+  repetidos integer,
+  legado jsonb,
+  criado_em timestamptz not null default now(),
+  atualizado_em timestamptz not null default now()
+);
+create index if not exists sugestoes_hash on public.sugestoes (hash);
+create index if not exists sugestoes_estado on public.sugestoes (estado);
+
+-- Quadro (Mural): um por GOM + comunidade, com as imagens coladas ("rascunho")
+-- e as notas soltas.
+create table if not exists public.quadros (
+  id text primary key,
+  owner uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  comunidade_id text references public.comunidades (id) on delete set null,
+  gom_id text references public.goms (id) on delete set null,
+  gom_nome text,                    -- como estava escrito (GOM sem cadastro)
+  comunidade_nome text,
+  rasc jsonb not null default '{}'::jsonb,   -- {rid: {asset, frame, nome, membro, cardId, ts}}
+  notas jsonb not null default '{}'::jsonb,  -- {nid: {t}}
+  travado text[] not null default '{}',
+  legado jsonb,
+  criado_em timestamptz not null default now(),
+  atualizado_em timestamptz not null default now()
+);
+
+-- Binder: as metas dela, as cópias que contou à mão e os cards pra troca.
+create table if not exists public.binder_meta (
+  owner uuid primary key default auth.uid() references auth.users (id) on delete cascade,
+  copias jsonb not null default '{}'::jsonb, -- n: {card_id: cópias contadas}
+  troca jsonb not null default '[]'::jsonb,  -- tr: cards pra troca
+  metas jsonb not null default '[]'::jsonb,  -- g: metas (set ou era)
+  legado jsonb,
+  atualizado_em timestamptz not null default now()
+);
+
+-- Estado dela em cada card do catálogo (tenho, a caminho, quero...).
+-- "grupo" é o agrupamento do app (o membro), pra reconstruir a coleção antiga.
+create table if not exists public.posse (
+  owner uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  grupo text not null,
+  card_id text not null,
+  estado text not null,
+  atualizado_em timestamptz not null default now(),
+  primary key (owner, card_id)
+);
+create index if not exists posse_grupo on public.posse (owner, grupo);
+
+-- Cards que ela criou e ainda não existem no catálogo.
+create table if not exists public.cards_novos (
+  id text primary key,
+  owner uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  membro text, era text, versao text, tipo text,
+  legado jsonb,
+  criado_em timestamptz not null default now(),
+  atualizado_em timestamptz not null default now()
+);
+
+-- Estado dos robôs e do app (fontes lidas, quando foi a última conferência).
+create table if not exists public.meta (
+  owner uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  chave text not null,
+  dados jsonb not null default '{}'::jsonb,
+  atualizado_em timestamptz not null default now(),
+  primary key (owner, chave)
+);
+
+-- Rede de segurança: qualquer coleção do app antigo sem tabela própria
+-- (mural, notas e apelidos do app antigo...) guarda o registro inteiro aqui.
+-- Assim a migração nunca deixa nada para trás.
+create table if not exists public.avulsos (
+  owner uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  col text not null,
+  id text not null,
+  dados jsonb not null default '{}'::jsonb,
+  atualizado_em timestamptz not null default now(),
+  primary key (owner, col, id)
+);
+
+-- segurança, atualizado_em e tempo real das tabelas novas ----------------
+do $$
+declare t text;
+begin
+  foreach t in array array['sugestoes','quadros','binder_meta','posse','cards_novos','meta','avulsos'] loop
+    execute format('alter table public.%I enable row level security', t);
+    execute format('drop policy if exists "do dono" on public.%I', t);
+    execute format('create policy "do dono" on public.%I for all to authenticated using (owner = auth.uid()) with check (owner = auth.uid())', t);
+    execute format('drop trigger if exists v2_touch on public.%I', t);
+    execute format('create trigger v2_touch before update on public.%I for each row execute function public.v2_touch()', t);
+  end loop;
+  -- Tempo real: o app assina estas tabelas. replica identity full faz o
+  -- "apagado" chegar com o registro inteiro.
+  foreach t in array array['comunidades','goms','grupos_wa','cegs','claims','itens','item_status',
+    'cobrancas','cobranca_itens','envios','envio_itens','provas','apelidos','card_fotos',
+    'sugestoes','quadros','binder_meta','posse','cards_novos','meta','avulsos'] loop
+    execute format('alter table public.%I replica identity full', t);
+    if exists (select 1 from pg_publication where pubname = 'supabase_realtime')
+       and not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = t) then
+      execute format('alter publication supabase_realtime add table public.%I', t);
+    end if;
+  end loop;
+end $$;
+
+-- gravar várias tabelas de uma vez, tudo ou nada --------------------------
+-- O app e o robô mandam "o que mudou" (linhas a gravar e linhas a apagar) e
+-- esta função aplica tudo numa transação só: ou grava tudo ou nada. Só mexe
+-- nas colunas que vieram (o resto da linha fica como está). O dono é quem
+-- está logado (auth.uid()); o robô, que usa a chave de serviço, passa p_owner.
+--   p = {"up": [["cegs", [{...}, ...]], ...], "del": [["itens", [{"id": "..."}]], ...]}
+create or replace function public.v2_aplicar(p jsonb, p_owner uuid default null)
+returns void
+language plpgsql security invoker as $$
+declare
+  dono uuid := coalesce(p_owner, auth.uid());
+  permitidas text[] := array['comunidades','goms','grupos_wa','cegs','claims','itens','item_status',
+    'cobrancas','cobranca_itens','envios','envio_itens','provas','apelidos','card_fotos','sugestoes',
+    'quadros','binder_meta','posse','cards_novos','meta','avulsos'];
+  par jsonb; tab text; linha jsonb; cols text[]; pk text[]; pkdado text[];
+  lista text; sel text; sets text; alvo text; cond text;
+begin
+  if dono is null then raise exception 'v2_aplicar: sem dono (faça login ou passe p_owner)'; end if;
+  for par in select * from jsonb_array_elements(coalesce(p->'up', '[]'::jsonb)) loop
+    tab := par->>0;
+    if not tab = any(permitidas) then raise exception 'v2_aplicar: tabela % não permitida', tab; end if;
+    pk := case tab when 'binder_meta' then array['owner'] when 'posse' then array['owner','card_id']
+      when 'card_fotos' then array['owner','card_id'] when 'meta' then array['owner','chave']
+      when 'avulsos' then array['owner','col','id'] else array['id'] end;
+    for linha in select * from jsonb_array_elements(par->1) loop
+      linha := linha || jsonb_build_object('owner', dono);
+      cols := array(select jsonb_object_keys(linha));
+      lista := (select string_agg(format('%I', c), ',') from unnest(cols) c);
+      alvo := (select string_agg(format('%I', c), ',') from unnest(pk) c);
+      sets := (select string_agg(format('%1$I = excluded.%1$I', c), ', ') from unnest(cols) c where not c = any(pk));
+      execute format('insert into public.%1$I (%2$s) select %2$s from jsonb_populate_record(null::public.%1$I, $1) on conflict (%3$s) %4$s',
+        tab, lista, alvo, case when sets is null then 'do nothing' else 'do update set ' || sets end) using linha;
+    end loop;
+  end loop;
+  for par in select * from jsonb_array_elements(coalesce(p->'del', '[]'::jsonb)) loop
+    tab := par->>0;
+    if not tab = any(permitidas) then raise exception 'v2_aplicar: tabela % não permitida', tab; end if;
+    pk := case tab when 'binder_meta' then array[]::text[] when 'posse' then array['card_id']
+      when 'card_fotos' then array['card_id'] when 'meta' then array['chave']
+      when 'avulsos' then array['col','id'] else array['id'] end;
+    for linha in select * from jsonb_array_elements(par->1) loop
+      cond := (select string_agg(format('%I = %L', c, linha->>c), ' and ') from unnest(pk) c);
+      execute format('delete from public.%I where owner = %L%s', tab, dono, case when cond is null then '' else ' and ' || cond end);
+    end loop;
+  end loop;
+end $$;
