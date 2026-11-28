@@ -66,7 +66,7 @@ export function abrirStore({ url = process.env.SUPABASE_URL, key = process.env.S
   async function lerTab(tab) {
     if (lidas.has(tab)) return;
     for (let de = 0; ; de += 1000) {
-      const pg = (await rest(`${tab}?owner=eq.${owner}&select=*&limit=1000&offset=${de}`)) || [];
+      const pg = (await rest(`${tab}?owner=eq.${owner}&select=*${C.pkDe(tab).length ? `&order=${C.pkDe(tab).join(",")}` : ""}&limit=1000&offset=${de}`)) || [];
       pg.forEach((r) => T[tab].set(C.pkVal(tab, r), r));
       if (pg.length < 1000) break;
     }

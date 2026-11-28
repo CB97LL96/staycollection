@@ -43,7 +43,7 @@ function aplicar(p){
 window.__aplicados=[];
 const sbFalso={
   auth:{getSession:async()=>({data:{session:{access_token:"t"}}}),signInWithOAuth:async()=>({})},
-  from:tab=>({select(){return{range:async(a,b)=>({data:[...T[tab].values()].slice(a,b+1),error:null})}}}),
+  from:tab=>({select(){const q={order(){return q},range:async(a,b)=>({data:[...T[tab].values()].slice(a,b+1),error:null})};return q}}),
   rpc:async(nome,args)=>{if(nome!=="v2_aplicar")return{error:{message:"rpc desconhecida"}};window.__aplicados.push(args.p);try{aplicar(args.p)}catch(e){return{error:{message:e.message}}}return{error:null}},
   channel:()=>{const ch={hs:[],on(_,f,cb){ch.hs.push({tabela:f.table,cb});return ch},subscribe(){canais.push(ch);return ch}};return ch},
   storage:{from:()=>({upload:async()=>({error:null}),remove:async()=>({error:null}),getPublicUrl:id=>({data:{publicUrl:"/_blob/"+id}})})},

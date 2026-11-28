@@ -130,7 +130,8 @@ function criarV2(){
   function lerTab(tab){
     if (!lidas.has(tab)) lidas.set(tab, (async () => {
       for (let de = 0; ; de += 1000) {
-        const { data, error } = await sb.from(tab).select("*").range(de, de + 999);
+        let q = sb.from(tab).select("*"); C.pkDe(tab).forEach(c => { q = q.order(c) }); // ordem fixa: a paginação não pula nem repete linha
+        const { data, error } = await q.range(de, de + 999);
         if (error) { lidas.delete(tab); fail(error); }
         data.forEach(r => T[tab].set(C.pkVal(tab, r), r));
         if (data.length < 1000) break;

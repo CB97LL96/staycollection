@@ -199,12 +199,11 @@ function novoMapeador(T0, op = {}) {
         if (desejados.length === 1 && !usados.has(`item-${d.id}`)) return `item-${d.id}`;
         let n = 1; while (usados.has(`item-${d.id}-${n}`)) n++; return `item-${d.id}-${n}`;
       };
-      const foto = (x.fotoItem || null);
       desejados.forEach((card, i) => {
         const ex = casa(card);
         const id = ex ? ex.id : livre(i); usados.add(id);
         const row = { id, card_id: card, descricao: desejados.length === 1 || !card ? txt(x.item) : null, membro: txt(x.membro), tipo: txt(x.tipo), claim_id: claimId, ceg_id: cegId, status: txt(x.status), etiquetas, travado: trav, notas: txt(x.obs) };
-        if (!ex) { row.origem = x.ceg ? "ceg" : "compra"; if (foto) row.foto = foto; }
+        if (!ex) row.origem = x.ceg ? "ceg" : "compra";
         t.itens.push(row);
         if (ex && txt(x.status) && ex.status !== txt(x.status)) t.item_status.push({ id: `st-${id}-${curto(txt(x.status) + hoje)}`, item_id: id, status: txt(x.status), em: hoje });
       });

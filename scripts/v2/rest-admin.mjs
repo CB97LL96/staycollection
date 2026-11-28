@@ -28,7 +28,7 @@ export function conectar({ url = process.env.SUPABASE_URL, key = process.env.SUP
     lerDocs: () => paginas(`docs?owner=eq.${owner}&select=col,id,data&order=col,id`),
     async lerTabelas(tabs = C.TABELAS) {
       const T = {};
-      for (const t of tabs) T[t] = await paginas(`${t}?owner=eq.${owner}&select=*`);
+      for (const t of tabs) T[t] = await paginas(`${t}?owner=eq.${owner}&select=*${C.pkDe(t).length ? `&order=${C.pkDe(t).join(",")}` : ""}`);
       return T;
     },
   };
