@@ -41,6 +41,21 @@ const iconKey = (t, n) => { let h = 5381; const x = String(n || "").toLowerCase(
     await pg.fill("#qtag", "Do It Pobs"); await pg.press("#qtag", "Enter"); await pg.waitForTimeout(400);
     const nova = await pg.evaluate(() => [...window.__store.cegs.values()].find((c) => c.nome === "Do It Pobs"));
     ok(nova && nova.gom === "Gabi" && nova.comunidade === "Comunidade Azul", `${nome}: nova tag cria a CEG nessa GOM e comunidade`);
+    // frames em grade fixa: mover e esconder
+    const nomes = () => pg.locator(".qf .qft").evaluateAll(els => els.map(e => e.textContent.trim()).filter(t => t && t !== "Notas" && t !== "Sem tag"));
+    const n0 = await nomes(); ok(n0.length === 3, `${nome}: 3 tags no quadro (${n0})`);
+    ok(await pg.evaluate(() => getComputedStyle(document.querySelector(".qcols")).display) === "grid", `${nome}: os frames ficam numa grade`);
+    const primeira = n0[0];
+    await pg.locator(".qf", { hasText: primeira }).locator('[data-qmv$="|1"]').first().click(); await pg.waitForTimeout(400);
+    const n1 = await nomes(); ok(n1[1] === primeira && n1[0] === n0[1], `${nome}: ▶ move a tag pra depois (${n1})`);
+    ok((await pg.evaluate(() => [...window.__store.quadros.values()][0].ordem || [])).length === 3, `${nome}: a ordem das tags fica guardada`);
+    await pg.click(".undo"); await pg.waitForTimeout(400); ok(JSON.stringify(await nomes()) === JSON.stringify(n0), `${nome}: desfazer volta a ordem das tags`);
+    await pg.locator(".qf", { hasText: n0[2] }).locator("[data-qoff]").first().click(); await pg.waitForTimeout(400);
+    ok((await nomes()).length === 2, `${nome}: esconder tira a tag do quadro`);
+    ok(await pg.locator("[data-qshow]").count() === 1, `${nome}: aparece "Mostrar 1 escondida"`);
+    await pg.click("[data-qshow]"); ok((await nomes()).length === 3 && await pg.locator(".qf.off").count() === 1, `${nome}: mostrar as escondidas (apagadas, tracejadas)`);
+    await pg.locator(".qf.off [data-qoff]").click(); await pg.waitForTimeout(400); await pg.click("[data-qshow]").catch(() => {});
+    ok((await nomes()).length === 3, `${nome}: mostrar de novo traz a tag de volta`);
     // colar (Ctrl+V) na tag marcada
     await pg.locator(".qf", { hasText: "Caixa 2 PHP" }).locator(".qfh").click();
     const colar = () => pg.evaluate(async (d) => { const f = new File([Uint8Array.from(atob(d), (c) => c.charCodeAt(0))], "p.png", { type: "image/png" }); const dt = new DataTransfer(); dt.items.add(f); document.dispatchEvent(new ClipboardEvent("paste", { clipboardData: dt, bubbles: true, cancelable: true })); }, b64);

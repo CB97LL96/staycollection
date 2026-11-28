@@ -268,7 +268,8 @@ h2 .r{margin-left:auto;font-size:14px;font-weight:700}
 .qbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0 8px}.qbar .g{margin-left:auto;display:flex;gap:6px;align-items:center}.qnew{display:flex;gap:6px;flex:1;min-width:220px}.qnew input{flex:1;min-width:0;border:1.5px solid var(--ink);background:var(--surface);border-radius:10px;padding:9px 12px;font:inherit;color:var(--ink)}
 .qz{min-width:44px;text-align:center;font-weight:700;font-size:13px}
 .qcanvas{overflow:auto;height:calc(100vh - 250px);min-height:420px;border:1.5px solid var(--ink);border-radius:14px;padding:18px;background:var(--surface2);background-image:radial-gradient(var(--line) 1px,transparent 1px);background-size:24px 24px;overscroll-behavior:contain}
-.qcols{display:flex;gap:22px;align-items:flex-start;width:max-content}.qcol{display:grid;gap:22px;width:432px;align-content:start}
+.qcols{display:flex;gap:22px;align-items:flex-start;width:max-content}.qcol{display:grid;gap:22px;width:432px;align-content:start}.qgrid{display:grid;gap:22px;align-items:start;width:max-content}.qf.off{opacity:.55;border-style:dashed}
+.qmv{display:flex;gap:4px;margin-left:auto}.qmv button{border:1.5px solid var(--ink);background:var(--surface);color:var(--ink);border-radius:8px;min-width:30px;height:30px;padding:0 8px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}.qmv button:disabled{opacity:.35;cursor:default}.qfh[draggable=true]{cursor:grab}
 .qf{background:var(--surface);border:2px solid var(--ink);border-radius:14px;padding:12px;display:grid;gap:10px}.qf.act{outline:3px solid var(--accent);outline-offset:2px}
 .qf.over{outline:3px dashed var(--accent);outline-offset:2px}
 .qfh{display:flex;gap:8px;align-items:center;min-width:0}.qft{border:0;background:none;font:inherit;font-weight:800;font-size:17px;letter-spacing:-.01em;cursor:pointer;color:var(--ink);padding:0;text-align:left;overflow-wrap:anywhere}.qfh .s{color:var(--ink3);font-size:13px;margin-right:auto}
@@ -1498,7 +1499,7 @@ document.addEventListener("contextmenu",e=>{if(e.target.closest&&e.target.closes
 // Um quadro por GOM (dentro de uma comunidade). Cada tag (CEG) é um frame. Ela
 // cola ou solta o print inteiro no frame, escreve o nome do card (segunda camada)
 // e registra: vira item da coleção, com a foto, ligado ao catálogo.
-let qcur=null, qact="", qdragR="", qscroll={x:0,y:0};
+let qcur=null, qact="", qdragR="", qdragF="", qKeys=[], qscroll={x:0,y:0};
 const qIdOf=(gom,com)=>iconKey("quadro",gomNome(gom)+"|"+(com||""));
 const qDoc=()=>(qcur&&D.quadros.get(qcur.id))||{};
 const qRasc=()=>qDoc().rasc||{};
@@ -1550,10 +1551,10 @@ function qRascTile(rid,x,r){
     <div class="qsug" data-rid="${esc(rid)}">${qSugHtml(rid,x)}</div>
     <div class="ract"><button class="btn sm pri" data-qreg="${esc(rid)}" type="button" ${r?"":"disabled"} title="${r?"":"Arraste pra uma tag"}">Registrar</button><button class="btn sm" data-qsep="${esc(rid)}" type="button" title="Achar os cards dentro desta imagem">Separar</button><button class="btn sm" data-qrdel="${esc(rid)}" type="button" aria-label="remover imagem">×</button></div></div>`;
 }
-function qFrame(f){
+function qFrame(f,o={}){
   const r=f.r, nr=f.rs.length;
-  return `<section class="qf ${qact===(r?r.key:"")?"act":""}" data-qfr="${esc(r?r.key:"")}" data-dz="ceg:${esc(r?r.key:"")}">
-    <div class="qfh">${r?grpAv(r.doc,r.com,"sm"):`<span class="qsem">?</span>`}<button class="qft" ${r?`data-ceg="${esc(r.key)}"`:"disabled"} type="button">${esc(r?(r.lbl||r.nome):"Sem tag")}</button><span class="s">${esc(plural(f.its.length,"card","cards"))}</span>${r&&r.devN?`<span class="pill late">devo ${r.deve?brl(r.deve):"sem valor"}</span>`:""}</div>
+  return `<section class="qf ${qact===(r?r.key:"")?"act":""} ${o.off?"off":""}" data-qfr="${esc(r?r.key:"")}" data-dz="ceg:${esc(r?r.key:"")}">
+    <div class="qfh" ${r&&murFino()?`draggable="true" data-dfr="${esc(r.key)}"`:""}>${r?grpAv(r.doc,r.com,"sm"):`<span class="qsem">?</span>`}<button class="qft" ${r?`data-ceg="${esc(r.key)}"`:"disabled"} type="button">${esc(r?(r.lbl||r.nome):"Sem tag")}</button><span class="s">${esc(plural(f.its.length,"card","cards"))}</span>${r&&r.devN?`<span class="pill late">devo ${r.deve?brl(r.deve):"sem valor"}</span>`:""}${r?`<span class="qmv"><button type="button" data-qmv="${esc(r.key)}|-1" aria-label="mover a tag pra antes" ${o.i<=0?"disabled":""}>◀</button><button type="button" data-qmv="${esc(r.key)}|1" aria-label="mover a tag pra depois">▶</button><button type="button" data-qoff="${esc(r.key)}" aria-label="${o.off?"mostrar":"esconder"} a tag">${o.off?"mostrar":"esconder"}</button></span>`:""}</div>
     <div class="qfa"><label class="btn sm">${ico("plus",14)}imagem<input type="file" class="qfile" data-qf="${esc(r?r.key:"")}" accept="image/*" multiple hidden></label>${nr&&r?`<button class="btn sm pri" data-qregall="${esc(r.key)}" type="button">Registrar ${nr}</button>`:""}</div>
     ${!r&&nr?`<p class="note" style="margin:6px 0">Arraste estas imagens pra uma tag.</p>`:""}
     <div class="qfg">${f.rs.map(x=>qRascTile(x.id,x,r)).join("")}${f.its.map(d=>murTile(d)).join("")}</div>
@@ -1567,17 +1568,19 @@ function renderQuadro(){
   const frames=rows.map(r=>({r,its:r.itens,rs:rasc.filter(x=>x.frame===r.key)}));
   const sem=rasc.filter(x=>!x.frame||!rows.some(r=>r.key===x.frame));
   if(sem.length||!frames.length)frames.unshift({r:null,its:[],rs:sem});
-  const est=f=>90+Math.ceil(f.its.length/4)*172+Math.ceil(f.rs.length/4)*330+(!f.its.length&&!f.rs.length?40:0);
-  const nc=window.innerWidth<820?1:Math.min(window.innerWidth>=1500?3:2,Math.max(1,frames.length)), cols=Array.from({length:nc},()=>({h:0,fs:[]}));
-  [...frames].sort((a,b)=>(b.rs.length>0)-(a.rs.length>0)||b.its.length-a.its.length).forEach(f=>{const c=cols.reduce((m,x)=>x.h<m.h?x:m); c.fs.push(f); c.h+=est(f)});
+  const fkey=f=>f.r?f.r.key:"", ordem=qDoc().ordem||[], oc=new Set(qDoc().ocultos||[]);
+  const dflt=[...frames].sort((x,y)=>(y.rs.length>0)-(x.rs.length>0)||y.its.length-x.its.length);
+  const posK=f=>{const k=fkey(f); if(!k)return -1; const i=ordem.indexOf(k); return i<0?1e6+dflt.indexOf(f):i};
+  const todosF=[...frames].sort((x,y)=>posK(x)-posK(y)); qKeys=todosF.map(fkey).filter(Boolean);
+  const visF=todosF.filter(f=>!f.r||!oc.has(fkey(f))||ui.qshow), nOc=todosF.filter(f=>f.r&&oc.has(fkey(f))).length;
+  const nc=window.innerWidth<820?1:Math.min(window.innerWidth>=1500?3:2,Math.max(1,visF.length+1));
   const notas=Object.entries(qDoc().notas||{});
   const z=ui.qz||(window.innerWidth<820?.82:1);
   const notasHtml=`<section class="qf qnotas"><div class="qfh"><span class="qsem">✎</span><b class="qft" style="cursor:default">Notas</b></div>${notas.map(([id,n])=>`<div class="qn2"><textarea class="qnota" data-qnota="${esc(id)}" rows="3" placeholder="escreva aqui">${esc(n.t||"")}</textarea><button type="button" data-qndel="${esc(id)}" aria-label="apagar nota">×</button></div>`).join("")}<div class="qfa"><button class="btn sm" data-qnnota type="button">${ico("plus",14)}nota</button></div></section>`;
-  cols[cols.length-1].fs.push({nota:true});
   $("#main").innerHTML=`<div class="qtop"><button class="btn sm" data-qhome type="button">${ico("back",16)}Quadros</button><button class="btn sm" data-go="mural" type="button">Mural</button><span class="qtit">${gomTag(qcur.gom,qcur.com,"lg")}</span></div>
-  <div class="qbar"><form class="qnew" data-qform><input id="qtag" placeholder="Nova tag (nome da CEG)" aria-label="nova tag" autocomplete="off"><button class="btn sm pri" type="submit">${ico("plus",14)}tag</button></form><span class="g"><button class="btn sm" data-qzoom="-" type="button" aria-label="menos zoom">−</button><span class="qz">${Math.round(z*100)}%</span><button class="btn sm" data-qzoom="+" type="button" aria-label="mais zoom">+</button></span></div>
+  <div class="qbar"><form class="qnew" data-qform><input id="qtag" placeholder="Nova tag (nome da CEG)" aria-label="nova tag" autocomplete="off"><button class="btn sm pri" type="submit">${ico("plus",14)}tag</button></form><span class="g">${nOc?`<button class="btn sm" data-qshow type="button" aria-pressed="${!!ui.qshow}">${ui.qshow?"Esconder":"Mostrar"} ${plural(nOc,"escondida","escondidas")}</button>`:""}<button class="btn sm" data-qzoom="-" type="button" aria-label="menos zoom">−</button><span class="qz">${Math.round(z*100)}%</span><button class="btn sm" data-qzoom="+" type="button" aria-label="mais zoom">+</button></span></div>
   <p class="note" style="margin:0 0 8px">Cole (Ctrl+V) ou solte um print na tag que está marcada. Escreva o nome de cada card e toque em Registrar: ele entra na coleção com a foto.</p>
-  <div class="qcanvas" id="qcv"><div class="qcols" style="zoom:${z}">${cols.map(c=>`<div class="qcol">${c.fs.map(f=>f.nota?notasHtml:qFrame(f)).join("")}</div>`).join("")}</div></div>`;
+  <div class="qcanvas" id="qcv"><div class="qcols qgrid" style="zoom:${z};grid-template-columns:repeat(${nc},432px)">${visF.map((f,i)=>qFrame(f,{off:!!f.r&&oc.has(fkey(f)),i,n:qKeys.length})).join("")}${notasHtml}</div></div>`;
   const cv=$("#qcv"); if(cv){cv.scrollLeft=qscroll.x;cv.scrollTop=qscroll.y;cv.addEventListener("scroll",()=>{qscroll.x=cv.scrollLeft;qscroll.y=cv.scrollTop},{passive:true})}
 }
 // ---- gravar ----
@@ -1591,6 +1594,9 @@ async function qAddFiles(files,frame){
   catch(e){toast("Não deu pra enviar tudo; as anteriores ficaram"); return}
   toast(`${plural(novos.length,"imagem adicionada","imagens adicionadas")}`,async()=>{const rs={...qRasc()}; novos.forEach(([rid])=>delete rs[rid]); await qSave({rasc:rs}); const a=await window.claude.use("assets"); for(const [,as] of novos)a.delete(as).catch(()=>{})});
 }
+async function qMoverFrame(key,delta){const ks=[...qKeys], i=ks.indexOf(key), j=i+delta; if(i<0||j<0||j>=ks.length){toast(delta<0?"Já é a primeira tag":"Já é a última tag");return} ks.splice(i,1); ks.splice(j,0,key); const antes=qDoc().ordem||[]; await qSave({ordem:ks}); toast("Tag movida",()=>qSave({ordem:antes}))}
+async function qMoverFrameAntes(key,alvo){const ks=[...qKeys].filter(k=>k!==key), i=ks.indexOf(alvo); if(i<0||key===alvo)return; ks.splice(i,0,key); const antes=qDoc().ordem||[]; await qSave({ordem:ks}); toast("Tag movida",()=>qSave({ordem:antes}))}
+async function qEsconder(key){const oc=new Set(qDoc().ocultos||[]), on=oc.has(key); on?oc.delete(key):oc.add(key); const antes=qDoc().ocultos||[]; await qSave({ocultos:[...oc]}); toast(on?"Tag à mostra":"Tag escondida do quadro (os cards seguem no Mural e na Coleção)",()=>qSave({ocultos:antes}))}
 async function qMoverR(rid,frame){const x=qRasc()[rid]; if(!x||x.frame===frame)return; await qSet(rid,{frame}); qact=frame}
 async function qRegistrar(rid){
   const x=qRasc()[rid]; if(!x)return null; const r=cegs().find(c=>c.key===x.frame); if(!r){toast("Arraste a imagem pra uma tag antes de registrar");return null}
@@ -1748,14 +1754,15 @@ async function printSalvar(b){
 }
 // ---- arrastar, soltar e colar ----
 const temArquivo=e=>[...(e.dataTransfer&&e.dataTransfer.types||[])].includes("Files");
-document.addEventListener("dragstart",e=>{const rr=e.target.closest&&e.target.closest("[data-drr]"); if(rr){qdragR=rr.dataset.drr;e.dataTransfer.setData("text/plain",qdragR);e.dataTransfer.effectAllowed="move";rr.classList.add("dragging");return} const t=e.target.closest&&e.target.closest("[data-dr]"); if(!t)return; drag=t.dataset.dr; e.dataTransfer.setData("text/plain",drag); e.dataTransfer.effectAllowed="move"; t.classList.add("dragging")});
-document.addEventListener("dragend",()=>{drag="";qdragR="";document.querySelectorAll(".dl,.dr2").forEach(x=>x.classList.remove("dl","dr2"));document.querySelectorAll(".dragging,.over").forEach(x=>x.classList.remove("dragging","over"))});
+document.addEventListener("dragstart",e=>{const fh=e.target.closest&&e.target.closest("[data-dfr]"); if(fh&&e.target===fh){qdragF=fh.dataset.dfr;e.dataTransfer.setData("text/plain",qdragF);e.dataTransfer.effectAllowed="move";return} const rr=e.target.closest&&e.target.closest("[data-drr]"); if(rr){qdragR=rr.dataset.drr;e.dataTransfer.setData("text/plain",qdragR);e.dataTransfer.effectAllowed="move";rr.classList.add("dragging");return} const t=e.target.closest&&e.target.closest("[data-dr]"); if(!t)return; drag=t.dataset.dr; e.dataTransfer.setData("text/plain",drag); e.dataTransfer.effectAllowed="move"; t.classList.add("dragging")});
+document.addEventListener("dragend",()=>{drag="";qdragR="";qdragF="";document.querySelectorAll(".dl,.dr2").forEach(x=>x.classList.remove("dl","dr2"));document.querySelectorAll(".dragging,.over").forEach(x=>x.classList.remove("dragging","over"))});
 let overEl=null;
-document.addEventListener("dragover",e=>{const z=e.target.closest&&(e.target.closest("[data-dr]")&&temArquivo(e)?e.target.closest("[data-dr]"):e.target.closest("[data-dz]")); if(!z||(!drag&&!qdragR&&!temArquivo(e)))return; document.querySelectorAll(".dl,.dr2").forEach(x=>x.classList.remove("dl","dr2")); const tl=drag&&e.target.closest&&e.target.closest("[data-dr]"); if(tl&&tl.dataset.dr!==drag&&ui.mg!=="fase"){const rc=tl.getBoundingClientRect(); tl.classList.add(e.clientX>rc.left+rc.width/2?"dr2":"dl")}
+document.addEventListener("dragover",e=>{const z=e.target.closest&&(e.target.closest("[data-dr]")&&temArquivo(e)?e.target.closest("[data-dr]"):e.target.closest("[data-dz]")); if(!z||(!drag&&!qdragR&&!qdragF&&!temArquivo(e)))return; document.querySelectorAll(".dl,.dr2").forEach(x=>x.classList.remove("dl","dr2")); const tl=drag&&e.target.closest&&e.target.closest("[data-dr]"); if(tl&&tl.dataset.dr!==drag&&ui.mg!=="fase"){const rc=tl.getBoundingClientRect(); tl.classList.add(e.clientX>rc.left+rc.width/2?"dr2":"dl")}
   e.preventDefault(); if(overEl!==z){overEl&&overEl.classList.remove("over");overEl=z;z.classList.add("over")}});
 document.addEventListener("drop",async e=>{
   const alvoTile=e.target.closest&&e.target.closest("[data-dr]"), z=e.target.closest&&e.target.closest("[data-dz]"); overEl&&overEl.classList.remove("over"); overEl=null;
   const file=e.dataTransfer&&[...e.dataTransfer.files].find(f=>/^image\//.test(f.type));
+  if(qdragF&&z&&z.dataset.dz.startsWith("ceg:")){e.preventDefault(); const k=qdragF; qdragF=""; await qMoverFrameAntes(k,z.dataset.dz.slice(4)); return}
   if(file&&alvoTile){e.preventDefault(); await murFoto(alvoTile.dataset.dr,file); return}
   if(file&&z){e.preventDefault(); const kz=z.dataset.dz.startsWith("ceg:")?z.dataset.dz.slice(4):""; if(ui.tab==="quadro")await qAddFiles([...e.dataTransfer.files],kz); else abrirPrint(kz,file); return}
   if(drag&&alvoTile&&!file&&alvoTile.dataset.dr!==drag&&ui.mg!=="fase"){e.preventDefault(); const rc=alvoTile.getBoundingClientRect(), dep=e.clientX>rc.left+rc.width/2, id=drag; drag=""; document.querySelectorAll(".dl,.dr2").forEach(x=>x.classList.remove("dl","dr2")); await murReordenar(id,alvoTile.dataset.dr,dep); return}
@@ -2036,6 +2043,9 @@ document.addEventListener("click",async e=>{
   if(ds.mbulk!=null){openSheet("Mudar em lote",bulkSheet);return}
   if(ds.mbapply!=null){await bulkAplicar(b);return}
   if(ds.qzoom){ui.qz=Math.max(.4,Math.min(1.6,Math.round(((ui.qz||(window.innerWidth<820?.82:1))+(ds.qzoom==="+"?.1:-.1))*100)/100));render();return}
+  if(ds.qmv){const [k,d]=ds.qmv.split("|"); await qMoverFrame(k,Number(d)); return}
+  if(ds.qoff){await qEsconder(ds.qoff); return}
+  if(ds.qshow!=null){ui.qshow=!ui.qshow; render(); return}
   if(ds.qopen!=null){const [g,c]=ds.qopen.split("\u0001"); qAbrir(g==="Sem GOM"?"":g,c,ds.qf||"");return}
   if(ds.qhome!=null){qHome();return}
   if(ds.qreg){const r=await qRegistrar(ds.qreg); if(r)toast("Registrado na coleção",()=>qDesfazerReg([r])); return}
