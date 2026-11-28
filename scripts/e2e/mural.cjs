@@ -50,10 +50,12 @@ const srv = http.createServer((q, r) => { let p = decodeURIComponent(q.url.split
     ok((await pg.evaluate(() => window.__store.itens.get("i2"))).status === "Recebido", `${nome}: arrastar pra fase 'recebido'`);
     await pg.setViewportSize(vp); await pg.click('[data-mg="gom"]');
     // edição rápida
+    await pg.waitForTimeout(600);
+    if (await pg.locator("#sheet.on").count()) { await pg.keyboard.press("Escape"); await pg.waitForSelector("#sheet.on", { state: "detached", timeout: 3000 }).catch(() => {}); } // folha anterior ainda aberta
     await pg.click('[data-mi="i3"]'); await pg.waitForSelector("#mq-item");
     await pg.fill("#mq-etiquetas", "presente, bias"); await pg.selectOption("#mq-status", "Recebido"); await pg.fill("#mq-obs", "veio amassado");
     await pg.screenshot({ path: `/tmp/e2e-editar-${nome}.png` });
-    await pg.click("[data-msave]"); await pg.waitForTimeout(300);
+    await pg.locator("[data-msave]").evaluate((b) => b.click()); await pg.waitForTimeout(300);
     const i3 = await pg.evaluate(() => window.__store.itens.get("i3"));
     ok(i3.status === "Recebido" && i3.etiquetas === "presente, bias" && i3.obs === "veio amassado", `${nome}: edição rápida grava`);
     ok(i3.travado.includes("status") && !i3.travado.includes("obs"), `${nome}: trava status, não trava notas (${i3.travado})`);
