@@ -127,6 +127,16 @@ A proposta completa, comentada pela dona, está na página "staycollection 2"
 - **Caça de fotos** nas bases mapeadas em `fontes-catalogo.md`; guarda só o link.
 - **Celular:** Android. A entrada principal será compartilhar do WhatsApp para o app (PWA).
 
+### Migração completa para o v2 (28/11/2026, branch claude/migracao-v2)
+O app inteiro roda, atrás de uma chave, nas tabelas do modelo novo. **Nada foi rodado no banco real**: tudo é código e teste local; o modelo antigo continua valendo até a dona aprovar. Roteiro dela: `docs/MIGRACAO.md`.
+- **Chave:** `dataModel` no `config.js` e `DATA_MODEL` na Vercel (`docs` ou `v2`).
+- **Esquema completo** (`supabase/v2.sql`, parte 2): `sugestoes` (caixa do robô), `quadros`, `binder_meta`, `posse` (estado por card), `cards_novos`, `meta`, `avulsos` (rede de segurança), `card_fotos` por chave, `claims.ordem`, `envios.itens_txt` e a função `v2_aplicar` (grava várias tabelas de uma vez, tudo ou nada, com RLS). Tempo real nas 21 tabelas.
+- **Codec** (`v2-codec.js`): documento <-> tabelas, ids = prefixo + id antigo (os botões do Telegram não mudam), nome <-> id, `legado` guarda o documento sem pix, o que ela travou nunca é mudado pelo robô.
+- **Navegador** (`backend.js`) e **servidor** (`scripts/v2/store.mjs`: `api/telegram.js`, `api/investigar.js`, `api/rodada.js`, `conferir-*.mjs`, `aceitar.mjs`, `fontes.mjs`).
+- **Scripts:** `migrar-v2` (relatório; `--apply`), `verificar-v2` (falha se divergir), `voltar-v2` (v2 -> antigo, mantém o pix).
+- **Decisões:** citar uma CEG ou comunidade sem cadastro **não** cria cadastro por padrão (mesmo comportamento do antigo; ao cadastrar, os itens ligam sozinhos); GOM sem cadastro é criada, já que GOM virou nível próprio.
+- **Testes:** `npm test` (59), e2e nos dois modelos (`npm run e2e`, `npm run e2e:v2`), SQL num Postgres local (`scripts/v2/pg.test.mjs`).
+
 ### Língua do app: a das comunidades
 Regra da dona: os textos do app usam os termos das comunidades, não termos inventados.
 

@@ -287,3 +287,14 @@ e abrir http://localhost:8000 (a leitura pela API só funciona no Vercel).
 Nunca commitar dados pessoais: chaves Pix, nomes, grupos de WhatsApp,
 comprovantes, exports do banco. Backups ficam fora do git (veja `.gitignore`).
 
+## Dois modelos de dados (docs e v2)
+
+O app roda em um de dois modelos, escolhido por **uma chave**:
+
+- `dataModel` em `config.js` (o app no navegador) e a variável `DATA_MODEL` na Vercel (bot do Telegram, "compartilhar", conferências diárias);
+- `"docs"` (padrão): a tabela genérica `docs`, um JSON por registro, ligado por nome;
+- `"v2"`: as tabelas de `supabase/v2.sql`, ligadas por id (comunidade > GOM > CEG, `claims` e `itens`, `travado`, sem pix).
+
+Como funciona: `v2-codec.js` traduz documento <-> tabelas nos dois sentidos (um arquivo só, igual no navegador e no servidor). `backend.js` (navegador) e `scripts/v2/store.mjs` (servidor) usam esse codec e mostram ao resto do código os mesmos documentos de sempre; por isso o `index.html` quase não mudou. Roteiro de migração, passo a passo, em **[docs/MIGRACAO.md](docs/MIGRACAO.md)**.
+
+Testes: `npm ci && npm test` (inclui ida e volta e os dois modelos); `npm run e2e` (modelo docs) e `npm run e2e:v2` (modelo v2, mesmo banco falso com as tabelas novas); `PGTEST=1 PGHOST=... node --test scripts/v2/pg.test.mjs` testa o SQL num Postgres de verdade (ver o topo do arquivo).
