@@ -219,7 +219,24 @@ Na dúvida sobre um termo, usar o que aparece nas mensagens das GOMs e perguntar
    - Desfazer o comprovante apaga o arquivo subido; "montar envio" só cria o envio ao confirmar (desfazer apaga).
    - Falta: ler o valor do comprovante (decidido adiar); conferir tudo com o banco e os assets reais.
 4. **Binder, faltantes e caça de fotos.**
-5. **Rodada assistida.**
+5. **Rodada assistida** (pronto em 28/11/2026 no branch `claude/etapa5-rodada`, falta publicar):
+   - Botão **Começar a rodada** na Agora (e "Rodada" na aba CEGs). Uma CEG por vez, por comunidade;
+     ordem pelo risco: cobrança vencida, cobrança aberta, GOM no Brasil ou envio liberado, e
+     mais dias sem conferir. CEG conferida hoje fica de fora. GOM sempre com ícone e comunidade.
+   - Cada tela: foto do grupo, o que está anotado (cobranças com valor e prazo, itens por fase),
+     o que a planilha diz hoje (`api/rodada.js`, só lê; linhas com pix ou dados pessoais não saem),
+     onde olhar, e **Nada novo** (grava `conferidoEm` = hoje na CEG), **Tem novidade** (cola
+     mensagem ou print; usa `api/investigar.js` com a CEG já escolhida; aceitar/descartar),
+     **Paguei** (fluxo existente) e **Pular**. **Desfazer** em tudo, inclusive no placar.
+   - Placar: CEGs conferidas, quanto devo, o que foi pago, o que ficou pra depois.
+   - Lista de CEGs mostra "conferida hoje / há N dias". Corrigido `cegIdOf` (o botão
+     "conferi, está igual" da Agora não gravava, porque `list()` devolve cópias).
+   - Testes: `npm test` (33) e `scripts/e2e/rodada.cjs` (31 checagens por tela, desktop e celular).
+   - CEG que só existe nos itens também entra: "Nada novo" cadastra a CEG (nome, comunidade,
+     `conferidoEm`) e desfazer apaga. Paboracha: `api/rodada.js` lê a API pública (precisa de
+     `PABORACHA_PERFIL`) e mostra as cobranças da CEG. Forms não dá pra ler: a tela avisa e
+     abre o link. A rodada guarda onde parou (neste aparelho, no mesmo dia): "Continuar a rodada".
+   - Fora: ler o conteúdo de forms; testar com planilha, Paboracha e banco reais (só simulados).
 
 ### Mural e Quadro refeitos (27/11/2026)
 Feedback da dona: o Mural tinha um quadro livre dentro dele, e colar print numa lista de CEGs era tedioso.

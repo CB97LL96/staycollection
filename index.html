@@ -482,6 +482,23 @@ h2>.n:last-child{margin-left:auto}
 .agq .strip{display:flex;gap:6px;margin-top:10px}.agq .strip .ph{width:42px}
 .fileb{position:relative;overflow:hidden;cursor:pointer}.fileb input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
 .gsheet .sit{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+
+/* rodada assistida */
+.rdbtn{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:2px solid var(--ink);border-radius:16px;background:var(--surface);padding:14px 16px;margin:0 0 18px;cursor:pointer;color:var(--ink);min-height:56px}
+.rdbtn b{display:block;font-size:16.5px}.rdbtn small{display:block;color:var(--ink2);font-size:13px;margin-top:2px}.rdbtn .go{margin-left:auto;font-weight:800;font-size:20px}
+.cfd{color:var(--ink3)}.cfd.hoje{color:var(--ink);font-weight:700}
+.rdp{display:flex;align-items:center;gap:10px;margin:0 0 14px;font-size:13px;font-weight:800;color:var(--ink2)}.rdp .bar{flex:1;height:6px;border-radius:9px;background:var(--accent-soft);overflow:hidden}.rdp .bar i{display:block;height:100%;background:var(--accent)}
+.rdh{font-size:12px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);margin:18px 0 8px}
+.rdl{list-style:none;margin:0;padding:0}.rdrow{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)}.rdrow .t{display:block;font-weight:650}.rdrow .s{display:block;color:var(--ink2);font-size:13px;margin-top:2px}.rdrow .btn{flex:none}
+.rdrow .okt{color:var(--ink)}.rdrow .gt{color:var(--late)}
+.rdtot{margin:8px 0 0;font-size:14px}
+.rdfs{display:grid;gap:8px;margin-top:12px}.rdf{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.rdn{color:var(--ink2);font-size:13px;min-width:0;overflow-wrap:anywhere}
+.rdab{display:grid;gap:3px;margin:0 0 10px}.rdab small{color:var(--ink3)}.rdab code{display:block;font:13px/1.35 ui-monospace,Menlo,monospace;background:var(--accent-soft);border-radius:8px;padding:6px 8px;overflow-wrap:anywhere}
+.rdonde{display:flex;gap:8px;align-items:center;margin:0}.rdonde span:last-child{min-width:0;overflow-wrap:anywhere}
+.rdta{width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);padding:10px;font:inherit;resize:vertical}
+.rdact{position:sticky;bottom:0;background:var(--bg);margin:16px -18px 0;padding:12px 18px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px}
+.rdact .btn{flex:1 1 0;min-width:0;min-height:48px;padding:6px 8px;font-size:14.5px}.rdact .btn.pri{flex-basis:100%;min-height:56px;font-size:17px}.rdact .rdund{flex-basis:100%;min-height:36px;border-style:dashed}
+.rdsum{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 10px}.rdsum b{font-size:22px}.rdsum span{color:var(--ink2)}.rdsum.big{flex-direction:column;gap:0}.rdsum.big b{font-size:30px}
 </style>
 </head>
 <body>
@@ -763,7 +780,7 @@ function agoraFila(k){
   semConferir().forEach(({r,n})=>{const gom=gomDe(r), kk=gkey(gom,r.com);
     f.push({id:"v:"+r.key,tone:"guess",t:`${r.lbl||r.nome}: ${n==null?"nunca conferida":"sem conferir há "+plural(n,"dia","dias")}`,sub:gomTag(gom,r.com),d:"conferir",tag:n==null?"CEG nunca conferida com a planilha":`sem conferir há ${plural(n,"dia","dias")}`,
       full:`<p class="ags">${esc(r.lbl||r.nome)}: confira a planilha da GOM e veja se bate com o que você deve.</p><p style="margin:0">${gomBtn(gom,r.com)}</p>
-      <div class="actions"><a class="btn pri" href="${esc(r.doc.planilha)}" target="_blank" rel="noopener">abrir a planilha</a><button class="btn" data-conferi="${esc(r.key)}" type="button">conferi, está igual</button></div>`})});
+      <div class="actions"><button class="btn pri" data-rdini type="button">Começar a rodada</button><a class="btn" href="${esc(r.doc.planilha)}" target="_blank" rel="noopener">abrir a planilha</a><button class="btn" data-conferi="${esc(r.key)}" type="button">conferi, está igual</button></div>`})});
   if(k.confVenc.length)f.push({id:"cv",tone:"guess",t:`${plural(k.confVenc.length,"conta a confirmar já venceu","contas a confirmar já venceram")}`,sub:"ainda são palpites; confirme o valor com a GOM",d:"confirmar",tag:"a confirmar",full:`<p class="ags">Ainda são palpites. Confirme o valor com a GOM.</p><div class="actions"><button class="btn pri" data-go="contas" type="button">ver as contas</button></div>`});
   const robo=nSug(); if(robo)f.push({id:"robo",tone:"",t:`${plural(robo,"sugestão do robô","sugestões do robô")}`,sub:"ele só sugere; você decide",d:"conferir",tag:"robô",full:`<p class="ags">Ele só sugere; você decide.</p><div class="actions"><button class="btn pri" data-act="robo" type="button">conferir</button></div>`});
   const semCard=list("itens").filter(d=>tipoDe(d)==="Photocard / set"&&faseDe(d.status)!=="fora"&&!(Array.isArray(d.cards)&&d.cards.length)).length;
@@ -772,6 +789,8 @@ function agoraFila(k){
   const ord=[...f.filter(x=>x===pri),...f.filter(x=>x!==pri&&!ate.has(x.id)),...f.filter(x=>x!==pri&&ate.has(x.id))];
   return ord;
 }
+function rdBotao(){const sv=rdSalva(); if(sv)return `<button class="rdbtn" data-rdini type="button"><span class="tx"><b>Continuar a rodada</b><small>parou na ${sv.i+1}ª de ${sv.ordem.length} CEGs</small></span><span class="go" aria-hidden="true">→</span></button>`; const o=rdOrdem(), n=o.grupos.flat().length; if(!n)return "";
+  const coms=o.grupos.length; return `<button class="rdbtn" data-rdini type="button"><span class="tx"><b>Começar a rodada</b><small>${plural(n,"CEG","CEGs")} em ${plural(coms,"comunidade","comunidades")}, uma por vez${o.hojeJa?` · ${o.hojeJa} já conferida${o.hojeJa>1?"s":""} hoje`:""}</small></span><span class="go" aria-hidden="true">→</span></button>`}
 function renderAgora(){
   const k=contas(), col=colecao(), fila=agoraFila(k);
   const n=f=>col.filter(e=>GRUPO_F[f].includes(e.fase)).length;
@@ -783,6 +802,7 @@ function renderAgora(){
   $("#main").innerHTML=`<div class="topline"><span>STAY collection</span><span>${esc(dt)}</span></div>
   <button class="cover" data-go="contas" type="button"><small>Devo hoje</small><b>${brl(k.soma(k.devoL))}</b>
     <span class="stks"><span class="stk">${plural(k.devoL.length,"conta","contas")}</span>${sv?`<span class="stk g">${sv} sem valor</span>`:""}${k.conf.length?`<span class="stk g">${k.conf.length} a confirmar, fora da soma</span>`:""}${k.venc.length?`<span class="stk r">${k.venc.length} vencida${k.venc.length>1?"s":""}</span>`:""}</span></button>
+  ${rdBotao()}
   <h2>Agora <span class="n">${fila.length?plural(fila.length,"ação","ações"):""}</span></h2>
   ${cur?`<section class="agq" data-ag="${esc(cur.id)}"><span class="tag">${esc(cur.tag)}</span><div class="agt">${esc(cur.t)}</div>${cur.full}${depois.length?`<div class="actions"><button class="btn sm" data-agskip="${esc(cur.id)}" type="button">deixar pra depois</button></div>`:""}</section>`:`<div class="calm">Nada pra fazer agora.</div>`}
   ${depois.length?`<h2>Depois <span class="n">${depois.length}</span></h2><ol class="trks">${depois.map(row).join("")}</ol>`:""}
@@ -935,13 +955,13 @@ function renderCegs(){
   const grupos=[...m.entries()].sort((a,b)=>b[1].reduce((s,r)=>s+r.ativos,0)-a[1].reduce((s,r)=>s+r.ativos,0));
   const closed=v.filter(r=>!r.aberta);
   const card=r=>{const t=itemThumbs(r,5), cc=catCeg(r); return `<button class="ceg" style="--e:${eraCor(eraDe(r))}" data-ceg="${esc(r.key)}" type="button">
-    <span class="top">${grpAv(r.doc,r.com,"")}<span class="tx">${cc?`<span class="catp cat-${cc}">${CATL[cc]}</span>`:""}<span class="t">${esc(r.lbl||r.nome)}</span><span class="s">${r.doc&&r.doc.gom?gomTag(r.doc.gom,r.com)+" · ":""}${esc(plural(r.itens.length,"item","itens"))}</span></span>${r.devN?`<span class="pill late">devo ${r.deve?brl(r.deve):"sem valor"}</span>`:""}</span>
+    <span class="top">${grpAv(r.doc,r.com,"")}<span class="tx">${cc?`<span class="catp cat-${cc}">${CATL[cc]}</span>`:""}<span class="t">${esc(r.lbl||r.nome)}</span><span class="s">${r.doc&&r.doc.gom?gomTag(r.doc.gom,r.com)+" · ":""}${esc(plural(r.itens.length,"item","itens"))}${r.aberta&&r.doc?` · <span class="cfd ${confDias(r)===0?"hoje":""}">${esc(confTxt(r))}</span>`:""}</span></span>${r.devN?`<span class="pill late">devo ${r.deve?brl(r.deve):"sem valor"}</span>`:""}</span>
     ${t.n||t.sem?`<span class="strip">${t.html}${t.n+t.sem>5&&t.n?`<span class="more-n">+${t.n+t.sem-Math.min(5,t.n)}</span>`:""}${!t.n?`<span class="more-n">${plural(t.sem,"item sem foto","itens sem foto")}</span>`:""}</span>`:""}
     <span>${steps(r.step)}<span class="stepl"><span><b>${CSTEPS[r.step]}</b></span><span>${r.ativos?r.ativos+" por chegar":r.itens.length?"tudo comigo":""}</span></span></span>
   </button>`};
   $("#main").innerHTML=`${head("CEGs",`${plural(all.filter(r=>r.aberta).length,"CEG aberta","CEGs abertas")} em ${plural(new Set(all.filter(r=>r.aberta).map(r=>r.com)).size,"comunidade","comunidades")}`)}
   ${ui.gc?`<div class="hacts"><button class="btn sm" data-new="cegs" type="button">${ico("plus",16)}CEG</button></div>`:""}
-  ${ui.gc?"":`<div class="srow"><div class="search">${ico("search")}<input id="gq" type="search" placeholder="Buscar CEG, GOM, item ou membro" value="${esc(ui.gq)}" aria-label="Buscar CEG"></div><button class="btn sm" data-new="cegs" type="button">${ico("plus",16)}CEG</button></div>`}
+  ${ui.gc?"":`<div class="srow"><div class="search">${ico("search")}<input id="gq" type="search" placeholder="Buscar CEG, GOM, item ou membro" value="${esc(ui.gq)}" aria-label="Buscar CEG"></div><button class="btn sm" data-rdini type="button">Rodada</button><button class="btn sm" data-new="cegs" type="button">${ico("plus",16)}CEG</button></div>`}
   ${ui.gc?`<div class="hacts"><button class="btn sm" data-gc="" type="button">${ico("back",16)}Todas as comunidades</button></div>`:""}
   ${ui.gc?comHero(ui.gc)+gruposSec(ui.gc):""}
   ${!ui.gc&&!q?(grupos.length?sitSecs(grupos.concat(list("comunidades").map(c=>c.nome).filter(n=>n&&!m.has(n)).map(n=>[n,[]]))):`<p class="empty">Nenhuma CEG com esses filtros.</p>`):grupos.length?grupos.map(([c,rs])=>{const deve=rs.reduce((s,r)=>s+r.deve,0); const ci=comInfo(c);
@@ -969,14 +989,14 @@ function cardSheet(key){const e=colecao().find(x=>x.key===key); if(!e)return "<p
   return `<div class="cardhero">${ph(bgOf(e),e.tipo==="Photocard / set"?"":"wide",e.card||bgOf(e)?"":esc(e.nome))}<div><div style="font-size:20px;font-weight:700">${esc(e.nome)}</div><div style="color:var(--ink2)">${esc([e.membro,e.era].filter(Boolean).join(" · "))}</div><div class="actions"><span class="pill ${FTONE[e.fase]}">${FLBL[e.fase]}</span>${e.copias>1?`<span class="pill">${e.copias} cópias</span>`:""}</div>${e.semCard?`<p class="note">Este pedido ainda não está ligado a um card do catálogo.</p><button class="btn sm pri" data-link="${esc(e.item.id)}" type="button">ligar ao catálogo</button>`:""}</div></div>
   ${its?`<h2>De onde vem</h2><div class="panel"><ul class="rows">${its}</ul></div><div class="actions">${e.itens.map(d=>editBtn("itens",d.id,e.itens.length>1?"editar pedido ("+esc(cegLbl(d)||d.ceg||"sem CEG")+")":"editar pedido")).join("")}</div>`:e.acervo?`<p class="note">Item que já estava com você, sem pedido.</p>`:`<p class="note">Marcado na coleção, sem pedido ligado.</p>`}`;
 }
-const cegIdOf=doc=>{for(const [id,g] of D.cegs)if(g===doc)return id;return ""};
+const cegIdOf=doc=>{if(doc&&doc.id&&D.cegs.has(doc.id))return doc.id; for(const [id,g] of D.cegs)if(g===doc)return id;return ""}; // list() devolve cópias com id
 function cegSheet(key){const r=cegs().find(x=>x.key===key); if(!r)return "<p class='empty'>CEG não encontrada.</p>"; const d=r.doc||{};
   const deve=r.contas.filter(devo), pagas=r.contas.filter(c=>c.status==="Paga"), sum=a=>a.reduce((s,c)=>s+(c.valor||0),0);
   const its=r.itens.map(dd=>itemTile(dd)).join("");
   return `<div class="hero">${grpAv(r.doc,r.com,"xl")}<div><div style="font-size:20px;font-weight:700">${esc(r.lbl||r.nome)}</div><div style="color:var(--ink2);display:flex;gap:6px;align-items:center">${av("com",r.com,"xs")}${esc(r.com)}</div></div></div>
   ${d.gom?`<p style="margin:0 0 8px">${gomBtn(d.gom,r.com)}</p>`:""}
   <ul class="bigsteps">${CSTEPS.map((s,i)=>`<li class="${i<r.step?"on":i===r.step?"on now":""}"><span class="d"></span>${s}</li>`).join("")}</ul>
-  <dl class="kv">${[["Situação",d.status],["Grupo",d.grupo],["Devo",deve.length?total(deve):""],["Já paguei",pagas.length?brl(sum(pagas)):""]].filter(x=>x[1]).map(([a,b])=>`<dt>${a}</dt><dd>${esc(b)}</dd>`).join("")}</dl>
+  <dl class="kv">${[["Situação",d.status],["Grupo",d.grupo],["Conferida",r.aberta&&r.doc?confTxt(r).replace("conferida ","").replace(/^(\w)/,m=>m.toUpperCase()):""],["Devo",deve.length?total(deve):""],["Já paguei",pagas.length?brl(sum(pagas)):""]].filter(x=>x[1]).map(([a,b])=>`<dt>${a}</dt><dd>${esc(b)}</dd>`).join("")}</dl>
   ${d.planilha&&okUrl(d.planilha)?`<p><a href="${esc(d.planilha)}" target="_blank" rel="noopener">abrir planilha</a></p>`:""}
   ${its?`<h2>Meus itens <span class="n">${r.itens.length}</span></h2><div class="mini">${its}</div>`:""}
   ${r.contas.length?`<h2>Contas desta CEG <span class="n">${r.contas.length}</span></h2><div class="panel"><ul class="rows">${[...r.contas].sort(byPrazo).map(contaRow).join("")}</ul></div>`:""}
@@ -1531,6 +1551,140 @@ document.addEventListener("paste",e=>{
   if(sheetFn===printSheet){pr.step=0;lerPrint(f)}else abrirPrint("",f);
 });
 
+// ---------- Rodada assistida: uma CEG por vez ----------
+// Ela passa de CEG em CEG (comunidade por comunidade). O robô só mostra e sugere:
+// nada muda sem ela tocar. conferidoEm fica na doc da CEG (só esse campo é gravado).
+const rd={ordem:[],i:-1,feitos:{},hist:[],devoIni:new Set(),deveIni:0,plan:{},nov:false,txt:"",img:null,semDoc:0,hojeJa:0};
+const confDias=r=>{const d=pd(r.doc&&r.doc.conferidoEm); return d?Math.round((today()-d)/864e5):null};
+const confTxt=r=>{if(!r.doc)return "sem cadastro"; const n=confDias(r); return n==null?"nunca conferida":n<=0?"conferida hoje":n===1?"conferida ontem":`conferida há ${n} dias`};
+function rdOrdem(){
+  const xs=cegs().filter(r=>r.aberta).map(r=>{
+    const n=confDias(r), venc=r.contas.some(c=>devo(c)&&vencida(c)), ab=r.contas.some(c=>ABERTA.includes(c.status)), gom=r.itens.some(d=>["br","lib"].includes(faseDe(d.status)));
+    return {r,n,score:(venc?4e6:0)+(ab?2e6:0)+(gom?1e6:0)+(n==null?999:Math.max(0,n))}});
+  const livres=xs.filter(x=>x.n!==0), m=new Map();
+  livres.forEach(x=>{const k=x.r.com||""; if(!m.has(k))m.set(k,[]); m.get(k).push(x)});
+  const grupos=[...m.values()].map(g=>g.sort((a,b)=>b.score-a.score)).sort((a,b)=>b[0].score-a[0].score);
+  return {grupos,hojeJa:xs.length-livres.length};
+}
+const RD_K="novo-rodada";
+function rdSalvar(){try{localStorage.setItem(RD_K,JSON.stringify({dia:isoToday(),ordem:rd.ordem,i:rd.i,feitos:rd.feitos,hist:rd.hist,devoIni:[...rd.devoIni],deveIni:rd.deveIni,hojeJa:rd.hojeJa}))}catch(e){}}
+function rdSalva(){try{const j=JSON.parse(localStorage.getItem(RD_K)||"null"); return j&&j.dia===isoToday()&&Array.isArray(j.ordem)&&j.i>=0&&j.i<j.ordem.length?j:null}catch(e){return null}}
+function rdIniciar(){
+  const sv=rdSalva();
+  if(sv&&sv.ordem.every(k=>cegs().some(x=>x.key===k))){Object.assign(rd,{ordem:sv.ordem,i:sv.i,feitos:sv.feitos||{},hist:sv.hist||[],devoIni:new Set(sv.devoIni),deveIni:sv.deveIni,plan:{},nov:false,txt:"",img:null,hojeJa:sv.hojeJa||0}); openSheet("Rodada",rodadaSheet); return}
+  const o=rdOrdem(), k=contas();
+  Object.assign(rd,{ordem:o.grupos.flat().map(x=>x.r.key),i:-1,feitos:{},hist:[],devoIni:new Set(k.devoL.map(c=>c.id)),deveIni:k.soma(k.devoL),plan:{},nov:false,txt:"",img:null,hojeJa:o.hojeJa});
+  openSheet("Rodada",rodadaSheet);
+}
+const rdAtual=()=>rd.i>=0&&rd.i<rd.ordem.length?cegs().find(x=>x.key===rd.ordem[rd.i]):null;
+function rdBusca(r){
+  if(!r||!r.doc||!r.doc.planilha||rd.plan[r.key])return;
+  const key=r.key; rd.plan[key]={carregando:true};
+  (async()=>{
+    try{const s=await window.stay.getSession(); const resp=await fetch("/api/rodada",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+(s&&s.access_token)},body:JSON.stringify({ceg:r.nome,comunidade:r.com})});
+      const j=await resp.json().catch(()=>({})); rd.plan[key]=resp.ok?j:{lida:false,temPlanilha:true,motivo:j.erro||"Não consegui abrir a planilha agora."}}
+    catch(e){rd.plan[key]={lida:false,temPlanilha:true,motivo:"Sem conexão pra ler a planilha. Abra pelo link."}}
+    const cur=rdAtual(); if(sheetFn===rodadaSheet&&cur&&cur.key===key&&!$("#shB").contains(document.activeElement)){const sc=$("#shB").scrollTop;$("#shB").innerHTML=rodadaSheet();$("#shB").scrollTop=sc}
+  })();
+}
+const rdOndeOlhar=r=>{const g=r.doc&&r.doc.grupo, n=g||(gruposDe(r.com)[0]||{}).nome; return n?{n,grupo:true}:{n:"grupo da "+nomeCom(r.com),grupo:false}};
+function rdPlanHtml(r,p){
+  if(!r.doc||!r.doc.planilha)return `<p class="note">${r.doc?"Esta CEG não tem planilha cadastrada.":"Esta CEG ainda não está cadastrada, então não tem planilha."} Olhe no grupo.</p>`;
+  const link=okUrl(r.doc.planilha)?`<a class="btn sm" href="${esc(r.doc.planilha)}" target="_blank" rel="noopener">${/forms/i.test(r.doc.planilha)?"abrir o forms":/paboracha/i.test(r.doc.planilha)?"abrir o Paboracha":"abrir a planilha"}</a>`:"";
+  if(!p||p.carregando)return `<p class="note">Lendo a planilha…</p>${link}`;
+  if(!p.cadastrada&&p.cadastrada!==undefined)return `<p class="note">Esta CEG não está cadastrada no servidor.</p>`;
+  if(p.lida===false)return `<p class="note">${esc(p.motivo||"Não consegui ler a planilha.")}</p>${link}`;
+  if(!p.achouNome)return `<p class="note">${p.paboracha?"Nenhuma cobrança desta CEG no Paboracha.":"Planilha lida, mas o seu nome não aparece nela."}</p>${link}`;
+  return `${p.paboracha?`<p class="note">Cobranças desta CEG no Paboracha:</p>`:""}${p.abas.map(a=>`<div class="rdab"><b>${esc(a.aba||"planilha")}</b>${a.cabecalho?`<small>${esc(a.cabecalho)}</small>`:""}${a.linhas.map(l=>`<code>${esc(l)}</code>`).join("")}${a.mais?`<small>+ ${a.mais} ${a.mais===1?"linha":"linhas"}</small>`:""}</div>`).join("")}${link}`;
+}
+function rdCega(r){
+  const p=rd.plan[r.key], d=r.doc, gom=gomDe(r), ond=rdOndeOlhar(r);
+  const dv=r.contas.filter(devo), ab=r.contas.filter(c=>ABERTA.includes(c.status)).sort(byPrazo);
+  const achou=id=>{const x=p&&p.cobrancas&&p.cobrancas.find(c=>c.id===id); return x?x.achou:null};
+  const fs=FASES.filter(f=>f[0]!=="fora").map(f=>[f,r.itens.filter(i=>faseDe(i.status)===f[0])]).filter(x=>x[1].length);
+  const cobRow=c=>{const n=daysTo(c.prazo), a=achou(c.id); return `<li class="rdrow"><span class="tx"><span class="t">${esc(c.referente||c.tipo||"Cobrança")}</span><span class="s">${typeof c.valor==="number"?brl(c.valor):"sem valor"} · ${c.prazo?(n<0?`venceu há ${plural(-n,"dia","dias")}`:`vence ${fdd(c.prazo)}`):"sem prazo"} · ${esc(c.status)}${a===true?` · <b class="okt">na planilha</b>`:a===false?` · <b class="gt">não achei na planilha</b>`:""}</span></span>${devo(c)?`<button class="btn sm pri" data-cst="${esc(c.id)}|Paga" type="button">Paguei</button>`:""}</li>`};
+  const total=dv.reduce((s,c)=>s+(c.valor||0),0);
+  const pago=r.contas.filter(c=>c.status==="Paga"&&rd.devoIni.has(c.id));
+  return `<div class="origem">${grpAv(d,r.com,"lg")}<span><b>${esc(r.lbl||r.nome)}</b><small>${esc(confTxt(r))}</small></span></div>
+  <p style="margin:0 0 12px">${gomBtn(gom,r.com)}</p>
+  <h3 class="rdh">O que está anotado</h3>
+  ${ab.length?`<ul class="rdl">${ab.map(cobRow).join("")}</ul>${dv.length?`<p class="rdtot">Devo nesta CEG: <b>${total?brl(total):"sem valor"}</b>${semValor(dv)&&total?` + ${plural(semValor(dv),"sem valor","sem valor")}`:""}</p>`:""}`:`<p class="note">Nenhuma cobrança aberta.${pago.length?` Você pagou ${plural(pago.length,"conta","contas")} agora.`:""}</p>`}
+  ${fs.length?`<div class="rdfs">${fs.map(([f,its])=>`<div class="rdf"><span class="pill ${FTONE[f[0]]}">${esc(FLBL[f[0]]||f[1])} · ${its.length}</span><span class="rdn">${esc(its.slice(0,4).map(i=>[i.item,i.membro].filter(Boolean).join(" · ")).join(" · "))}${its.length>4?` e mais ${its.length-4}`:""}</span></div>`).join("")}</div>`:`<p class="note">Nenhum item andando nesta CEG.</p>`}
+  <h3 class="rdh">A planilha diz hoje</h3>${rdPlanHtml(r,p)}
+  <h3 class="rdh">Onde olhar</h3><p class="rdonde">${ond.grupo?av("grp",ond.n,"xs"):av("com",r.com,"xs")}<span>${ond.grupo?`grupo <b>${esc(ond.n)}</b>`:`<b>${esc(ond.n)}</b>`} · comunidade ${esc(nomeCom(r.com)||"sem comunidade")}</span></p>
+  ${rd.nov?rdNovidade(r):""}`;
+}
+function rdNovidade(r){
+  const veio=sh.busy||sh.erro||sh.res;
+  return `<h3 class="rdh">Tem novidade</h3>
+  ${veio?"":`<p class="lede" style="margin:0 0 8px">Cole a mensagem da GOM ou mande o print. O robô só sugere; você aceita ou descarta.</p>
+  <textarea id="rdt" class="rdta" rows="4" placeholder="Cole aqui a mensagem do grupo" aria-label="Mensagem da GOM">${esc(rd.txt)}</textarea>
+  <div class="actions" style="margin:8px 0 0"><label class="btn fileb">${rd.img?"Print: "+esc(rd.img.name.slice(0,22)):"Escolher print"}<input type="file" accept="image/*" id="rdi" aria-label="Escolher print"></label><button class="btn pri" data-rdler type="button">Ler</button></div>`}
+  ${veio?shareSheet():""}
+  <div class="actions" style="margin:12px 0 0"><button class="btn pri" data-rdnada="anotei" type="button">Pronto, anotei</button><button class="btn" data-rdnovx type="button">Voltar</button></div>`;
+}
+function rodadaSheet(){
+  if(!rd.ordem.length&&rd.i<0){
+    return `<p class="lede">Nenhuma CEG pra conferir agora.</p>${rd.hojeJa?`<p class="note">${plural(rd.hojeJa,"CEG já foi conferida hoje","CEGs já foram conferidas hoje")}.</p>`:""}<div class="actions"><button class="btn" data-rdfechar type="button">Fechar</button></div>`;
+  }
+  if(rd.i<0){
+    const byCom=new Map(); rd.ordem.map(k=>cegs().find(x=>x.key===k)).filter(Boolean).forEach(r=>{const k=r.com||""; if(!byCom.has(k))byCom.set(k,[]); byCom.get(k).push(r)});
+    const k=contas();
+    return `<p class="lede" style="margin:0 0 10px">Uma CEG por vez, comunidade por comunidade. As com cobrança, com a GOM no Brasil ou com envio liberado vêm primeiro.</p>
+    <div class="rdsum"><b>${plural(rd.ordem.length,"CEG","CEGs")}</b><span>em ${plural(byCom.size,"comunidade","comunidades")} · devo ${brl(k.soma(k.devoL))}</span></div>
+    ${rd.hojeJa?`<p class="note">${plural(rd.hojeJa,"CEG já foi conferida hoje e ficou de fora","CEGs já foram conferidas hoje e ficaram de fora")}.</p>`:""}
+    <div class="panel"><ul class="rows">${[...byCom].map(([com,rs])=>`<li><div class="row" style="cursor:default">${av("com",com,"sm")}<span class="tx"><span class="t">${esc(nomeCom(com)||"Sem comunidade")}</span><span class="s">${esc(rs.map(r=>r.lbl||r.nome).slice(0,3).join(", "))}${rs.length>3?` e mais ${rs.length-3}`:""}</span></span><span class="v">${rs.length}</span></div></li>`).join("")}</ul></div>
+    <div class="actions stick"><button class="btn pri" data-rdgo type="button" style="width:100%;min-height:52px">Começar</button></div>`;
+  }
+  const r=rdAtual();
+  if(!r){
+    const r2=rd.ordem.map(k=>cegs().find(x=>x.key===k)).filter(Boolean), st=k=>r2.filter(x=>rd.feitos[x.key]===k), nada=st("nada"), nov=st("novidade"), pul=st("pulou"), nao=r2.filter(x=>!rd.feitos[x.key]);
+    const k=contas(), deve=k.soma(k.devoL), pagas=k.pagas.filter(c=>rd.devoIni.has(c.id));
+    const li=x=>`<li><div class="row" style="cursor:default">${grpAv(x.doc,x.com,"sm")}<span class="tx"><span class="t">${esc(x.lbl||x.nome)}</span><span class="s">${gomTag(gomDe(x),x.com)}</span></span></div></li>`;
+    return `<div class="rdsum big"><span>CEGs conferidas</span><b>${nada.length+nov.length} de ${r2.length}</b></div>
+    <div class="hero" style="margin:12px 0"><div class="big">${brl(deve)}</div><span class="pill ${deve?"late":"ok"}">${deve?"devo no total":"nada a pagar"}</span></div>
+    <dl class="kv"><dt>Sem novidade</dt><dd>${nada.length}</dd><dt>Com novidade</dt><dd>${nov.length}</dd><dt>Pagas agora</dt><dd>${pagas.length?`${pagas.length} (${brl(pagas.reduce((s,c)=>s+(c.valor||0),0))})`:"0"}</dd>${rd.deveIni!==deve?`<dt>Devia no começo</dt><dd>${brl(rd.deveIni)}</dd>`:""}</dl>
+    ${pul.length+nao.length?`<h3 class="rdh">Ficaram pra depois</h3><div class="panel"><ul class="rows">${[...pul,...nao].map(li).join("")}</ul></div>`:`<p class="note">Rodada completa. Nada ficou pra depois.</p>`}
+    <div class="actions stick">${rd.hist.length?`<button class="btn" data-rddesf type="button">Desfazer a última</button>`:""}<button class="btn pri" data-rdfechar type="button">Fechar</button></div>`;
+  }
+  rdBusca(r);
+  const dv=r.contas.filter(devo), pc=(rd.i+1)/rd.ordem.length*100;
+  return `<div class="rdp"><span>${rd.i+1} de ${rd.ordem.length}</span><span class="bar"><i style="width:${pc}%"></i></span><button class="btn sm" data-rdfim type="button">Encerrar</button></div>
+  ${rdCega(r)}
+  ${rd.nov?"":`<div class="rdact"><button class="btn pri" data-rdnada="nada" type="button">Nada novo</button><button class="btn" data-rdnov type="button">Tem novidade</button>
+    ${dv.length?`<button class="btn" ${dv.length===1?`data-cst="${esc(dv[0].id)}|Paga"`:`data-liq="${esc(r.key)}"`} ${dv.length>1&&semValor(dv)?"disabled":""} type="button">${dv.length>1?"Paguei tudo":"Paguei"}</button>`:`<span></span>`}
+    <button class="btn" data-rdpular type="button">Pular</button>
+    ${rd.hist.length?`<button class="btn sm rdund" data-rddesf type="button">Desfazer</button>`:""}</div>`}`;
+}
+const rdRe=()=>{if(sheetFn===rodadaSheet){$("#shB").innerHTML=rodadaSheet();$("#shB").scrollTop=0;lazy()}};
+async function rdMarcar(como){ // como: nada | novidade | pulou
+  const r=rdAtual(); if(!r)return;
+  const h={key:r.key,i:rd.i,feito:rd.feitos[r.key],id:"",prev:undefined};
+  if(como!=="pulou"){
+    if(!db||!canWrite){toast("Sem permissão pra gravar");return}
+    if(r.doc){const id=cegIdOf(r.doc); if(!id){toast("Não achei essa CEG pra gravar");return}
+      h.id=id; h.prev=r.doc.conferidoEm===undefined?null:r.doc.conferidoEm;
+      try{await db.doc("cegs/"+id).update({conferidoEm:isoToday()})}catch(e){toast("Não deu pra salvar; tente de novo");return}}
+    else{ // CEG que só existia nos itens: cadastra na hora (desfazer apaga)
+      try{const n=await db.collection("cegs").add({nome:r.nome,comunidade:r.com,conferidoEm:isoToday()}); h.id=n.id; h.criada=true}catch(e){toast("Não deu pra salvar; tente de novo");return}}
+  }
+  rd.feitos[r.key]=como; rd.hist.push(h); rd.i++; rdSalvar(); rd.nov=false; rd.txt=""; rd.img=null; Object.assign(sh,{busy:false,erro:"",res:null});
+  rdRe();
+}
+async function rdDesfazer(){
+  const h=rd.hist.pop(); if(!h)return;
+  if(h.id){try{if(h.criada)await db.doc("cegs/"+h.id).delete(); else await db.doc("cegs/"+h.id).update({conferidoEm:h.prev})}catch(e){rd.hist.push(h);toast("Não deu pra desfazer");return}}
+  if(h.feito===undefined)delete rd.feitos[h.key]; else rd.feitos[h.key]=h.feito;
+  rd.i=h.i; rd.nov=false; rdSalvar(); toast("Desfeito"); rdRe();
+}
+async function rdLer(){
+  const texto=(rd.txt||"").trim(), r=rdAtual(); if(!r)return;
+  if(!texto&&!rd.img){toast("Cole a mensagem ou escolha um print");return}
+  Object.assign(sh,{texto,nome:rd.img?rd.img.name:"",imagem:rd.img,busy:false,erro:"",res:null,escolha:null});
+  const id=r.doc?cegIdOf(r.doc):"";
+  shEnviar({texto,nomeArquivo:rd.img?rd.img.name:"",cegForcada:id?"ceg-"+id:r.nome,...(rd.img?{imagem:await imagemParaIA(rd.img)}:{})});
+}
+
 // ---------- Compartilhar do WhatsApp (app instalado no celular) ----------
 // O sw.js guarda o que ela compartilhou; aqui o app lê, manda pra investigação
 // (api/investigar) e mostra o resultado com aceitar/descartar.
@@ -1559,14 +1713,15 @@ function shareSheet(){
   ${pend.length>1&&pronto?`<div class="actions stick"><button class="btn pri" data-shall="${esc(r.id)}" type="button">Aceitar as ${pend.length}</button></div>`:""}`;
 }
 async function shEnviar(corpo){
-  sh.busy=true; sh.erro=""; sh.res=null; sh.escolha=null; if(sheetFn===shareSheet)$("#shB").innerHTML=shareSheet();
+  sh.busy=true; sh.erro=""; sh.res=null; sh.escolha=null; shRe();
   try{
     const s=await window.stay.getSession(); const r=await fetch("/api/investigar",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+(s&&s.access_token)},body:JSON.stringify(corpo)});
     const j=await r.json().catch(()=>({})); if(!r.ok)throw new Error(j.erro||"Não consegui ler isso.");
     sh.res=j;
   }catch(e){sh.erro=e.message||"Não consegui ler isso."}
-  sh.busy=false; if(sheetFn===shareSheet)$("#shB").innerHTML=shareSheet();
+  sh.busy=false; shRe();
 }
+function shRe(){if(sheetFn===shareSheet)$("#shB").innerHTML=shareSheet(); else if(sheetFn===rodadaSheet){const sc=$("#shB").scrollTop;$("#shB").innerHTML=rodadaSheet();$("#shB").scrollTop=sc}}
 function abrirCompartilhado({texto="",nome="",imagem=null}){
   Object.assign(sh,{texto,nome,imagem,busy:false,erro:"",res:null,escolha:null});
   if(imagem&&!texto.trim()){sh.escolha=imagem}
@@ -1613,6 +1768,16 @@ document.addEventListener("click",async e=>{
   if(ds.gomenv){const k=ds.gomenv, [g,com]=k.split("\u0001"); if(!gomResumo(g,com).lib.length){toast("Nada com envio liberado nesta GOM");return}
     const ev=list("envios").find(x=>x.status==="A pedir"&&gomNome(x.gom)===gomNome(g)&&(x.comunidade||"")===(com||"")), id=ev?ev.id:"novo:"+k;
     const f=()=>envioSheet(id,k); if(sheetFn){$("#shT").textContent="Montar envio";sheetFn=f;$("#shB").innerHTML=f();lazy();$("#shB").scrollTop=0}else openSheet("Montar envio",f); return}
+  if(ds.rdini!=null){rdIniciar();return}
+  if(ds.rdgo!=null){rd.i=0;rdSalvar();rdRe();return}
+  if(ds.rdnada){await rdMarcar(ds.rdnada==="anotei"?"novidade":"nada");return}
+  if(ds.rdnov!=null){rd.nov=true;rdRe();setTimeout(()=>{const t=$("#rdt");if(t)t.focus()},50);return}
+  if(ds.rdnovx!=null){rd.nov=false;Object.assign(sh,{busy:false,erro:"",res:null});rdRe();return}
+  if(ds.rdpular!=null){await rdMarcar("pulou");return}
+  if(ds.rddesf!=null){await rdDesfazer();return}
+  if(ds.rdfim!=null){rd.i=rd.ordem.length;rd.nov=false;rdSalvar();rdRe();return}
+  if(ds.rdler!=null){await rdLer();return}
+  if(ds.rdfechar!=null){closeSheet();return}
   if(ds.conferi){const r=cegs().find(x=>x.key===ds.conferi); if(!r||!r.doc)return; await setMany([["cegs",cegIdOf(r.doc),{conferidoEm:isoToday()}]],"CEG conferida hoje"); return}
   if(ds.go){if(ds.cf){ui.cf=ds.cf;ui.cn=240}go(ds.go);return}
   if(ds.href){location.href=ds.href;return}
@@ -1717,11 +1882,13 @@ document.addEventListener("input",e=>{
   if(id==="qq"){clearTimeout(qt);qt=setTimeout(()=>{ui.qq=e.target.value;const pos=e.target.selectionStart;render();const el=$("#qq");if(el){el.focus();try{el.setSelectionRange(pos,pos)}catch(err){}}},160);return}
   if(id==="mq"){clearTimeout(qt);qt=setTimeout(()=>{ui.mq=e.target.value;const pos=e.target.selectionStart;render();const el=$("#mq");if(el){el.focus();try{el.setSelectionRange(pos,pos)}catch(err){}}},180);return}
   if(id==="ncq"){clearTimeout(qt);qt=setTimeout(()=>{nc.q=e.target.value;$("#shB").innerHTML=novaSheet();lazy();const el=$("#ncq");el.focus();el.setSelectionRange(nc.q.length,nc.q.length)},200);return}
+  if(id==="rdt"){rd.txt=e.target.value;return}
   if(id==="ncv"){nc.valor=e.target.value}
   if(id==="ncp"){nc.prazo=e.target.value}
 });
 document.addEventListener("focusout",e=>{if(e.target.matches&&e.target.matches("#cq,#gq"))setTimeout(()=>{if(!document.activeElement||!document.activeElement.matches("input"))render()},50)});
 document.addEventListener("change",e=>{const f=e.target.id;
+  if(f==="rdi"&&e.target.files[0]){rd.img=e.target.files[0];rdRe();return}
   if(f==="prf"&&e.target.files[0]){lerPrint(e.target.files[0]);return}
   if(e.target.dataset&&e.target.dataset.comp&&e.target.files[0]){const fl=e.target.files[0]; e.target.value=""; compBaixa(e.target.dataset.comp,fl); return}
   if(f==="mif"&&e.target.files[0]){murFoto(e.target.dataset.for,e.target.files[0]);return}
