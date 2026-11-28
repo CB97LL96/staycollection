@@ -240,7 +240,7 @@ h2 .r{margin-left:auto;font-size:14px;font-weight:700}
 .mgh{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}.mgh h2{margin:0}
 .mgrp{margin-top:26px}.mceg{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
 .mhd{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.mhd .t{font-weight:700}.mhd .s{color:var(--ink3);font-size:13px;margin-right:auto}
-.mini.mm{margin-top:12px}.mtile{cursor:grab}.mtile.dragging{opacity:.4}
+.mini.mm{margin-top:12px}.mtile{cursor:grab;position:relative}.mtile.dl::before,.mtile.dr2::after{content:"";position:absolute;top:0;bottom:0;width:4px;background:var(--accent);border-radius:2px;z-index:3}.mtile.dl::before{left:-8px}.mtile.dr2::after{right:-8px}.mtile.dragging{opacity:.4}
 [data-dz].over,.mtile.over{outline:3px dashed var(--accent);outline-offset:3px}
 .prl{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px}.prrow{display:grid;grid-template-columns:auto 56px minmax(0,1fr);gap:10px;align-items:center}
 .prcat{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.prcat .ph{width:44px;aspect-ratio:55/85;border-radius:6px;flex:none}.prcat .btn.sm{min-height:36px;padding:2px 10px}.prcat .btn.on{outline:2px solid var(--accent)}.prrep{color:var(--late);font-size:12px}.prrow{grid-template-columns:auto 56px minmax(0,1fr)}.prrow .prcatw{grid-column:2/-1}
@@ -672,7 +672,8 @@ function cegs(){
   list("cegs").forEach(g=>{const r=get(g.comunidade,g.nome); r.doc=g;});
   list("itens").forEach(d=>{ if(!d.ceg)return; if(faseDe(d.status)==="fora")return; get(d.comunidade,d.ceg).itens.push(d); });
   list("cobrancas").forEach(c=>{ if(!c.ceg)return; get(c.comunidade,c.ceg).contas.push(c); });
-  const out=[...m.values()].map(r=>{
+  const byOrd=(a,b)=>(typeof a.ord==="number"?a.ord:1e9)-(typeof b.ord==="number"?b.ord:1e9);
+  const out=[...m.values()].map(r=>{r.itens.sort(byOrd);
     const st=r.doc&&r.doc.status in CEG_ST?CEG_ST[r.doc.status]:null;
     const fs=r.itens.map(d=>F2S[faseDe(d.status)]).filter(x=>x!=null);
     const step=st!=null?st:(fs.length?Math.min(...fs):0);
@@ -1205,7 +1206,7 @@ function renderMural(){
     const m=new Map(); rowsTodas.forEach(r=>{const k=mode==="comunidade"?(nomeCom(r.com)||"Sem comunidade"):gkey(gomDe(r),r.com); if(!m.has(k))m.set(k,[]); m.get(k).push(r)});
     const gs=[...m].sort((a,b)=>b[1].reduce((s,r)=>s+r.itens.length,0)-a[1].reduce((s,r)=>s+r.itens.length,0));
     corpo=gs.map(([k,rs])=>{const n=rs.reduce((s,r)=>s+r.itens.length,0), lib=rs.reduce((s,r)=>s+r.itens.filter(d=>faseDe(d.status)==="lib").length,0), deve=rs.reduce((s,r)=>s+r.deve,0), ids=rs.flatMap(r=>r.itens.map(d=>d.id)).join(",");
-      return `<section class="mgrp"><div class="mgh">${av("com",rs[0].com,"lg")}<h2>${mode==="comunidade"?esc(k):gomBtn(gomDe(rs[0]),rs[0].com)} <span class="n">${n}</span></h2>${lib?`<span class="pill ok">${lib} com envio liberado</span>`:""}${deve?`<span class="pill late">devo ${brl(deve)}</span>`:""}${ui.msel?`<button class="btn sm" data-selids="${esc(ids)}" type="button">todos</button>`:`<button class="btn sm" data-qopen="${esc(gkey(gomDe(rs[0]),rs[0].com))}" type="button">${ico("plus",14)}inserir</button>`}</div>${rs.sort((a,b)=>b.ativos-a.ativos).map(murCeg).join("")}</section>`}).join("");
+      return `<section class="mgrp"><div class="mgh">${mode==="comunidade"?av("com",rs[0].com,"lg"):""}<h2>${mode==="comunidade"?esc(k):gomBtn(gomDe(rs[0]),rs[0].com,"lg")} <span class="n">${n}</span></h2>${lib?`<span class="pill ok">${lib} com envio liberado</span>`:""}${deve?`<span class="pill late">devo ${brl(deve)}</span>`:""}${ui.msel?`<button class="btn sm" data-selids="${esc(ids)}" type="button">todos</button>`:`<button class="btn sm" data-qopen="${esc(gkey(gomDe(rs[0]),rs[0].com))}" type="button">${ico("plus",14)}inserir</button>`}</div>${rs.sort((a,b)=>b.ativos-a.ativos).map(murCeg).join("")}</section>`}).join("");
   }
   const filtros=ui.mf||ui.mm||ui.me||ui.mq;
   $("#main").innerHTML=`${head("Mural",`${plural(vis.length,"item","itens")}${filtros?` de ${todos.length}`:""}${vw==="lista"&&murFino()?" · arraste pra mudar de CEG ou fase":""} · ${ui.msel?"toque nos cards pra selecionar":"toque pra editar, segure pra selecionar"}`)}
@@ -1386,6 +1387,20 @@ async function qNovaTag(nome){
 document.addEventListener("pointerdown",e=>{const f=e.target.closest&&e.target.closest("[data-qfr]"); if(!f||ui.tab!=="quadro")return; qact=f.dataset.qfr; document.querySelectorAll(".qf.act").forEach(x=>x.classList.remove("act")); f.classList.add("act")});
 document.addEventListener("submit",e=>{if(e.target.matches&&e.target.matches("[data-qform]")){e.preventDefault(); const i=$("#qtag"); const v=i.value; i.value=""; qNovaTag(v)}});
 document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.classList&&e.target.classList.contains("qnome")){e.preventDefault(); const all=[...document.querySelectorAll(".qnome")], i=all.indexOf(e.target); (all[i+1]||e.target).focus(); if(!all[i+1])e.target.blur()}});
+// ---- ordem dos cards: ela arruma como num binder ----
+async function murReordenar(id,alvoId,depois){
+  const d=D.itens.get(id), t=D.itens.get(alvoId); if(!d||!t||id===alvoId)return;
+  const r=cegs().find(x=>x.com===(t.comunidade||"")&&x.nome===t.ceg); if(!r)return;
+  const ids=r.itens.map(x=>x.id).filter(x=>x!==id); const i=ids.indexOf(alvoId)+(depois?1:0); ids.splice(i,0,id);
+  const mudou=!(d.ceg===r.nome&&(d.comunidade||"")===r.com);
+  const ch=ids.map((x,k)=>{const o=D.itens.get(x), p={}; if(o.ord!==k*10)p.ord=k*10; if(x===id&&mudou){p.ceg=r.nome;p.comunidade=r.com;Object.assign(p,travar(o,["ceg","comunidade"]))} return Object.keys(p).length?["itens",x,p]:null}).filter(Boolean);
+  if(ch.length)await setMany(ch,mudou?"Movido para "+(r.lbl||r.nome):"Ordem mudada");
+}
+async function murAndar(id,passo){
+  const d=D.itens.get(id); if(!d)return; const r=cegs().find(x=>x.com===(d.comunidade||"")&&x.nome===d.ceg); if(!r)return;
+  const ids=r.itens.map(x=>x.id), i=ids.indexOf(id), j=i+passo; if(i<0||j<0||j>=ids.length){toast(passo<0?"Já é o primeiro":"Já é o último");return}
+  await murReordenar(id,ids[j],passo>0);
+}
 // ---- mover e trocar foto ----
 async function murMover(id,zona){
   const d=D.itens.get(id); if(!d||!zona)return;
@@ -1420,7 +1435,7 @@ function muralSheet(id){
     <div class="field wide"><label for="mq-obs">Notas</label><textarea id="mq-obs" rows="3">${esc(d.obs||"")}</textarea></div>
   </div>
   ${tr.length?`<p class="note">Campos travados: o robô não muda sozinho, só sugere. ${tr.map(f=>`<button class="chip" data-destravar="${esc(id)}|${esc(f)}" type="button">${esc(f)} ×</button>`).join(" ")}</p>`:""}
-  <div class="actions stick"><button class="btn pri" data-msave="${esc(id)}" type="button">Salvar</button><button class="btn" data-edit="itens|${esc(id)}" type="button">Todos os campos</button>${!cs.length?`<button class="btn" data-link="${esc(id)}" type="button">${ico("link",16)}Ligar ao catálogo</button>`:""}</div>`;
+  <div class="actions stick"><button class="btn pri" data-msave="${esc(id)}" type="button">Salvar</button><button class="btn" data-mand="${esc(id)}|-1" type="button" aria-label="mover pra antes">◀ antes</button><button class="btn" data-mand="${esc(id)}|1" type="button" aria-label="mover pra depois">depois ▶</button><button class="btn" data-edit="itens|${esc(id)}" type="button">Todos os campos</button>${!cs.length?`<button class="btn" data-link="${esc(id)}" type="button">${ico("link",16)}Ligar ao catálogo</button>`:""}</div>`;
 }
 async function murSalvar(b){
   const id=b.dataset.msave, d=D.itens.get(id); if(!d)return;
@@ -1496,14 +1511,16 @@ async function printSalvar(b){
 // ---- arrastar, soltar e colar ----
 const temArquivo=e=>[...(e.dataTransfer&&e.dataTransfer.types||[])].includes("Files");
 document.addEventListener("dragstart",e=>{const rr=e.target.closest&&e.target.closest("[data-drr]"); if(rr){qdragR=rr.dataset.drr;e.dataTransfer.setData("text/plain",qdragR);e.dataTransfer.effectAllowed="move";rr.classList.add("dragging");return} const t=e.target.closest&&e.target.closest("[data-dr]"); if(!t)return; drag=t.dataset.dr; e.dataTransfer.setData("text/plain",drag); e.dataTransfer.effectAllowed="move"; t.classList.add("dragging")});
-document.addEventListener("dragend",()=>{drag="";qdragR="";document.querySelectorAll(".dragging,.over").forEach(x=>x.classList.remove("dragging","over"))});
+document.addEventListener("dragend",()=>{drag="";qdragR="";document.querySelectorAll(".dl,.dr2").forEach(x=>x.classList.remove("dl","dr2"));document.querySelectorAll(".dragging,.over").forEach(x=>x.classList.remove("dragging","over"))});
 let overEl=null;
-document.addEventListener("dragover",e=>{const z=e.target.closest&&(e.target.closest("[data-dr]")&&temArquivo(e)?e.target.closest("[data-dr]"):e.target.closest("[data-dz]")); if(!z||(!drag&&!qdragR&&!temArquivo(e)))return; e.preventDefault(); if(overEl!==z){overEl&&overEl.classList.remove("over");overEl=z;z.classList.add("over")}});
+document.addEventListener("dragover",e=>{const z=e.target.closest&&(e.target.closest("[data-dr]")&&temArquivo(e)?e.target.closest("[data-dr]"):e.target.closest("[data-dz]")); if(!z||(!drag&&!qdragR&&!temArquivo(e)))return; document.querySelectorAll(".dl,.dr2").forEach(x=>x.classList.remove("dl","dr2")); const tl=drag&&e.target.closest&&e.target.closest("[data-dr]"); if(tl&&tl.dataset.dr!==drag&&ui.mg!=="fase"){const rc=tl.getBoundingClientRect(); tl.classList.add(e.clientX>rc.left+rc.width/2?"dr2":"dl")}
+  e.preventDefault(); if(overEl!==z){overEl&&overEl.classList.remove("over");overEl=z;z.classList.add("over")}});
 document.addEventListener("drop",async e=>{
   const alvoTile=e.target.closest&&e.target.closest("[data-dr]"), z=e.target.closest&&e.target.closest("[data-dz]"); overEl&&overEl.classList.remove("over"); overEl=null;
   const file=e.dataTransfer&&[...e.dataTransfer.files].find(f=>/^image\//.test(f.type));
   if(file&&alvoTile){e.preventDefault(); await murFoto(alvoTile.dataset.dr,file); return}
   if(file&&z){e.preventDefault(); const kz=z.dataset.dz.startsWith("ceg:")?z.dataset.dz.slice(4):""; if(ui.tab==="quadro")await qAddFiles([...e.dataTransfer.files],kz); else abrirPrint(kz,file); return}
+  if(drag&&alvoTile&&!file&&alvoTile.dataset.dr!==drag&&ui.mg!=="fase"){e.preventDefault(); const rc=alvoTile.getBoundingClientRect(), dep=e.clientX>rc.left+rc.width/2, id=drag; drag=""; document.querySelectorAll(".dl,.dr2").forEach(x=>x.classList.remove("dl","dr2")); await murReordenar(id,alvoTile.dataset.dr,dep); return}
   if(qdragR&&z){e.preventDefault(); const id=qdragR; qdragR=""; await qMoverR(id,z.dataset.dz.startsWith("ceg:")?z.dataset.dz.slice(4):""); return}
   if(drag&&z){e.preventDefault(); const id=drag; drag=""; await murMover(id,z.dataset.dz)}
 });
@@ -1630,6 +1647,7 @@ document.addEventListener("click",async e=>{
   if(ds.qpick){const [rid,cid]=ds.qpick.split("|"), x=qRasc()[rid]; if(!x)return; const c=CIDX.get(cid); await qSet(rid,{cardId:x.cardId===cid?"":cid,...(c&&!x.membro?{membro:membro(c.m)}:{})}); return}
   if(ds.qnnota!=null){await qSave({notas:{...(qDoc().notas||{}),["n"+Date.now().toString(36)]:{t:""}}});return}
   if(ds.qndel){const n={...(qDoc().notas||{})}; delete n[ds.qndel]; await qSave({notas:n}); return}
+  if(ds.mand){const [i,p]=ds.mand.split("|"); await murAndar(i,Number(p)); return}
   if(ds.mi){if(suprimir){suprimir=false;return} if(ui.msel){murToggle(ds.mi);return} const id=ds.mi;openSheet("Item",()=>muralSheet(id));return}
   if(ds.msave){await murSalvar(b);return}
   if(ds.prb!=null){abrirPrint(ds.prb);return}

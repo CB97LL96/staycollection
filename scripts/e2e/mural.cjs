@@ -21,6 +21,22 @@ const srv = http.createServer((q, r) => { let p = decodeURIComponent(q.url.split
     ok(await pg.locator(".mgh h2").count() === 2, `${nome}: 2 grupos de GOM (Gabi, Ana)`);
     { const h = (await pg.locator(".mgh h2").first().innerText()).toLowerCase(); ok(h.includes("gabi") && h.includes("comunidade azul"), `${nome}: Gabi (com a comunidade) vem primeiro (mais itens)`); }
     await pg.screenshot({ path: `/tmp/e2e-mural-${nome}.png`, fullPage: true });
+    // ordem dos cards: arrastar um card pro lado de outro
+    const ordemDom = () => pg.locator('.mceg:has([data-mi="i1"]) .mtile').evaluateAll(els => els.map(e => e.dataset.mi));
+    ok(JSON.stringify(await ordemDom()) === JSON.stringify(["i1", "i2"]), `${nome}: ordem inicial i1, i2`);
+    await pg.setViewportSize({ width: vp.width, height: 2400 });
+    const t2 = pg.locator('[data-dr="i2"]'), bb = await t2.boundingBox();
+    await pg.locator('[data-dr="i1"]').dragTo(t2, { targetPosition: { x: bb.width * 0.8, y: bb.height * 0.3 } }); await pg.waitForTimeout(400);
+    ok(JSON.stringify(await ordemDom()) === JSON.stringify(["i2", "i1"]), `${nome}: arrastar pro lado direito do outro card troca a ordem (${await ordemDom()})`);
+    const ords = await pg.evaluate(() => [window.__store.itens.get("i2").ord, window.__store.itens.get("i1").ord]);
+    ok(ords[0] < ords[1], `${nome}: a ordem fica guardada (${ords})`);
+    await pg.locator('[data-dr="i1"]').dragTo(pg.locator('[data-dr="i2"]'), { targetPosition: { x: 5, y: bb.height * 0.3 } }); await pg.waitForTimeout(400);
+    ok(JSON.stringify(await ordemDom()) === JSON.stringify(["i1", "i2"]), `${nome}: arrastar pro lado esquerdo põe antes`);
+    await pg.click(".undo"); await pg.waitForTimeout(300);
+    ok(JSON.stringify(await ordemDom()) === JSON.stringify(["i2", "i1"]), `${nome}: desfazer volta a ordem`);
+    await pg.click('[data-mi="i2"]'); await pg.waitForSelector("[data-mand]"); await pg.click('[data-mand="i2|1"]'); await pg.waitForTimeout(400);
+    ok(JSON.stringify(await ordemDom()) === JSON.stringify(["i1", "i2"]), `${nome}: botão "depois" também muda (sem arrastar, pro celular)`);
+    await pg.keyboard.press("Escape"); await pg.setViewportSize(vp);
     // arrastar i1 pra CEG Variados 7
     await pg.setViewportSize({ width: vp.width, height: 2400 });
     const alvo = pg.locator('.mceg', { hasText: "Variados 7" });
